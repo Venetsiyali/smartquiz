@@ -19,7 +19,7 @@ const RANK_ICONS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
 export default function TeacherGamePage() {
     const router = useRouter();
     const pinRef = useRef<string | null>(null);
-    const [phase, setPhase] = useState<'question' | 'leaderboard' | 'ended'>('question');
+    const [phase, setPhase] = useState<'loading' | 'question' | 'leaderboard' | 'ended'>('loading');
     const [question, setQuestion] = useState<QuestionPayload | null>(null);
     const [questionEnd, setQuestionEnd] = useState<QuestionEndPayload | null>(null);
     const [timeLeft, setTimeLeft] = useState(0);
@@ -68,6 +68,15 @@ export default function TeacherGamePage() {
             clearTimer();
             setQuestionEnd({ correctOptions: [], leaderboard, isLastQuestion: true });
             setPhase('ended');
+        });
+
+        // Call start API only AFTER subscription is confirmed — eliminates race condition
+        channelRef.current.bind('pusher:subscription_succeeded', () => {
+            fetch('/api/game/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin }),
+            });
         });
 
         return () => {

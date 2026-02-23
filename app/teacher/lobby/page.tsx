@@ -59,25 +59,16 @@ export default function TeacherLobbyPage() {
         };
     }, [pin]);
 
-    const handleStart = async () => {
+    const handleStart = () => {
         if (!pin) return;
         if (players.length === 0) {
             setError("Kamida bitta o'yinchi kerak!");
             setTimeout(() => setError(''), 3000);
             return;
         }
+        // Navigate first — game page will call /api/game/start AFTER Pusher subscription is ready
         setLoading(true);
-        const res = await fetch('/api/game/start', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin }),
-        });
-        if (res.ok) {
-            router.push('/teacher/game');
-        } else {
-            setError("O'yinni boshlashda xatolik");
-            setLoading(false);
-        }
+        router.push('/teacher/game');
     };
 
     return (
