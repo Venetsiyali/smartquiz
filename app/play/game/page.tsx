@@ -4,7 +4,15 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
 
-interface QuestionPayload { questionIndex: number; total: number; text: string; options: string[]; timeLimit: number; imageUrl?: string; }
+interface QuestionPayload {
+    questionIndex: number;
+    total: number;
+    text: string;
+    options: string[];
+    timeLimit: number;
+    imageUrl?: string;
+    questionStartTime?: number;
+}
 interface AnswerResult { correct: boolean; points: number; totalScore: number; correctOptions: number[]; }
 interface LeaderboardEntry { nickname: string; score: number; rank: number; }
 
@@ -21,7 +29,7 @@ export default function StudentGamePage() {
     const [question, setQuestion] = useState<QuestionPayload | null>(null);
     const [selected, setSelected] = useState<number | null>(null);
     const [result, setResult] = useState<AnswerResult | null>(null);
-    const [phase, setPhase] = useState<'waiting' | 'question' | 'feedback' | 'between' | 'ended'>('waiting');
+    const [phase, setPhase] = useState<'loading' | 'question' | 'feedback' | 'between' | 'ended'>('loading');
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [totalScore, setTotalScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(0);
@@ -31,6 +39,28 @@ export default function StudentGamePage() {
 
     const clearTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
 
+    const startQuestionTimer = (q: QuestionPayload) => {
+        clearTimer();
+        // Calculate remaining time accounting for time already elapsed
+        const elapsed = q.questionStartTime ? Math.floor((Date.now() - q.questionStartTime) / 1000) : 0;
+        const remaining = Math.max(1, q.timeLimit - elapsed);
+        setTimeLeft(remaining);
+        timerRef.current = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) { clearTimer(); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    const showQuestion = (payload: QuestionPayload) => {
+        setQuestion(payload);
+        setSelected(null);
+        setResult(null);
+        setPhase('question');
+        startQuestionTimer(payload);
+    };
+
     useEffect(() => {
         const pin = sessionStorage.getItem('playerPin');
         const pid = sessionStorage.getItem('playerId');
@@ -38,23 +68,25 @@ export default function StudentGamePage() {
         pinRef.current = pin;
         playerIdRef.current = pid;
 
-        const pusher = getPusherClient();
+        // ── Step 1: Fetch current question state immediately from Redis ──
+        fetch(`/api/game/state?pin=${pin}`)
+            .then((r) => r.json())
+            .then((data) => {
+                if (data.status === 'question' && data.currentQuestion) {
+                    showQuestion(data.currentQuestion);
+                } else if (data.status === 'ended') {
+                    setPhase('ended');
+                }
+                // If lobby/leaderboard, just wait for Pusher events
+            })
+            .catch(() => {/* ignore, Pusher will handle it */ });
 
-        // Game channel (broadcasts)
+        // ── Step 2: Subscribe to Pusher for all future events ──
+        const pusher = getPusherClient();
         const gameCh = pusher.subscribe(`game-${pin}`);
+
         gameCh.bind('question-start', (payload: QuestionPayload) => {
-            setQuestion(payload);
-            setSelected(null);
-            setResult(null);
-            setPhase('question');
-            setTimeLeft(payload.timeLimit);
-            clearTimer();
-            timerRef.current = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) { clearTimer(); return 0; }
-                    return prev - 1;
-                });
-            }, 1000);
+            showQuestion(payload);
         });
 
         gameCh.bind('question-end', ({ leaderboard: lb }: { leaderboard: LeaderboardEntry[] }) => {
@@ -69,7 +101,7 @@ export default function StudentGamePage() {
             setPhase('ended');
         });
 
-        // Private player channel for individual answer result
+        // Private channel for individual answer feedback
         const playerCh = pusher.subscribe(`player-${pid}`);
         playerCh.bind('answer-result', (r: AnswerResult) => {
             clearTimer();
@@ -83,6 +115,7 @@ export default function StudentGamePage() {
             pusher.unsubscribe(`player-${pid}`);
             clearTimer();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router]);
 
     const handleAnswer = async (optIndex: number) => {
@@ -98,6 +131,19 @@ export default function StudentGamePage() {
     const timerPercent = question ? (timeLeft / question.timeLimit) * 100 : 100;
     const timerColor = timeLeft > (question?.timeLimit || 0) * 0.6 ? '#6BCB77' : timeLeft > (question?.timeLimit || 0) * 0.3 ? '#FFD93D' : '#FF6B6B';
 
+    // ── Loading state ──
+    if (phase === 'loading') {
+        return (
+            <div className="bg-game min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-6xl mb-4 animate-bounce">⚡</div>
+                    <p className="text-white/60 font-bold text-xl animate-pulse">Savol yuklanmoqda...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // ── Question ──
     if (phase === 'question' && question) {
         return (
             <div className="bg-game min-h-screen flex flex-col p-4">
@@ -141,6 +187,7 @@ export default function StudentGamePage() {
         );
     }
 
+    // ── Answer Feedback ──
     if (phase === 'feedback' && result) {
         return (
             <div className="bg-game min-h-screen flex flex-col items-center justify-center p-6 text-center">
@@ -167,6 +214,7 @@ export default function StudentGamePage() {
         );
     }
 
+    // ── Between questions / Leaderboard ──
     if (phase === 'between') {
         const myNick = sessionStorage.getItem('playerNickname') || '';
         return (
@@ -175,9 +223,13 @@ export default function StudentGamePage() {
                 <div className="w-full max-w-sm space-y-3 mb-6">
                     {leaderboard.map((entry, i) => (
                         <div key={i} className="flex items-center gap-3 p-3 rounded-2xl animate-slide-up"
-                            style={{ background: entry.nickname === myNick ? 'rgba(108,99,255,0.2)' : 'rgba(255,255,255,0.08)', border: entry.nickname === myNick ? '2px solid #6C63FF' : 'none', animationDelay: `${i * 0.1}s` }}>
+                            style={{
+                                background: entry.nickname === myNick ? 'rgba(108,99,255,0.25)' : 'rgba(255,255,255,0.08)',
+                                border: entry.nickname === myNick ? '2px solid #6C63FF' : 'none',
+                                animationDelay: `${i * 0.1}s`,
+                            }}>
                             <span className="text-2xl">{RANK_ICONS[i]}</span>
-                            <span className="flex-1 font-bold text-white">{entry.nickname} {entry.nickname === myNick ? '(Siz)' : ''}</span>
+                            <span className="flex-1 font-bold text-white">{entry.nickname}{entry.nickname === myNick ? ' (Siz)' : ''}</span>
                             <span className="text-yellow-400 font-extrabold">{entry.score.toLocaleString()}</span>
                         </div>
                     ))}
@@ -187,6 +239,7 @@ export default function StudentGamePage() {
         );
     }
 
+    // ── Game ended ──
     if (phase === 'ended') {
         const myNick = sessionStorage.getItem('playerNickname') || '';
         const myEntry = leaderboard.find((e) => e.nickname === myNick);
@@ -219,7 +272,7 @@ export default function StudentGamePage() {
         <div className="bg-game min-h-screen flex items-center justify-center">
             <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">⚡</div>
-                <p className="text-white/60 font-bold text-xl">O&apos;yin boshlanishini kutmoqda...</p>
+                <p className="text-white/60 font-bold text-xl">Yuklanmoqda...</p>
             </div>
         </div>
     );
