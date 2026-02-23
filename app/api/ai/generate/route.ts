@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
-});
-
 export async function POST(req: Request) {
+    // Instantiate inside handler — prevents build-time crash when env var isn't set
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
     const { topic, count = 5, language = 'uz' } = await req.json();
 
     if (!topic || topic.trim().length < 2) {
@@ -59,7 +58,6 @@ Faqat quyidagi JSON formatda qaytar, boshqa hech narsa yozma:
 
         const raw = completion.choices[0]?.message?.content || '';
 
-        // Extract JSON from response
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
             return NextResponse.json({ error: "AI javob formati noto'g'ri" }, { status: 500 });
