@@ -1,95 +1,99 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
-export default function HomePage() {
+export default function LandingPage() {
     const router = useRouter();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     return (
-        <div className="bg-game min-h-screen flex flex-col items-center justify-center p-6">
-            {/* Animated orbs */}
+        <div className="bg-landing min-h-screen flex flex-col">
+            {/* Animated background orbs */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute w-96 h-96 rounded-full opacity-20 animate-pulse-slow"
-                    style={{ background: 'radial-gradient(circle, #6C63FF, transparent)', top: '-10%', left: '-5%' }} />
-                <div className="absolute w-80 h-80 rounded-full opacity-15 animate-pulse-slow"
-                    style={{ background: 'radial-gradient(circle, #FF6B6B, transparent)', bottom: '-5%', right: '-5%', animationDelay: '1s' }} />
-                <div className="absolute w-64 h-64 rounded-full opacity-10 animate-pulse-slow"
-                    style={{ background: 'radial-gradient(circle, #FFD93D, transparent)', top: '40%', right: '10%', animationDelay: '2s' }} />
+                <div className="absolute w-[600px] h-[600px] rounded-full opacity-20 animate-pulse-slow"
+                    style={{ background: 'radial-gradient(circle, #0056b3, transparent)', top: '-15%', left: '-10%' }} />
+                <div className="absolute w-[400px] h-[400px] rounded-full opacity-10 animate-pulse-slow"
+                    style={{ background: 'radial-gradient(circle, #FFD600, transparent)', bottom: '10%', right: '-5%', animationDelay: '1.5s' }} />
+                <div className="absolute w-[300px] h-[300px] rounded-full opacity-10 animate-pulse-slow"
+                    style={{ background: 'radial-gradient(circle, #00E676, transparent)', top: '40%', right: '20%', animationDelay: '3s' }} />
             </div>
 
-            {/* Logo */}
-            <div className={`text-center mb-12 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
-                        style={{ background: 'linear-gradient(135deg, #6C63FF, #4834d4)', boxShadow: '0 8px 32px rgba(108,99,255,0.5)' }}>
-                        ⚡
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-black text-white">
-                        Smart<span style={{ color: '#6C63FF' }}>Quiz</span>
-                    </h1>
+            {/* Nav */}
+            <nav className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl font-black"
+                        style={{ background: 'linear-gradient(135deg, #0056b3, #FFD600)' }}>Z</div>
+                    <span className="text-2xl font-black text-white">
+                        Zukk<span className="logo-z">oo</span>
+                    </span>
+                    <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold"
+                        style={{ background: 'rgba(0,86,179,0.3)', border: '1px solid rgba(0,86,179,0.5)', color: '#60a5fa' }}>
+                        TUIT · ATT
+                    </span>
                 </div>
-                <p className="text-white/60 text-xl font-semibold">
-                    Real-vaqt rejimida ta&apos;limiy viktorina platformasi
+                <div className="flex items-center gap-3">
+                    <button onClick={() => router.push('/play')}
+                        className="px-5 py-2.5 rounded-xl font-bold text-white/80 hover:text-white hover:bg-white/10 transition-all text-sm">
+                        📱 O&apos;yinga kirish
+                    </button>
+                    <button onClick={() => router.push('/teacher/create')} className="btn-primary text-sm px-5 py-2.5">
+                        🎓 O&apos;qituvchi
+                    </button>
+                </div>
+            </nav>
+
+            {/* Hero */}
+            <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 font-bold text-sm"
+                    style={{ background: 'rgba(0,86,179,0.2)', border: '1px solid rgba(0,86,179,0.4)', color: '#93c5fd' }}>
+                    ⚡ Real-vaqt · WebSocket · 0.3s kechikish
+                </div>
+
+                <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-none tracking-tight">
+                    Ta&apos;limni<br />
+                    <span className="logo-z" style={{ fontSize: '1.1em' }}>O&apos;yinga</span>{' '}
+                    <span style={{ color: 'white' }}>Aylantir</span>
+                </h1>
+
+                <p className="text-xl text-white/60 font-semibold max-w-2xl mb-10 leading-relaxed">
+                    Zukkoo — TUIT talabalari uchun real-vaqt interaktiv viktorina platformasi.
+                    O&apos;qituvchi savol tuzadi, talabalar telefondan javob beradi. Tezroq — ko&apos;proq ball!
                 </p>
-            </div>
 
-            {/* Role Selection */}
-            <div className={`w-full max-w-lg space-y-4 transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                {/* Teacher Card */}
-                <button
-                    onClick={() => router.push('/teacher/create')}
-                    className="w-full glass p-6 rounded-2xl text-left hover:scale-105 transition-all duration-200 cursor-pointer group"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0"
-                            style={{ background: 'linear-gradient(135deg, #6C63FF, #4834d4)' }}>
-                            👨‍🏫
-                        </div>
-                        <div className="flex-1">
-                            <h2 className="text-2xl font-extrabold text-white group-hover:text-purple-300 transition-colors">
-                                O&apos;qituvchi
-                            </h2>
-                            <p className="text-white/60 font-semibold">
-                                Quiz yarating va o&apos;yinni boshqaring
-                            </p>
-                        </div>
-                        <div className="text-white/40 text-2xl group-hover:translate-x-2 transition-transform">→</div>
-                    </div>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4 mb-16">
+                    <button onClick={() => router.push('/teacher/create')}
+                        className="btn-primary text-lg px-8 py-4">
+                        🎓 Quiz Yaratish
+                    </button>
+                    <button onClick={() => router.push('/play')}
+                        className="px-8 py-4 rounded-2xl font-extrabold text-lg text-white transition-all hover:scale-105"
+                        style={{ background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)' }}>
+                        📱 O&apos;yinga Kirish
+                    </button>
+                </div>
 
-                {/* Student Card */}
-                <button
-                    onClick={() => router.push('/play')}
-                    className="w-full glass p-6 rounded-2xl text-left hover:scale-105 transition-all duration-200 cursor-pointer group"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0"
-                            style={{ background: 'linear-gradient(135deg, #FF6B6B, #ee0979)' }}>
-                            🎮
+                {/* Feature Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+                    {[
+                        { icon: '⚡', title: 'Real-vaqt', desc: "WebSocket orqali 0.3s dan kam kechikish. Barcha o'yinchilar bir vaqtda ko'radi.", color: '#FFD600' },
+                        { icon: '🤖', title: 'AI Savol Yaratuvchi', desc: "Groq LLaMA 3.3-70B yordamida mavzu bo'yicha savollar avtomatik yaratiladi.", color: '#00E676' },
+                        { icon: '🏆', title: 'Tezlik + Ball', desc: "To'g'ri va tez javob = ko'proq ball. Real raqobat muhiti yaratadi.", color: '#0056b3' },
+                    ].map((f, i) => (
+                        <div key={i} className="glass p-6 text-left animate-slide-up" style={{ animationDelay: `${i * 0.15}s` }}>
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+                                style={{ background: `${f.color}22`, border: `1px solid ${f.color}44` }}>
+                                {f.icon}
+                            </div>
+                            <h3 className="text-white font-extrabold text-lg mb-2">{f.title}</h3>
+                            <p className="text-white/50 font-semibold text-sm leading-relaxed">{f.desc}</p>
                         </div>
-                        <div className="flex-1">
-                            <h2 className="text-2xl font-extrabold text-white group-hover:text-pink-300 transition-colors">
-                                O&apos;yinchi
-                            </h2>
-                            <p className="text-white/60 font-semibold">
-                                PIN yoki QR kod orqali kiring
-                            </p>
-                        </div>
-                        <div className="text-white/40 text-2xl group-hover:translate-x-2 transition-transform">→</div>
-                    </div>
-                </button>
-            </div>
+                    ))}
+                </div>
+            </main>
 
             {/* Footer */}
-            <p className={`mt-12 text-white/30 text-sm font-semibold transition-all duration-700 delay-400 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-                ⚡ WebSocket orqali real-vaqt ulanish
-            </p>
+            <footer className="relative z-10 text-center py-6 text-white/30 font-semibold text-sm">
+                © 2026 Zukkoo · TUIT ATT bo&apos;limi · Barcha huquqlar himoyalangan
+            </footer>
         </div>
     );
 }
