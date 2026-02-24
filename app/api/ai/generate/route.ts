@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
+// Fisher-Yates shuffle — returns new array
+function shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
 export async function POST(req: Request) {
-    // Instantiate inside handler — prevents build-time crash when env var isn't set
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const { topic, count = 5, language = 'uz' } = await req.json();
@@ -20,20 +29,27 @@ export async function POST(req: Request) {
 
     const prompt = `${langInstruction}
 
-Quyidagi mavzu bo'yicha ${count} ta test savoli tuz: "${topic}"
+Mavzu: "${topic}"
+${count} ta test savoli tuz.
 
-Har bir savol uchun:
-- 1 ta savol matni
-- 4 ta javob varianti (A, B, C, D)
-- To'g'ri javobning indeksi (0=A, 1=B, 2=C, 3=D)
+QAT'IY QOIDALAR:
+1. Har bir savolda TO'G'RI javobni HAR XIL pozitsiyaga qo'y.
+   - 1-savol: to'g'ri javob indeksi 2 (C)
+   - 2-savol: to'g'ri javob indeksi 0 (A)
+   - 3-savol: to'g'ri javob indeksi 3 (D)
+   - 4-savol: to'g'ri javob indeksi 1 (B)
+   - 5-savol: to'g'ri javob indeksi 2 (C)
+   ... va hokazo. HECH QACHON to'g'ri javobni ketma-ket bir xil pozitsiyaga qo'yma.
+2. Noto'g'ri javoblar real va ishonchli ko'rinsin — o'quvchinni chalg'itsin.
+3. Savollar qiyin va o'ylantiruvchi bo'lsin.
 
-Faqat quyidagi JSON formatda qaytar, boshqa hech narsa yozma:
+Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
 {
   "questions": [
     {
       "text": "Savol matni?",
-      "options": ["A variant", "B variant", "C variant", "D variant"],
-      "correctOptions": [0]
+      "options": ["variant0", "variant1", "variant2", "variant3"],
+      "correctOptions": [to'g'ri_variant_indeksi]
     }
   ]
 }`;
@@ -45,7 +61,7 @@ Faqat quyidagi JSON formatda qaytar, boshqa hech narsa yozma:
                 {
                     role: 'system',
                     content:
-                        "Sen ta'lim sohasida test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, boshqa hech narsa qo'shma.",
+                        "Sen ta'lim sohasida mukammal test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, boshqa hech narsa qo'shma. TO'G'RI JAVOBNI HAR DOIM HAR XIL POZITSIYAGA QO'Y — A, B, C, D pozitsiyalari teng taqsimlansin.",
                 },
                 {
                     role: 'user',
@@ -69,7 +85,22 @@ Faqat quyidagi JSON formatda qaytar, boshqa hech narsa yozma:
             return NextResponse.json({ error: "AI savollarni to'g'ri formatlamadi" }, { status: 500 });
         }
 
-        return NextResponse.json({ questions: parsed.questions });
+        // Shuffle options server-side to guarantee varied correct answer positions
+        // regardless of AI behavior
+        const questions = parsed.questions.map((q: any) => {
+            const opts: string[] = q.options || [];
+            const correctIdxs: number[] = q.correctOptions || [0];
+            const correctTexts = new Set(correctIdxs.map((i: number) => opts[i]));
+
+            const shuffled = shuffle(opts);
+            const newCorrectOptions = shuffled
+                .map((o, i) => (correctTexts.has(o) ? i : -1))
+                .filter(i => i !== -1);
+
+            return { text: q.text, options: shuffled, correctOptions: newCorrectOptions };
+        });
+
+        return NextResponse.json({ questions });
     } catch (err: any) {
         console.error('Groq error:', err);
         return NextResponse.json(
