@@ -8,7 +8,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription } from '@/lib/subscriptionContext';
 
 interface LeaderboardEntry { nickname: string; avatar: string; score: number; streak: number; rank: number; }
-interface QuestionPayload { questionIndex: number; total: number; text: string; options: string[]; timeLimit: number; imageUrl?: string; questionStartTime?: number; }
+interface MatchPair { term: string; definition: string; }
+interface QuestionPayload {
+    questionIndex: number; total: number; text: string; options: string[];
+    type?: 'multiple' | 'truefalse' | 'order' | 'match';
+    pairs?: MatchPair[];
+    timeLimit: number; imageUrl?: string; questionStartTime?: number;
+}
 interface QuestionEndPayload { correctOptions: number[]; explanation?: string | null; options: string[]; leaderboard: LeaderboardEntry[]; isLastQuestion: boolean; }
 interface Badge { nickname: string; avatar: string; badge: string; icon: string; desc: string; }
 interface GameEndPayload { leaderboard: LeaderboardEntry[]; badges: Badge[]; }
@@ -170,18 +176,70 @@ export default function TeacherGamePage() {
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center gap-8 px-8 md:px-16 py-8">
+                {/* Question type badge */}
+                <div className="flex items-center gap-2 mb-2">
+                    {question.type === 'match' && (
+                        <div className="glass px-3 py-1 rounded-xl">
+                            <span className="font-black text-sm" style={{ color: '#a78bfa' }}>💎 TERMINLAR JANGI</span>
+                        </div>
+                    )}
+                    {question.type === 'order' && (
+                        <div className="glass px-3 py-1 rounded-xl">
+                            <span className="text-yellow-400 font-black text-sm">🔗 MANTIQIY ZANJIR</span>
+                        </div>
+                    )}
+                </div>
+
                 {question.imageUrl && <img src={question.imageUrl} alt="" className="max-h-52 rounded-3xl object-cover shadow-2xl" />}
                 <h2 className="text-3xl md:text-5xl font-black text-white text-center leading-tight max-w-5xl"
                     style={{ textShadow: '0 2px 24px rgba(0,0,0,0.6)' }}>{question.text}</h2>
-                <div className="grid grid-cols-2 gap-5 w-full max-w-5xl">
-                    {question.options.map((opt, i) => (
-                        <div key={i} className={`btn-answer text-xl md:text-2xl justify-start`} style={i >= 2 ? { color: '#0a1a0a' } : {}}>
-                            <span className="text-3xl">{OPTION_COLORS[i].icon}</span>
-                            <span className="font-extrabold mr-2">{OPTION_COLORS[i].label}.</span>
-                            <span>{opt}</span>
+
+                {/* Match type — show pair preview on host screen */}
+                {question.type === 'match' && question.pairs && (
+                    <div className="w-full max-w-3xl">
+                        <div className="grid grid-cols-2 gap-3">
+                            {question.pairs.slice(0, 4).map((p, i) => (
+                                <div key={i} className="glass p-3 rounded-xl flex items-center gap-3 opacity-70">
+                                    <span className="text-2xl">💎</span>
+                                    <div>
+                                        <p className="text-blue-300 font-black text-sm">{p.term}</p>
+                                        <p className="text-purple-300 font-bold text-xs opacity-70">{p.definition}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                        {question.pairs.length > 4 && (
+                            <p className="text-white/30 text-center text-sm font-bold mt-2">+{question.pairs.length - 4} ta juft ko&apos;rsatilmadi</p>
+                        )}
+                        <motion.p
+                            animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="text-center text-white/50 font-bold text-lg mt-4">
+                            ⏳ Talabalar juftliklarni taqashtirmoqda...
+                        </motion.p>
+                    </div>
+                )}
+
+                {/* Order type — waiting message */}
+                {question.type === 'order' && (
+                    <motion.p
+                        animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }}
+                        className="text-center text-white/50 font-bold text-2xl">
+                        ⏳ Talabalar tartiblab javob bermoqda...
+                    </motion.p>
+                )}
+
+                {/* MCQ/TF — show option grid as before */}
+                {(question.type === 'multiple' || question.type === 'truefalse' || !question.type) && (
+                    <div className="grid grid-cols-2 gap-5 w-full max-w-5xl">
+                        {question.options.map((opt, i) => (
+                            <div key={i} className={`btn-answer text-xl md:text-2xl justify-start`} style={i >= 2 ? { color: '#0a1a0a' } : {}}>
+                                <span className="text-3xl">{OPTION_COLORS[i].icon}</span>
+                                <span className="font-extrabold mr-2">{OPTION_COLORS[i].label}.</span>
+                                <span>{opt}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             <div className="h-2 bg-white/10">
                 <div className="h-full transition-all duration-1000" style={{ width: `${pct}%`, background: tColor, boxShadow: `0 0 14px ${tColor}` }} />

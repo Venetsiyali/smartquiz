@@ -20,13 +20,21 @@ export interface Player {
     fastestAnswerMs: number; // fastest single answer in ms
 }
 
+export interface MatchPair {
+    term: string;
+    definition: string;
+    termImage?: string;       // Pro: image for the term card
+    definitionImage?: string; // Pro: image for the definition card
+}
+
 export interface Question {
     id: string;
-    type?: 'multiple' | 'truefalse' | 'order';
+    type?: 'multiple' | 'truefalse' | 'order' | 'match';
     text: string;
     options: string[];        // for 'order': stored in CORRECT sequence
     optionImages?: string[];  // Pro: optional image URL per option (order type)
     correctOptions: number[]; // for 'order': [0,1,2,...] correct indices
+    pairs?: MatchPair[];      // for 'match' type
     timeLimit: number;
     imageUrl?: string;
     explanation?: string;    // "Did you know?" text shown after question

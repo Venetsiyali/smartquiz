@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import SortGame from '@/components/SortGame';
+import MatchGame, { type MatchPair, type MatchResult } from '@/components/MatchGame';
 
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
-    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order';
+    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order' | 'match';
+    pairs?: MatchPair[];
     timeLimit: number; imageUrl?: string; questionStartTime?: number;
 }
 interface AnswerResult {
@@ -20,6 +22,7 @@ interface AnswerResult {
     submittedOrder?: number[] | null;
     correctCount?: number | null;
     questionType?: string;
+    matchResult?: MatchResult | null;
 }
 interface QuestionEndPayload {
     correctOptions: number[]; explanation?: string | null; options: string[];
@@ -59,6 +62,8 @@ export default function StudentGamePage() {
     // Sorting game state
     const [sortItems, setSortItems] = useState<{ id: string; text: string; imageUrl?: string }[]>([]);
     const [sortSubmitted, setSortSubmitted] = useState(false);
+    // Match game state
+    const [matchSubmitted, setMatchSubmitted] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pinRef = useRef('');
@@ -82,6 +87,7 @@ export default function StudentGamePage() {
         clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
         setQuestion(payload); setSelected(null); setResult(null); setPhase('question');
         setSortSubmitted(false);
+        setMatchSubmitted(false);
         // Build sort items with randomized IDs (server already shuffled order)
         if (payload.type === 'order') {
             setSortItems(payload.options.map((text, idx) => ({
@@ -172,6 +178,17 @@ export default function StudentGamePage() {
         });
     };
 
+    // Submit match result when all pairs matched
+    const handleMatchComplete = async (mr: MatchResult) => {
+        if (matchSubmitted || phase !== 'question') return;
+        setMatchSubmitted(true);
+        vibrate(mr.cleanSweep ? [80, 40, 80, 40, 120] : 60);
+        await fetch('/api/game/answer', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, matchResult: mr }),
+        });
+    };
+
     const pct = question ? (timeLeft / question.timeLimit) * 100 : 100;
     const tColor = !question ? '#0056b3' : timeLeft > question.timeLimit * 0.6 ? '#00E676' : timeLeft > question.timeLimit * 0.3 ? '#FFD600' : '#FF1744';
     const myNick = typeof window !== 'undefined' ? sessionStorage.getItem('playerNickname') || '' : '';
@@ -201,6 +218,11 @@ export default function StudentGamePage() {
                             <span className="text-yellow-400 font-black text-xs">🔗 ZANJIR</span>
                         </div>
                     )}
+                    {question.type === 'match' && (
+                        <div className="glass px-2.5 py-1 rounded-xl">
+                            <span className="font-black text-xs" style={{ color: '#a78bfa' }}>💎 MATCH</span>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     {streak >= 3 && (
@@ -226,8 +248,26 @@ export default function StudentGamePage() {
                 <p className="text-white font-extrabold text-lg leading-snug text-center">{question.text}</p>
             </div>
 
-            {/* ── ORDER / Sorting ── */}
-            {question.type === 'order' ? (
+            {/* ── MATCH / Terminlar jangi ── */}
+            {question.type === 'match' ? (
+                <div className="flex-1 overflow-y-auto pb-4">
+                    {question.pairs && question.pairs.length > 0 ? (
+                        <MatchGame
+                            pairs={question.pairs}
+                            timeLimit={question.timeLimit}
+                            onComplete={handleMatchComplete}
+                            result={null}
+                        />
+                    ) : (
+                        <p className="text-white/40 text-center font-bold">Juftliklar yuklanmoqda...</p>
+                    )}
+                    {matchSubmitted && (
+                        <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">
+                            ✅ Bajarildi! Boshqalar kutilmoqda...
+                        </p>
+                    )}
+                </div>
+            ) : question.type === 'order' ? (
                 <div className="flex-1 overflow-y-auto pb-4">
                     <SortGame
                         question={question.text}

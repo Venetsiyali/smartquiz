@@ -47,6 +47,7 @@ export async function POST(req: Request) {
         text: question.text,
         options: broadcastOptions,
         optionImages: broadcastOptionImages || null,
+        pairs: question.pairs || null,
         timeLimit: question.timeLimit,
         imageUrl: question.imageUrl,
         questionStartTime: room.questionStartTime,

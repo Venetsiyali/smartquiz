@@ -2,11 +2,20 @@ import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
 import { getRoom, saveRoomData, calculateScore, getLeaderboard } from '@/lib/gameState';
 
+interface MatchResultBody {
+    totalPairs: number;
+    completedMs: number;
+    mistakes: number;
+    cleanSweep: boolean;
+    points: number;
+}
+
 interface AnswerBody {
     pin: string;
     playerId: string;
-    optionIndex?: number;       // MCQ / TrueFalse
-    submittedOrder?: number[];  // Order / Sorting question
+    optionIndex?: number;        // MCQ / TrueFalse
+    submittedOrder?: number[];   // Order / Sorting
+    matchResult?: MatchResultBody; // Match / Terminlar jangi
 }
 
 export async function POST(req: Request) {
@@ -27,33 +36,38 @@ export async function POST(req: Request) {
     const totalMs = question.timeLimit * 1000;
     const remaining = Math.max(0, totalMs - elapsed);
 
-    // ── Sorting question scoring ──────────────────────────────────────────
-    const isOrderQuestion = question.type === 'order';
+    const qType = question.type || 'multiple';
+    let points = 0;
     let isCorrect = false;
-    let orderScore = 0;
-    let correctCount = 0;
     let streakFire = false;
 
-    if (isOrderQuestion && body.submittedOrder) {
+    /* ── Match Scoring ─────────────────────────────────────────────── */
+    if (qType === 'match' && body.matchResult) {
+        const mr = body.matchResult;
+        isCorrect = mr.cleanSweep;
+        points = mr.points; // already calculated on client
+        streakFire = mr.cleanSweep && mr.completedMs < 20000;
+    }
+
+    /* ── Order Scoring ─────────────────────────────────────────────── */
+    else if (qType === 'order' && body.submittedOrder) {
         const submitted = body.submittedOrder;
-        const correct = question.correctOptions; // [0,1,2,...] expected order
-        correctCount = submitted.reduce((acc, val, idx) => acc + (val === correct[idx] ? 1 : 0), 0);
+        const correct = question.correctOptions;
+        const correctCount = submitted.reduce((acc, val, idx) => acc + (val === correct[idx] ? 1 : 0), 0);
         const pct = correctCount / correct.length;
         isCorrect = pct === 1;
-        // Score: up to 1000 for accuracy + up to 200 time bonus
         const timeBonus = isCorrect ? Math.round((remaining / totalMs) * 200) : 0;
-        orderScore = Math.round(pct * 1000) + timeBonus;
-        // Streak fire: fully correct in < 10 seconds
+        points = Math.round(pct * 1000) + timeBonus;
         streakFire = isCorrect && elapsed < 10000;
     }
 
-    // ── MCQ / TrueFalse scoring ───────────────────────────────────────────
-    const optionIndex = body.optionIndex ?? -1;
-    if (!isOrderQuestion) {
+    /* ── MCQ / TrueFalse Scoring ────────────────────────────────────── */
+    else {
+        const optionIndex = body.optionIndex ?? -1;
         isCorrect = question.correctOptions.includes(optionIndex);
     }
 
-    const player = room.players.find((p) => p.id === playerId);
+    const player = room.players.find(p => p.id === playerId);
     if (player) {
         if (isCorrect) {
             player.streak += 1;
@@ -62,9 +76,9 @@ export async function POST(req: Request) {
             player.streak = 0;
         }
 
-        const points = isOrderQuestion
-            ? orderScore
-            : calculateScore(isCorrect, remaining, totalMs, player.streak);
+        if (qType !== 'match' && qType !== 'order') {
+            points = calculateScore(isCorrect, remaining, totalMs, player.streak);
+        }
 
         player.score += points;
         player.totalAnswers += 1;
@@ -85,10 +99,10 @@ export async function POST(req: Request) {
             explanation: question.explanation || null,
             options: question.options,
             optionImages: question.optionImages || null,
-            selectedOption: isOrderQuestion ? null : optionIndex,
-            submittedOrder: isOrderQuestion ? body.submittedOrder : null,
-            correctCount: isOrderQuestion ? correctCount : null,
-            questionType: question.type || 'multiple',
+            selectedOption: qType === 'multiple' || qType === 'truefalse' ? (body.optionIndex ?? -1) : null,
+            submittedOrder: qType === 'order' ? body.submittedOrder : null,
+            questionType: qType,
+            matchResult: qType === 'match' ? body.matchResult : null,
         });
     } else {
         room.answeredPlayerIds.push(playerId);
@@ -99,16 +113,14 @@ export async function POST(req: Request) {
     if (room.answeredPlayerIds.length >= room.players.length && room.players.length > 0) {
         room.status = 'leaderboard';
         await saveRoomData(room);
-
         const leaderboard = getLeaderboard(room.players);
         const isLastQuestion = room.currentQuestionIndex >= room.questions.length - 1;
-
         await pusherServer.trigger(`game-${pin}`, 'question-end', {
             correctOptions: question.correctOptions,
             explanation: question.explanation || null,
             options: question.options,
             optionImages: question.optionImages || null,
-            questionType: question.type || 'multiple',
+            questionType: qType,
             leaderboard,
             isLastQuestion,
         });

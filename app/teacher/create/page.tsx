@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
-type QuestionType = 'multiple' | 'truefalse' | 'order';
+type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match';
 interface AnswerOption { text: string; isCorrect: boolean; }
 interface OrderItem { text: string; imageUrl?: string; }
+interface MatchPair { term: string; definition: string; termImage?: string; definitionImage?: string; }
 interface QuizQuestion {
     id: string; type: QuestionType; text: string;
-    options: AnswerOption[]; orderItems?: OrderItem[];
+    options: AnswerOption[]; orderItems?: OrderItem[]; matchPairs?: MatchPair[];
     timeLimit: number;
     imageUrl?: string; explanation?: string;
 }
@@ -25,6 +26,10 @@ const TF_DEFAULTS = (): AnswerOption[] => [
 ];
 const ORDER_DEFAULTS = (): OrderItem[] => [
     { text: '' }, { text: '' }, { text: '' }, { text: '' },
+];
+const MATCH_DEFAULTS = (): MatchPair[] => [
+    { term: '', definition: '' }, { term: '', definition: '' },
+    { term: '', definition: '' }, { term: '', definition: '' },
 ];
 const TIME_OPTIONS = [10, 20, 30, 60, 90, 120];
 const OPTION_COLORS = [
@@ -286,9 +291,11 @@ export default function TeacherCreatePage() {
 
     const setType = (type: QuestionType) => {
         if (type === 'order') {
-            upQ({ type, orderItems: ORDER_DEFAULTS(), options: MULTI_DEFAULTS() });
+            upQ({ type, orderItems: ORDER_DEFAULTS(), options: MULTI_DEFAULTS(), matchPairs: undefined });
+        } else if (type === 'match') {
+            upQ({ type, matchPairs: MATCH_DEFAULTS(), options: MULTI_DEFAULTS(), orderItems: undefined });
         } else {
-            upQ({ type, options: type === 'truefalse' ? TF_DEFAULTS() : MULTI_DEFAULTS(), orderItems: undefined });
+            upQ({ type, options: type === 'truefalse' ? TF_DEFAULTS() : MULTI_DEFAULTS(), orderItems: undefined, matchPairs: undefined });
         }
     };
 
@@ -336,8 +343,11 @@ export default function TeacherCreatePage() {
             if (!q.text.trim()) errs.push(`${i + 1}-savol bo'sh`);
             if (q.type === 'order') {
                 const items = q.orderItems || [];
-                const filled = items.filter(it => it.text.trim()).length;
-                if (filled < 2) errs.push(`${i + 1}-savol: kamida 2 ta element kiriting`);
+                if (items.filter(it => it.text.trim()).length < 2) errs.push(`${i + 1}-savol: kamida 2 ta element`);
+            } else if (q.type === 'match') {
+                const pairs = q.matchPairs || [];
+                if (pairs.filter(p => p.term.trim() && p.definition.trim()).length < 2)
+                    errs.push(`${i + 1}-savol: kamida 2 ta juft kerak`);
             } else {
                 if (!q.options.some(o => o.isCorrect)) errs.push(`${i + 1}-savolda to'g'ri javob yo'q`);
                 if (q.type === 'multiple' && q.options.filter(o => o.text.trim()).length < 2)
@@ -356,23 +366,32 @@ export default function TeacherCreatePage() {
                 if (q.type === 'order') {
                     const items = (q.orderItems || []).filter(it => it.text.trim());
                     return {
-                        id: q.id, type: 'order',
-                        text: q.text,
+                        id: q.id, type: 'order', text: q.text,
                         options: items.map(it => it.text),
                         optionImages: items.some(it => it.imageUrl) ? items.map(it => it.imageUrl || '') : undefined,
-                        correctOptions: items.map((_, idx) => idx), // [0,1,2,...] = correct order
-                        timeLimit: q.timeLimit,
-                        imageUrl: q.imageUrl,
-                        explanation: q.explanation || '',
+                        correctOptions: items.map((_, idx) => idx),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+                if (q.type === 'match') {
+                    const pairs = (q.matchPairs || []).filter(p => p.term.trim() && p.definition.trim());
+                    return {
+                        id: q.id, type: 'match', text: q.text,
+                        options: [], correctOptions: [],
+                        pairs: pairs.map(p => ({
+                            term: p.term,
+                            definition: p.definition,
+                            termImage: p.termImage || undefined,
+                            definitionImage: p.definitionImage || undefined,
+                        })),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
                     };
                 }
                 return {
                     id: q.id, type: q.type, text: q.text,
                     options: q.options.map(o => o.text),
                     correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
-                    timeLimit: q.timeLimit,
-                    imageUrl: q.imageUrl,
-                    explanation: q.explanation || '',
+                    timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
                 };
             }),
         };
@@ -450,10 +469,10 @@ export default function TeacherCreatePage() {
                                 <span className="flex-1 text-xs font-bold text-white/60 truncate">{q.text || 'Savol...'}</span>
                                 <span className="text-xs px-1 py-0.5 rounded font-bold shrink-0"
                                     style={{
-                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : 'rgba(0,86,179,0.15)',
-                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : '#60a5fa'
+                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : q.type === 'match' ? 'rgba(167,139,250,0.15)' : 'rgba(0,86,179,0.15)',
+                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : q.type === 'match' ? '#a78bfa' : '#60a5fa'
                                     }}>
-                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : 'MC'}
+                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : q.type === 'match' ? 'MG' : 'MC'}
                                 </span>
                                 {questions.length > 1 && (
                                     <button onClick={e => { e.stopPropagation(); delQ(i); }}
@@ -486,11 +505,12 @@ export default function TeacherCreatePage() {
                             ['multiple', "📋 Ko'p tanlov"],
                             ['truefalse', "✅ To'g'ri/Noto'g'ri"],
                             ['order', "🔗 Mantiqiy Zanjir"],
+                            ['match', "💎 Terminlar Jangi"],
                         ] as [QuestionType, string][]).map(([t, l]) => (
                             <button key={t} onClick={() => setType(t)}
                                 className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
                                 style={q.type === t
-                                    ? { background: t === 'order' ? 'linear-gradient(135deg, #B8860B, #FFD700)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
+                                    ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
                                     : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
                                 {l}
                             </button>
@@ -534,8 +554,8 @@ export default function TeacherCreatePage() {
                         {q.imageUrl && <img src={q.imageUrl} alt="" className="h-28 rounded-xl object-cover" />}
                     </div>
 
-                    {/* Options — MCQ / TrueFalse */}
-                    {q.type !== 'order' && (
+                    {/* Options — MCQ / TrueFalse only */}
+                    {(q.type === 'multiple' || q.type === 'truefalse') && (
                         <div className={`grid gap-4 ${q.type === 'truefalse' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
                             {q.options.map((opt, i) => (
                                 <div key={i} className={`flex items-center gap-3 p-4 rounded-2xl ${OPTION_COLORS[i % 4].cls}`}
@@ -617,6 +637,86 @@ export default function TeacherCreatePage() {
                             )}
                             <div className="glass-blue p-3 rounded-xl">
                                 <p className="text-white/50 text-xs font-bold">💡 Talabalar uchun tartib avtomatik aralashtriladi. Yuqoridagi tartib — to&apos;g&apos;ri tartib.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Match editor — Terminlar Jangi */}
+                    {q.type === 'match' && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <p className="text-white/40 font-bold text-xs tracking-widest">ATAMA ↔ TA&apos;RIF JUFTLARI</p>
+                                <span className="text-purple-400 text-xs font-black">💎</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <p className="text-blue-400 font-black text-xs text-center">ATAMA (Term)</p>
+                                <p className="text-purple-400 font-black text-xs text-center">TA&apos;RIF (Definition)</p>
+                            </div>
+                            {(q.matchPairs || MATCH_DEFAULTS()).map((pair, idx) => (
+                                <div key={idx} className="space-y-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0"
+                                            style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
+                                            {idx + 1}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 flex-1">
+                                            <input
+                                                value={pair.term}
+                                                onChange={e => {
+                                                    const pairs = [...(q.matchPairs || MATCH_DEFAULTS())];
+                                                    pairs[idx] = { ...pairs[idx], term: e.target.value };
+                                                    upQ({ matchPairs: pairs });
+                                                }}
+                                                placeholder={`Atama ${idx + 1}...`}
+                                                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white font-bold text-sm outline-none focus:border-blue-500 transition-colors"
+                                            />
+                                            <input
+                                                value={pair.definition}
+                                                onChange={e => {
+                                                    const pairs = [...(q.matchPairs || MATCH_DEFAULTS())];
+                                                    pairs[idx] = { ...pairs[idx], definition: e.target.value };
+                                                    upQ({ matchPairs: pairs });
+                                                }}
+                                                placeholder={`Ta'rif ${idx + 1}...`}
+                                                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white font-bold text-sm outline-none focus:border-purple-500 transition-colors"
+                                            />
+                                        </div>
+                                        {(q.matchPairs || []).length > 2 && (
+                                            <button onClick={() => {
+                                                const pairs = (q.matchPairs || MATCH_DEFAULTS()).filter((_, i) => i !== idx);
+                                                upQ({ matchPairs: pairs });
+                                            }} className="text-red-400 hover:text-red-300 text-xl font-bold shrink-0 transition-colors">×</button>
+                                        )}
+                                    </div>
+                                    {isPro ? (
+                                        <div className="grid grid-cols-2 gap-2 pl-9">
+                                            <input value={pair.termImage || ''}
+                                                onChange={e => { const p = [...(q.matchPairs || MATCH_DEFAULTS())]; p[idx] = { ...p[idx], termImage: e.target.value }; upQ({ matchPairs: p }); }}
+                                                placeholder="Atama rasm URL..." className="bg-white/5 border border-white/10 rounded-xl px-2 py-1.5 text-white/50 text-xs outline-none focus:border-blue-500" />
+                                            <input value={pair.definitionImage || ''}
+                                                onChange={e => { const p = [...(q.matchPairs || MATCH_DEFAULTS())]; p[idx] = { ...p[idx], definitionImage: e.target.value }; upQ({ matchPairs: p }); }}
+                                                placeholder="Ta'rif rasm URL..." className="bg-white/5 border border-white/10 rounded-xl px-2 py-1.5 text-white/50 text-xs outline-none focus:border-purple-500" />
+                                        </div>
+                                    ) : (
+                                        <div className="pl-9">
+                                            <button onClick={() => router.push('/pricing')}
+                                                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold opacity-40 hover:opacity-70 transition-opacity"
+                                                style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa' }}>
+                                                🖼️ Rasm qo&apos;shish <ProLock />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {(q.matchPairs || MATCH_DEFAULTS()).length < 8 && (
+                                <button onClick={() => upQ({ matchPairs: [...(q.matchPairs || MATCH_DEFAULTS()), { term: '', definition: '' }] })}
+                                    className="w-full py-2.5 rounded-xl border border-dashed text-xs font-bold transition-all hover:scale-105"
+                                    style={{ borderColor: 'rgba(167,139,250,0.3)', color: 'rgba(167,139,250,0.6)' }}>
+                                    + Juft qo&apos;shish (maks 8)
+                                </button>
+                            )}
+                            <div className="glass p-3 rounded-xl" style={{ border: '1px solid rgba(167,139,250,0.2)' }}>
+                                <p className="text-white/50 text-xs font-bold">💡 Talabalar atama va ta&apos;riflarni aralashtrilgan holda ko&apos;radi — mos juftlikni bosib topadi.</p>
                             </div>
                         </div>
                     )}
