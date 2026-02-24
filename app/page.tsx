@@ -80,24 +80,8 @@ export default function LandingPage() {
                     </button>
                 </div>
 
-                {/* Feature Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
-                    {[
-                        { icon: '⚡', title: 'Real-vaqt', desc: "WebSocket orqali 0.3s dan kam kechikish. Barcha o'yinchilar bir vaqtda ko'radi.", color: '#FFD600' },
-                        { icon: '🤖', title: 'AI Savol Yaratuvchi', desc: "Groq LLaMA 3.3-70B yordamida mavzu bo'yicha savollar avtomatik yaratiladi.", color: '#00E676' },
-                        { icon: '🏆', title: 'Tezlik + Ball', desc: "To'g'ri va tez javob = ko'proq ball. Real raqobat muhiti yaratadi.", color: '#0056b3' },
-                    ].map((f, i) => (
-                        <div key={i} className="glass p-6 text-left animate-slide-up" style={{ animationDelay: `${i * 0.15}s` }}>
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
-                                style={{ background: `${f.color}22`, border: `1px solid ${f.color}44` }}>
-                                {f.icon}
-                            </div>
-                            <h3 className="text-white font-extrabold text-lg mb-2">{f.title}</h3>
-                            <p className="text-white/50 font-semibold text-sm leading-relaxed">{f.desc}</p>
-                        </div>
-                    ))}
-                </div>
             </main>
+
 
             {/* Footer */}
             <footer className="relative z-10 text-center py-6 text-white/30 font-semibold text-sm">
