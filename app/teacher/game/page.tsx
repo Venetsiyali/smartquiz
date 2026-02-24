@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSubscription } from '@/lib/subscriptionContext';
 
 interface LeaderboardEntry { nickname: string; avatar: string; score: number; streak: number; rank: number; }
 interface QuestionPayload { questionIndex: number; total: number; text: string; options: string[]; timeLimit: number; imageUrl?: string; questionStartTime?: number; }
@@ -31,6 +32,7 @@ function fireConfetti() {
 
 export default function TeacherGamePage() {
     const router = useRouter();
+    const { isPro } = useSubscription();
     const pinRef = useRef<string | null>(null);
     const [phase, setPhase] = useState<'loading' | 'question' | 'leaderboard' | 'badges' | 'ended'>('loading');
     const [question, setQuestion] = useState<QuestionPayload | null>(null);
@@ -40,6 +42,24 @@ export default function TeacherGamePage() {
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const channelRef = useRef<any>(null);
     const [finalLeaderboard, setFinalLeaderboard] = useState<LeaderboardEntry[]>([]);
+    // AI Voice synthesis
+    const [voiceEnabled, setVoiceEnabled] = useState(false);
+    const speakQuestion = useCallback((text: string) => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = 'uz-UZ';
+        utt.rate = 0.9;
+        utt.pitch = 1.0;
+        utt.volume = 1.0;
+        // Try to find Uzbek voice, fall back to default
+        const voices = window.speechSynthesis.getVoices();
+        const uzVoice = voices.find(v => v.lang.startsWith('uz')) ||
+            voices.find(v => v.lang.startsWith('ru')) ||
+            voices[0];
+        if (uzVoice) utt.voice = uzVoice;
+        window.speechSynthesis.speak(utt);
+    }, []);
 
     const clearTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
 
@@ -68,9 +88,13 @@ export default function TeacherGamePage() {
         channelRef.current.bind('question-start', (payload: QuestionPayload) => {
             setQuestion(payload); setPhase('question'); setQuestionEnd(null);
             startTimer(payload.timeLimit, pin);
+            // AI Voice: read question aloud if enabled
+            if (voiceEnabled) speakQuestion(payload.text);
         });
         channelRef.current.bind('question-end', (payload: QuestionEndPayload) => {
-            clearTimer(); setQuestionEnd(payload); setPhase('leaderboard');
+            clearTimer();
+            if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+            setQuestionEnd(payload); setPhase('leaderboard');
         });
         channelRef.current.bind('game-end', (payload: GameEndPayload) => {
             clearTimer(); setFinalLeaderboard(payload.leaderboard); setBadges(payload.badges || []); setPhase('badges');
@@ -80,8 +104,8 @@ export default function TeacherGamePage() {
             fetch('/api/game/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
         });
 
-        return () => { pusher.unsubscribe(`game-${pin}`); clearTimer(); };
-    }, [router, startTimer]);
+        return () => { pusher.unsubscribe(`game-${pin}`); clearTimer(); if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); };
+    }, [router, startTimer, voiceEnabled, speakQuestion]);
 
     const handleNext = async () => {
         const pin = pinRef.current; if (!pin) return;
@@ -124,9 +148,24 @@ export default function TeacherGamePage() {
                     </svg>
                     <span className="absolute inset-0 flex items-center justify-center text-2xl font-black" style={{ color: tColor }}>{timeLeft}</span>
                 </div>
-                <div className="glass px-5 py-2 rounded-xl">
-                    <span className="text-white/50 text-sm font-bold">PIN: </span>
-                    <span className="text-yellow-400 font-black text-xl tracking-widest">{typeof window !== 'undefined' ? sessionStorage.getItem('gamePin') || '' : ''}</span>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => {
+                        const next = !voiceEnabled;
+                        setVoiceEnabled(next);
+                        if (!next && typeof window !== 'undefined') window.speechSynthesis?.cancel();
+                    }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105"
+                        style={{
+                            background: voiceEnabled ? 'rgba(0,230,118,0.15)' : 'rgba(255,255,255,0.07)',
+                            border: `1px solid ${voiceEnabled ? 'rgba(0,230,118,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                            color: voiceEnabled ? '#00E676' : 'rgba(255,255,255,0.4)',
+                        }}>
+                        {voiceEnabled ? '🎙️' : '🔇'} AI Ovoz
+                    </button>
+                    <div className="glass px-5 py-2 rounded-xl">
+                        <span className="text-white/50 text-sm font-bold">PIN: </span>
+                        <span className="text-yellow-400 font-black text-xl tracking-widest">{typeof window !== 'undefined' ? sessionStorage.getItem('gamePin') || '' : ''}</span>
+                    </div>
                 </div>
             </div>
 

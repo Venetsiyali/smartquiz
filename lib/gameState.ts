@@ -111,8 +111,27 @@ export function computeBadges(players: Player[]) {
     // "Unstoppable" — longest streak
     const topStreak = [...players].sort((a, b) => b.longestStreak - a.longestStreak)[0];
     if (topStreak && topStreak.longestStreak >= 2) {
-        badges.push({ nickname: topStreak.nickname, avatar: topStreak.avatar, badge: 'To\'xtatib Bo\'lmas', icon: '🔥', desc: `${topStreak.longestStreak} ketma-ket to'g'ri` });
+        badges.push({ nickname: topStreak.nickname, avatar: topStreak.avatar, badge: "To'xtatib Bo'lmas", icon: '🔥', desc: `${topStreak.longestStreak} ketma-ket to'g'ri` });
+    }
+
+    // "Comeback King" — player with highest final score whose correctCount ratio
+    // was below 50% at some point but finished top 3
+    // Approximation: player ranked last by speed (slowest avg) but finished top 3 by score
+    const sorted = [...players].sort((a, b) => b.score - a.score);
+    if (sorted.length >= 4) {
+        // Find fastest scorer (top 3) who had the lowest accuracy mid-game proxy (slowest start)
+        const top3 = sorted.slice(0, 3);
+        const comingBack = top3.find(p => {
+            // Proxy: high score but low initial speed (high totalResponseMs per answer)
+            const avgMs = p.totalAnswers > 0 ? p.totalResponseMs / p.totalAnswers : 0;
+            const slowThreshold = 6000; // > 6s avg response used as proxy for slow start
+            return avgMs > slowThreshold && p.score > 0;
+        });
+        if (comingBack) {
+            badges.push({ nickname: comingBack.nickname, avatar: comingBack.avatar, badge: 'Qaytish Qiroli', icon: '👑', desc: 'Oxirdan birinchiga!' });
+        }
     }
 
     return badges;
 }
+

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
 type QuestionType = 'multiple' | 'truefalse';
 interface AnswerOption { text: string; isCorrect: boolean; }
@@ -262,6 +263,8 @@ type ModalType = 'none' | 'ai' | 'file';
 
 export default function TeacherCreatePage() {
     const router = useRouter();
+    const { isPro, plan } = useSubscription();
+    const maxQ = isPro ? PLAN_LIMITS.pro.maxQuestions : PLAN_LIMITS.free.maxQuestions;
     const [title, setTitle] = useState('');
     const [questions, setQuestions] = useState<QuizQuestion[]>([
         { id: uuidv4(), type: 'multiple', text: '', options: MULTI_DEFAULTS(), timeLimit: 20 }
@@ -295,7 +298,10 @@ export default function TeacherCreatePage() {
     }, [active]);
 
     const addQ = () => {
-        if (questions.length >= 50) return;
+        if (questions.length >= maxQ) {
+            if (!isPro) setErrors([`Bepul tarif: max ${maxQ} ta savol. Pro versiyaga o'ting!`]);
+            return;
+        }
         const nq: QuizQuestion = { id: uuidv4(), type: 'multiple', text: '', options: MULTI_DEFAULTS(), timeLimit: 20 };
         setQuestions(p => [...p, nq]);
         setActive(questions.length);
@@ -352,22 +358,43 @@ export default function TeacherCreatePage() {
             <header className="flex items-center gap-3 p-4 border-b border-white/10 flex-wrap">
                 <button onClick={() => router.push('/')} className="text-white/50 hover:text-white text-2xl transition-colors">←</button>
                 <span className="text-xl font-black text-white">Zukk<span className="logo-z">oo</span></span>
+                {isPro && <CrownBadge />}
                 <span className="text-white/30">·</span>
                 <input value={title} onChange={e => setTitle(e.target.value)}
                     placeholder="Quiz nomi..."
                     className="input-game flex-1 min-w-48 max-w-xs text-sm"
                     style={{ textAlign: 'left', padding: '10px 16px', borderRadius: '12px' }} />
                 <div className="ml-auto flex items-center gap-2">
-                    <button onClick={() => setModal('file')}
-                        className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:scale-105"
-                        style={{ background: 'rgba(0,230,118,0.15)', border: '1px solid rgba(0,230,118,0.3)', color: '#00E676' }}>
-                        📄 Fayl
-                    </button>
-                    <button onClick={() => setModal('ai')}
-                        className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:scale-105"
-                        style={{ background: 'rgba(0,86,179,0.2)', border: '1px solid rgba(0,86,179,0.4)', color: '#60a5fa' }}>
-                        🤖 AI
-                    </button>
+                    {/* File upload — Pro only */}
+                    {isPro ? (
+                        <button onClick={() => setModal('file')}
+                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
+                            style={{ background: 'rgba(0,230,118,0.15)', border: '1px solid rgba(0,230,118,0.3)', color: '#00E676' }}>
+                            📄 Fayl
+                        </button>
+                    ) : (
+                        <button onClick={() => router.push('/pricing')}
+                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 opacity-60"
+                            title="Pro xususiyat"
+                            style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
+                            📄 Fayl <ProLock />
+                        </button>
+                    )}
+                    {/* AI text — Pro only */}
+                    {isPro ? (
+                        <button onClick={() => setModal('ai')}
+                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
+                            style={{ background: 'rgba(0,86,179,0.2)', border: '1px solid rgba(0,86,179,0.4)', color: '#60a5fa' }}>
+                            🤖 AI
+                        </button>
+                    ) : (
+                        <button onClick={() => router.push('/pricing')}
+                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 opacity-60"
+                            title="Pro xususiyat"
+                            style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
+                            🤖 AI <ProLock />
+                        </button>
+                    )}
                     <button onClick={startLobby} className="btn-primary text-sm px-5 py-2.5">🚀 Lobby</button>
                 </div>
             </header>
@@ -375,7 +402,10 @@ export default function TeacherCreatePage() {
             <div className="flex flex-col lg:flex-row">
                 {/* Sidebar — scrollable, up to 50 */}
                 <aside className="lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col gap-3">
-                    <p className="text-white/40 font-bold text-xs">SAVOLLAR ({questions.length}/50)</p>
+                    <p className="text-white/40 font-bold text-xs">
+                        SAVOLLAR ({questions.length}/{maxQ})
+                        {!isPro && <span className="ml-1.5 text-yellow-500">· Bepul: max 10</span>}
+                    </p>
                     <div className="space-y-1.5 overflow-y-auto scrollbar-hide" style={{ maxHeight: 'calc(100vh - 220px)' }}>
                         {questions.map((q, i) => (
                             <div key={q.id} onClick={() => setActive(i)}
@@ -398,10 +428,17 @@ export default function TeacherCreatePage() {
                             </div>
                         ))}
                     </div>
-                    {questions.length < 50 && (
+                    {questions.length < maxQ && (
                         <button onClick={addQ}
                             className="w-full p-2.5 rounded-xl border border-dashed border-white/20 text-white/40 hover:text-white hover:border-white/30 text-xs font-bold transition-all">
                             + Savol qo&apos;shish
+                        </button>
+                    )}
+                    {!isPro && questions.length >= maxQ && (
+                        <button onClick={() => router.push('/pricing')}
+                            className="w-full p-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                            style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
+                            👑 Pro → 50 ta savolga
                         </button>
                     )}
                 </aside>

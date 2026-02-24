@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { SubscriptionProvider } from '@/lib/subscriptionContext';
 
 export const metadata: Metadata = {
     title: 'Zukkoo — Real-vaqt Ta\'lim Platformasi',
@@ -11,7 +12,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="uz">
-            <body>{children}</body>
+            <body>
+                <SubscriptionProvider>
+                    {children}
+                </SubscriptionProvider>
+            </body>
         </html>
     );
 }

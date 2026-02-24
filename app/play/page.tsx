@@ -3,27 +3,75 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import { useSubscription } from '@/lib/subscriptionContext';
 
-const AVATARS = [
+const FREE_AVATARS = [
     '🤖', '👾', '🦾', '🎮', '🚀', '⚡', '🌟', '💥',
     '🦊', '🐼', '🐸', '🦁', '🐯', '🦋', '🦄', '🔥',
 ];
 
+// Pro Legendary avatar gallery: Golden Robots, Einstein Mode, Space Pioneers
+const PRO_AVATARS = [
+    { emoji: '🤖✨', label: 'Oltin Robot' },
+    { emoji: '🧠💡', label: 'Einstein Mode' },
+    { emoji: '🚀🌌', label: 'Space Pioneer' },
+    { emoji: '🦸‍♂️', label: 'SuperQahramon' },
+    { emoji: '🧬⚗️', label: 'Olim' },
+    { emoji: '🏆👑', label: 'Chempion' },
+];
+
+const ALL_AVATARS = FREE_AVATARS;
+
 function AvatarGrid({ selected, onSelect }: { selected: string; onSelect: (a: string) => void }) {
+    const router = useRouter();
+    const { isPro } = useSubscription();
     return (
-        <div className="grid grid-cols-4 gap-3">
-            {AVATARS.map(a => (
-                <button key={a} onClick={() => onSelect(a)}
-                    className="w-full aspect-square rounded-2xl flex items-center justify-center text-3xl transition-all hover:scale-110"
-                    style={{
-                        background: selected === a ? 'linear-gradient(135deg, #0056b3, #003d82)' : 'rgba(255,255,255,0.07)',
-                        border: selected === a ? '2px solid #0056b3' : '2px solid transparent',
-                        boxShadow: selected === a ? '0 0 20px rgba(0,86,179,0.5)' : 'none',
-                        transform: selected === a ? 'scale(1.1)' : 'scale(1)',
-                    }}>
-                    {a}
-                </button>
-            ))}
+        <div className="space-y-4">
+            {/* Standard avatars */}
+            <div className="grid grid-cols-4 gap-3">
+                {FREE_AVATARS.map(a => (
+                    <button key={a} onClick={() => onSelect(a)}
+                        className="w-full aspect-square rounded-2xl flex items-center justify-center text-3xl transition-all hover:scale-110"
+                        style={{
+                            background: selected === a ? 'linear-gradient(135deg, #0056b3, #003d82)' : 'rgba(255,255,255,0.07)',
+                            border: selected === a ? '2px solid #0056b3' : '2px solid transparent',
+                            boxShadow: selected === a ? '0 0 20px rgba(0,86,179,0.5)' : 'none',
+                            transform: selected === a ? 'scale(1.1)' : 'scale(1)',
+                        }}>
+                        {a}
+                    </button>
+                ))}
+            </div>
+
+            {/* Pro Legendary avatars */}
+            <div>
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-white/40 font-bold text-xs tracking-widest">LEGENDAR AVATARLAR</span>
+                    {!isPro && <span className="text-yellow-500 text-xs font-black">👑 Pro</span>}
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                    {PRO_AVATARS.map(pa => (
+                        <button key={pa.emoji}
+                            onClick={() => isPro ? onSelect(pa.emoji) : router.push('/pricing')}
+                            className="w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all"
+                            style={{
+                                background: isPro && selected === pa.emoji
+                                    ? 'linear-gradient(135deg, #B8860B, #FFD700)'
+                                    : 'rgba(255,215,0,0.06)',
+                                border: isPro && selected === pa.emoji
+                                    ? '2px solid #FFD700'
+                                    : '2px solid rgba(255,215,0,0.2)',
+                                filter: isPro ? 'none' : 'blur(0px)',
+                                opacity: isPro ? 1 : 0.5,
+                                position: 'relative',
+                            }}>
+                            <span className="text-2xl">{pa.emoji}</span>
+                            <span className="text-white/50 text-xs font-bold" style={{ fontSize: '9px' }}>{pa.label}</span>
+                            {!isPro && <span className="absolute inset-0 flex items-center justify-center text-xl">🔒</span>}
+                        </button>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
@@ -32,7 +80,7 @@ function PlayEntry() {
     const router = useRouter();
     const params = useSearchParams();
     const [step, setStep] = useState<'avatar' | 'details'>('avatar');
-    const [avatar, setAvatar] = useState(AVATARS[0]);
+    const [avatar, setAvatar] = useState(FREE_AVATARS[0]);
     const [pin, setPin] = useState(params.get('pin') || '');
     const [nickname, setNickname] = useState('');
     const [error, setError] = useState('');
