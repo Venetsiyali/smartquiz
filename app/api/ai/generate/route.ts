@@ -42,6 +42,7 @@ QAT'IY QOIDALAR:
    ... va hokazo. HECH QACHON to'g'ri javobni ketma-ket bir xil pozitsiyaga qo'yma.
 2. Noto'g'ri javoblar real va ishonchli ko'rinsin — o'quvchinni chalg'itsin.
 3. Savollar qiyin va o'ylantiruvchi bo'lsin.
+4. Har bir savol uchun "explanation" — qisqa izoh (1-2 jumla) yoz: nima uchun to'g'ri javob to'g'riligini tushuntir.
 
 Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
 {
@@ -49,7 +50,8 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
     {
       "text": "Savol matni?",
       "options": ["variant0", "variant1", "variant2", "variant3"],
-      "correctOptions": [to'g'ri_variant_indeksi]
+      "correctOptions": [to'g'ri_variant_indeksi],
+      "explanation": "Bu to'g'ri, chunki..."
     }
   ]
 }`;

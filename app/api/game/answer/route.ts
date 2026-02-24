@@ -10,7 +10,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Savol aktiv emas' }, { status: 400 });
     }
 
-    // Check already answered
     if (room.answeredPlayerIds.includes(playerId)) {
         return NextResponse.json({ error: 'Allaqachon javob bergansiz' }, { status: 400 });
     }
@@ -20,24 +19,44 @@ export async function POST(req: Request) {
     const elapsed = Date.now() - (room.questionStartTime || Date.now());
     const totalMs = question.timeLimit * 1000;
     const remaining = Math.max(0, totalMs - elapsed);
-    const points = calculateScore(isCorrect, remaining, totalMs);
 
-    // Update player score
     const player = room.players.find((p) => p.id === playerId);
-    if (player) player.score += points;
+    if (player) {
+        // Update streak
+        if (isCorrect) {
+            player.streak += 1;
+            if (player.streak > player.longestStreak) player.longestStreak = player.streak;
+        } else {
+            player.streak = 0;
+        }
 
-    room.answeredPlayerIds.push(playerId);
-    await saveRoomData(room);
+        const points = calculateScore(isCorrect, remaining, totalMs, player.streak);
+        player.score += points;
+        player.totalAnswers += 1;
+        player.totalResponseMs += elapsed;
+        if (elapsed < player.fastestAnswerMs) player.fastestAnswerMs = elapsed;
+        if (isCorrect) player.correctCount += 1;
 
-    // Send individual result to player's private channel
-    await pusherServer.trigger(`player-${playerId}`, 'answer-result', {
-        correct: isCorrect,
-        points,
-        totalScore: player?.score ?? 0,
-        correctOptions: question.correctOptions,
-    });
+        room.answeredPlayerIds.push(playerId);
+        await saveRoomData(room);
 
-    // If all players answered, auto-end question
+        // Individual result to player channel
+        await pusherServer.trigger(`player-${playerId}`, 'answer-result', {
+            correct: isCorrect,
+            points,
+            totalScore: player.score,
+            streak: player.streak,
+            correctOptions: question.correctOptions,
+            explanation: question.explanation || null,
+            options: question.options,
+            selectedOption: optionIndex,
+        });
+    } else {
+        room.answeredPlayerIds.push(playerId);
+        await saveRoomData(room);
+    }
+
+    // Auto-end if all players answered
     if (room.answeredPlayerIds.length >= room.players.length && room.players.length > 0) {
         room.status = 'leaderboard';
         await saveRoomData(room);
@@ -47,6 +66,8 @@ export async function POST(req: Request) {
 
         await pusherServer.trigger(`game-${pin}`, 'question-end', {
             correctOptions: question.correctOptions,
+            explanation: question.explanation || null,
+            options: question.options,
             leaderboard,
             isLastQuestion,
         });

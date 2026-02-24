@@ -8,13 +8,15 @@ export default function WaitingPage() {
     const router = useRouter();
     const [nickname, setNickname] = useState('');
     const [pin, setPin] = useState('');
+    const [avatar, setAvatar] = useState('🤖');
     const [dots, setDots] = useState('');
 
     useEffect(() => {
         const storedPin = sessionStorage.getItem('playerPin');
         const storedNick = sessionStorage.getItem('playerNickname');
+        const storedAvatar = sessionStorage.getItem('playerAvatar') || '🤖';
         if (!storedPin || !storedNick) { router.push('/play'); return; }
-        setPin(storedPin); setNickname(storedNick);
+        setPin(storedPin); setNickname(storedNick); setAvatar(storedAvatar);
 
         const pusher = getPusherClient();
         const ch = pusher.subscribe(`game-${storedPin}`);
@@ -36,9 +38,9 @@ export default function WaitingPage() {
 
             <div className="text-center space-y-7 relative z-10 w-full max-w-sm">
                 {/* Avatar */}
-                <div className="w-28 h-28 rounded-full flex items-center justify-center text-6xl mx-auto pulse-ring font-black"
+                <div className="w-32 h-32 rounded-full flex items-center justify-center text-7xl mx-auto pulse-ring"
                     style={{ background: 'linear-gradient(135deg, #0056b3, #003d82)', boxShadow: '0 8px 40px rgba(0,86,179,0.5)' }}>
-                    {nickname ? nickname[0].toUpperCase() : '?'}
+                    {avatar}
                 </div>
 
                 <div>
@@ -51,11 +53,10 @@ export default function WaitingPage() {
                     <p className="text-4xl font-black tracking-widest" style={{ color: '#FFD600', textShadow: '0 0 20px rgba(255,214,0,0.5)' }}>{pin}</p>
                 </div>
 
-                {/* Bouncing dots */}
                 <div className="flex justify-center gap-3 my-2">
                     {[0, 1, 2].map(i => (
                         <div key={i} className="w-4 h-4 rounded-full animate-bounce"
-                            style={{ background: ['#0056b3', '#FFD600', '#00E676'][i], animationDelay: `${i * 0.2}s`, boxShadow: `0 4px 12px ${['rgba(0,86,179,0.6)', 'rgba(255,214,0,0.6)', 'rgba(0,230,118,0.6)'][i]}` }} />
+                            style={{ background: ['#0056b3', '#FFD600', '#00E676'][i], animationDelay: `${i * 0.2}s` }} />
                     ))}
                 </div>
                 <p className="text-white/50 font-bold">O&apos;qituvchi o&apos;yinni boshlashini kutmoqda{dots}</p>

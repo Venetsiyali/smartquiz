@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     const room = await getRoom(pin);
     if (!room || room.status !== 'lobby') {
-        return NextResponse.json({ error: 'O\'yin topilmadi' }, { status: 400 });
+        return NextResponse.json({ error: "O'yin topilmadi" }, { status: 400 });
     }
 
     room.status = 'question';
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
         options: question.options,
         timeLimit: question.timeLimit,
         imageUrl: question.imageUrl,
+        questionStartTime: room.questionStartTime,
     });
 
     return NextResponse.json({ ok: true });

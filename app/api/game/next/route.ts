@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData, getLeaderboard } from '@/lib/gameState';
+import { getRoom, saveRoomData, getLeaderboard, computeBadges } from '@/lib/gameState';
 
 export async function POST(req: Request) {
     const { pin }: { pin: string } = await req.json();
 
     const room = await getRoom(pin);
-    if (!room) return NextResponse.json({ error: 'O\'yin topilmadi' }, { status: 400 });
+    if (!room) return NextResponse.json({ error: "O'yin topilmadi" }, { status: 400 });
 
     room.currentQuestionIndex++;
 
@@ -16,7 +16,8 @@ export async function POST(req: Request) {
         await saveRoomData(room);
 
         const leaderboard = getLeaderboard(room.players);
-        await pusherServer.trigger(`game-${pin}`, 'game-end', { leaderboard });
+        const badges = computeBadges(room.players);
+        await pusherServer.trigger(`game-${pin}`, 'game-end', { leaderboard, badges });
         return NextResponse.json({ ok: true, ended: true });
     }
 
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
         options: question.options,
         timeLimit: question.timeLimit,
         imageUrl: question.imageUrl,
+        questionStartTime: room.questionStartTime,
     });
 
     return NextResponse.json({ ok: true });
