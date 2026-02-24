@@ -16,7 +16,9 @@ async function extractText(file: File): Promise<string> {
     const name = file.name.toLowerCase();
 
     if (name.endsWith('.pdf')) {
-        const pdfParse = (await import('pdf-parse')).default;
+        // pdf-parse is a CJS module; use require() to avoid TS "no call signatures" error
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
         const result = await pdfParse(buffer);
         return result.text;
     }
@@ -29,6 +31,7 @@ async function extractText(file: File): Promise<string> {
 
     throw new Error('Faqat PDF yoki DOCX fayl qabul qilinadi');
 }
+
 
 export async function POST(req: Request) {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
