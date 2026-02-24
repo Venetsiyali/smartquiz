@@ -22,14 +22,16 @@ export interface Player {
 
 export interface Question {
     id: string;
-    type?: 'multiple' | 'truefalse';
+    type?: 'multiple' | 'truefalse' | 'order';
     text: string;
-    options: string[];
-    correctOptions: number[];
+    options: string[];        // for 'order': stored in CORRECT sequence
+    optionImages?: string[];  // Pro: optional image URL per option (order type)
+    correctOptions: number[]; // for 'order': [0,1,2,...] correct indices
     timeLimit: number;
     imageUrl?: string;
     explanation?: string;    // "Did you know?" text shown after question
 }
+
 
 export interface GameRoom {
     pin: string;

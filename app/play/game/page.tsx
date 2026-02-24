@@ -4,17 +4,27 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
 import { motion, AnimatePresence } from 'framer-motion';
+import SortGame from '@/components/SortGame';
 
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
+    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order';
     timeLimit: number; imageUrl?: string; questionStartTime?: number;
 }
 interface AnswerResult {
     correct: boolean; points: number; totalScore: number; streak: number;
-    correctOptions: number[]; explanation: string | null; options: string[]; selectedOption: number;
+    streakFire?: boolean;
+    correctOptions: number[]; explanation: string | null; options: string[];
+    optionImages?: string[] | null;
+    selectedOption: number;
+    submittedOrder?: number[] | null;
+    correctCount?: number | null;
+    questionType?: string;
 }
 interface QuestionEndPayload {
     correctOptions: number[]; explanation?: string | null; options: string[];
+    optionImages?: string[] | null;
+    questionType?: string;
     leaderboard: LeaderboardEntry[]; isLastQuestion: boolean;
 }
 interface LeaderboardEntry { nickname: string; avatar: string; score: number; streak: number; rank: number; }
@@ -46,6 +56,9 @@ export default function StudentGamePage() {
     const [streak, setStreak] = useState(0);
     const [reviewCountdown, setReviewCountdown] = useState(5);
     const [timeLeft, setTimeLeft] = useState(0);
+    // Sorting game state
+    const [sortItems, setSortItems] = useState<{ id: string; text: string; imageUrl?: string }[]>([]);
+    const [sortSubmitted, setSortSubmitted] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pinRef = useRef('');
@@ -68,6 +81,15 @@ export default function StudentGamePage() {
     const showQuestion = (payload: QuestionPayload) => {
         clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
         setQuestion(payload); setSelected(null); setResult(null); setPhase('question');
+        setSortSubmitted(false);
+        // Build sort items with randomized IDs (server already shuffled order)
+        if (payload.type === 'order') {
+            setSortItems(payload.options.map((text, idx) => ({
+                id: `item-${idx}`,
+                text,
+                imageUrl: payload.optionImages?.[idx],
+            })));
+        }
         const elapsed = payload.questionStartTime ? Math.floor((Date.now() - payload.questionStartTime) / 1000) : 0;
         const rem = Math.max(1, payload.timeLimit - elapsed);
         setTimeLeft(rem);
@@ -138,6 +160,18 @@ export default function StudentGamePage() {
         });
     };
 
+    // Submit sorted order
+    const handleSortSubmit = async (orderedIds: string[]) => {
+        if (sortSubmitted || phase !== 'question') return;
+        setSortSubmitted(true); vibrate(40);
+        // Map IDs back to indices
+        const submittedOrder = orderedIds.map(id => parseInt(id.replace('item-', '')));
+        await fetch('/api/game/answer', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, submittedOrder }),
+        });
+    };
+
     const pct = question ? (timeLeft / question.timeLimit) * 100 : 100;
     const tColor = !question ? '#0056b3' : timeLeft > question.timeLimit * 0.6 ? '#00E676' : timeLeft > question.timeLimit * 0.3 ? '#FFD600' : '#FF1744';
     const myNick = typeof window !== 'undefined' ? sessionStorage.getItem('playerNickname') || '' : '';
@@ -162,6 +196,11 @@ export default function StudentGamePage() {
                     <div className="glass-blue px-3 py-1.5 rounded-xl">
                         <span className="text-white font-extrabold text-sm">{question.questionIndex + 1}/{question.total}</span>
                     </div>
+                    {question.type === 'order' && (
+                        <div className="glass px-2.5 py-1 rounded-xl">
+                            <span className="text-yellow-400 font-black text-xs">🔗 ZANJIR</span>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     {streak >= 3 && (
@@ -187,24 +226,49 @@ export default function StudentGamePage() {
                 <p className="text-white font-extrabold text-lg leading-snug text-center">{question.text}</p>
             </div>
 
-            {/* Answer grid */}
-            <div className={`grid gap-3 flex-1 ${question.options.length === 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                {question.options.map((opt, i) => (
-                    <button key={i} onClick={() => handleAnswer(i)} disabled={selected !== null}
-                        className={`btn-answer flex-col h-full min-h-24 rounded-2xl gap-2
-              ${selected === i ? 'ring-4 ring-white scale-95 brightness-125' : ''}
-              ${selected !== null && selected !== i ? 'opacity-50' : ''}`}
-                        style={{
-                            background: `linear-gradient(135deg, ${OPTION_BG[i]}, ${OPTION_BG[i]}cc)`,
-                            color: STYLES[i].isLight ? '#0a1a0a' : 'white',
-                        }}>
-                        <span className="text-3xl">{STYLES[i].icon}</span>
-                        <span className="text-sm font-extrabold text-center leading-snug px-1">{opt}</span>
-                    </button>
-                ))}
-            </div>
-            {selected !== null && (
-                <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">⏳ Boshqalar javob berishini kutmoqda...</p>
+            {/* ── ORDER / Sorting ── */}
+            {question.type === 'order' ? (
+                <div className="flex-1 overflow-y-auto pb-4">
+                    <SortGame
+                        question={question.text}
+                        items={sortItems}
+                        timeLeft={timeLeft}
+                        timeLimit={question.timeLimit}
+                        onSubmit={handleSortSubmit}
+                        result={result ? {
+                            correct: result.correct,
+                            points: result.points,
+                            streak: result.streak,
+                            streakFire: result.streakFire || false,
+                            correctOrder: result.correctOptions.map(i => `item-${i}`),
+                            submittedOrder: (result.submittedOrder || []).map(i => `item-${i}`),
+                            explanation: result.explanation,
+                        } : null}
+                        disabled={sortSubmitted}
+                    />
+                </div>
+            ) : (
+                /* ── MCQ / TrueFalse ── */
+                <>
+                    <div className={`grid gap-3 flex-1 ${question.options.length === 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {question.options.map((opt, i) => (
+                            <button key={i} onClick={() => handleAnswer(i)} disabled={selected !== null}
+                                className={`btn-answer flex-col h-full min-h-24 rounded-2xl gap-2
+                  ${selected === i ? 'ring-4 ring-white scale-95 brightness-125' : ''}
+                  ${selected !== null && selected !== i ? 'opacity-50' : ''}`}
+                                style={{
+                                    background: `linear-gradient(135deg, ${OPTION_BG[i]}, ${OPTION_BG[i]}cc)`,
+                                    color: STYLES[i].isLight ? '#0a1a0a' : 'white',
+                                }}>
+                                <span className="text-3xl">{STYLES[i].icon}</span>
+                                <span className="text-sm font-extrabold text-center leading-snug px-1">{opt}</span>
+                            </button>
+                        ))}
+                    </div>
+                    {selected !== null && (
+                        <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">⏳ Boshqalar javob berishini kutmoqda...</p>
+                    )}
+                </>
             )}
         </div>
     );

@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
-type QuestionType = 'multiple' | 'truefalse';
+type QuestionType = 'multiple' | 'truefalse' | 'order';
 interface AnswerOption { text: string; isCorrect: boolean; }
+interface OrderItem { text: string; imageUrl?: string; }
 interface QuizQuestion {
     id: string; type: QuestionType; text: string;
-    options: AnswerOption[]; timeLimit: number;
+    options: AnswerOption[]; orderItems?: OrderItem[];
+    timeLimit: number;
     imageUrl?: string; explanation?: string;
 }
 
@@ -20,6 +22,9 @@ const MULTI_DEFAULTS = (): AnswerOption[] => [
 const TF_DEFAULTS = (): AnswerOption[] => [
     { text: "To'g'ri ✅", isCorrect: false },
     { text: "Noto'g'ri ❌", isCorrect: false },
+];
+const ORDER_DEFAULTS = (): OrderItem[] => [
+    { text: '' }, { text: '' }, { text: '' }, { text: '' },
 ];
 const TIME_OPTIONS = [10, 20, 30, 60, 90, 120];
 const OPTION_COLORS = [
@@ -280,7 +285,11 @@ export default function TeacherCreatePage() {
     }, [active]);
 
     const setType = (type: QuestionType) => {
-        upQ({ type, options: type === 'truefalse' ? TF_DEFAULTS() : MULTI_DEFAULTS() });
+        if (type === 'order') {
+            upQ({ type, orderItems: ORDER_DEFAULTS(), options: MULTI_DEFAULTS() });
+        } else {
+            upQ({ type, options: type === 'truefalse' ? TF_DEFAULTS() : MULTI_DEFAULTS(), orderItems: undefined });
+        }
     };
 
     const setOptText = useCallback((oi: number, val: string) => {
@@ -325,8 +334,15 @@ export default function TeacherCreatePage() {
         if (!title.trim()) errs.push('Quiz nomi kerak');
         questions.forEach((q, i) => {
             if (!q.text.trim()) errs.push(`${i + 1}-savol bo'sh`);
-            if (!q.options.some(o => o.isCorrect)) errs.push(`${i + 1}-savolda to'g'ri javob yo'q`);
-            if (q.type === 'multiple' && q.options.filter(o => o.text.trim()).length < 2) errs.push(`${i + 1}-savolda kamida 2 variant kerak`);
+            if (q.type === 'order') {
+                const items = q.orderItems || [];
+                const filled = items.filter(it => it.text.trim()).length;
+                if (filled < 2) errs.push(`${i + 1}-savol: kamida 2 ta element kiriting`);
+            } else {
+                if (!q.options.some(o => o.isCorrect)) errs.push(`${i + 1}-savolda to'g'ri javob yo'q`);
+                if (q.type === 'multiple' && q.options.filter(o => o.text.trim()).length < 2)
+                    errs.push(`${i + 1}-savolda kamida 2 variant kerak`);
+            }
         });
         setErrors(errs);
         return errs.length === 0;
@@ -336,14 +352,29 @@ export default function TeacherCreatePage() {
         if (!validate()) return;
         const quiz = {
             title,
-            questions: questions.map(q => ({
-                id: q.id, type: q.type, text: q.text,
-                options: q.options.map(o => o.text),
-                correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
-                timeLimit: q.timeLimit,
-                imageUrl: q.imageUrl,
-                explanation: q.explanation || '',
-            })),
+            questions: questions.map(q => {
+                if (q.type === 'order') {
+                    const items = (q.orderItems || []).filter(it => it.text.trim());
+                    return {
+                        id: q.id, type: 'order',
+                        text: q.text,
+                        options: items.map(it => it.text),
+                        optionImages: items.some(it => it.imageUrl) ? items.map(it => it.imageUrl || '') : undefined,
+                        correctOptions: items.map((_, idx) => idx), // [0,1,2,...] = correct order
+                        timeLimit: q.timeLimit,
+                        imageUrl: q.imageUrl,
+                        explanation: q.explanation || '',
+                    };
+                }
+                return {
+                    id: q.id, type: q.type, text: q.text,
+                    options: q.options.map(o => o.text),
+                    correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
+                    timeLimit: q.timeLimit,
+                    imageUrl: q.imageUrl,
+                    explanation: q.explanation || '',
+                };
+            }),
         };
         sessionStorage.setItem('quiz', JSON.stringify(quiz));
         router.push('/teacher/lobby');
@@ -418,8 +449,11 @@ export default function TeacherCreatePage() {
                                     style={{ background: active === i ? '#0056b3' : 'rgba(255,255,255,0.1)' }}>{i + 1}</span>
                                 <span className="flex-1 text-xs font-bold text-white/60 truncate">{q.text || 'Savol...'}</span>
                                 <span className="text-xs px-1 py-0.5 rounded font-bold shrink-0"
-                                    style={{ background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : 'rgba(0,86,179,0.15)', color: q.type === 'truefalse' ? '#00E676' : '#60a5fa' }}>
-                                    {q.type === 'truefalse' ? 'T/F' : 'MC'}
+                                    style={{
+                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : 'rgba(0,86,179,0.15)',
+                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : '#60a5fa'
+                                    }}>
+                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : 'MC'}
                                 </span>
                                 {questions.length > 1 && (
                                     <button onClick={e => { e.stopPropagation(); delQ(i); }}
@@ -448,10 +482,16 @@ export default function TeacherCreatePage() {
                     {/* Type toggle */}
                     <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-white/40 font-bold text-sm">Turi:</span>
-                        {([['multiple', "📋 Ko'p tanlov"], ['truefalse', "✅ To'g'ri/Noto'g'ri"]] as [QuestionType, string][]).map(([t, l]) => (
+                        {([
+                            ['multiple', "📋 Ko'p tanlov"],
+                            ['truefalse', "✅ To'g'ri/Noto'g'ri"],
+                            ['order', "🔗 Mantiqiy Zanjir"],
+                        ] as [QuestionType, string][]).map(([t, l]) => (
                             <button key={t} onClick={() => setType(t)}
                                 className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
-                                style={q.type === t ? { background: '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+                                style={q.type === t
+                                    ? { background: t === 'order' ? 'linear-gradient(135deg, #B8860B, #FFD700)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
+                                    : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
                                 {l}
                             </button>
                         ))}
@@ -494,25 +534,92 @@ export default function TeacherCreatePage() {
                         {q.imageUrl && <img src={q.imageUrl} alt="" className="h-28 rounded-xl object-cover" />}
                     </div>
 
-                    {/* Options */}
-                    <div className={`grid gap-4 ${q.type === 'truefalse' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
-                        {q.options.map((opt, i) => (
-                            <div key={i} className={`flex items-center gap-3 p-4 rounded-2xl ${OPTION_COLORS[i % 4].cls}`}
-                                style={{ outline: opt.isCorrect ? '3px solid white' : 'none', outlineOffset: '3px' }}>
-                                <span className="text-2xl shrink-0">{OPTION_COLORS[i % 4].icon}</span>
-                                {q.type === 'truefalse' ? (
-                                    <span className="flex-1 text-white font-extrabold text-lg">{opt.text}</span>
-                                ) : (
-                                    <input value={opt.text} onChange={e => setOptText(i, e.target.value)}
-                                        placeholder={`${i + 1}-variant...`}
-                                        className="flex-1 bg-transparent text-white font-bold text-base outline-none placeholder-white/40" />
-                                )}
-                                <button onClick={() => toggleCorrect(i)} className="text-2xl shrink-0 hover:scale-110 transition-transform">
-                                    {opt.isCorrect ? '✅' : '⬜'}
-                                </button>
+                    {/* Options — MCQ / TrueFalse */}
+                    {q.type !== 'order' && (
+                        <div className={`grid gap-4 ${q.type === 'truefalse' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
+                            {q.options.map((opt, i) => (
+                                <div key={i} className={`flex items-center gap-3 p-4 rounded-2xl ${OPTION_COLORS[i % 4].cls}`}
+                                    style={{ outline: opt.isCorrect ? '3px solid white' : 'none', outlineOffset: '3px' }}>
+                                    <span className="text-2xl shrink-0">{OPTION_COLORS[i % 4].icon}</span>
+                                    {q.type === 'truefalse' ? (
+                                        <span className="flex-1 text-white font-extrabold text-lg">{opt.text}</span>
+                                    ) : (
+                                        <input value={opt.text} onChange={e => setOptText(i, e.target.value)}
+                                            placeholder={`${i + 1}-variant...`}
+                                            className="flex-1 bg-transparent text-white font-bold text-base outline-none placeholder-white/40" />
+                                    )}
+                                    <button onClick={() => toggleCorrect(i)} className="text-2xl shrink-0 hover:scale-110 transition-transform">
+                                        {opt.isCorrect ? '✅' : '⬜'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Order editor — Mantiqiy Zanjir */}
+                    {q.type === 'order' && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <p className="text-white/40 font-bold text-xs tracking-widest">TO&apos;G&apos;RI TARTIB (pastdan yuqoriga emas, tartib bo&apos;yicha kiriting)</p>
+                                <span className="text-yellow-400 text-xs font-black">🔗</span>
                             </div>
-                        ))}
-                    </div>
+                            {(q.orderItems || ORDER_DEFAULTS()).map((item, idx) => (
+                                <div key={idx} className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shrink-0"
+                                        style={{ background: 'rgba(255,215,0,0.15)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)' }}>
+                                        {idx + 1}
+                                    </div>
+                                    <input
+                                        value={item.text}
+                                        onChange={e => {
+                                            const items = [...(q.orderItems || ORDER_DEFAULTS())];
+                                            items[idx] = { ...items[idx], text: e.target.value };
+                                            upQ({ orderItems: items });
+                                        }}
+                                        placeholder={`${idx + 1}-qadam yoki element...`}
+                                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white font-bold text-sm outline-none focus:border-yellow-500 transition-colors"
+                                    />
+                                    {/* Pro: image URL per item */}
+                                    {isPro && (
+                                        <input
+                                            value={item.imageUrl || ''}
+                                            onChange={e => {
+                                                const items = [...(q.orderItems || ORDER_DEFAULTS())];
+                                                items[idx] = { ...items[idx], imageUrl: e.target.value };
+                                                upQ({ orderItems: items });
+                                            }}
+                                            placeholder="Rasm URL..."
+                                            className="w-32 bg-white/5 border border-white/10 rounded-xl px-2 py-2.5 text-white/50 text-xs outline-none focus:border-yellow-500 transition-colors"
+                                        />
+                                    )}
+                                    {!isPro && (
+                                        <button onClick={() => router.push('/pricing')}
+                                            className="flex items-center gap-1 px-2 py-2 rounded-xl text-xs font-bold opacity-50 hover:opacity-80 transition-opacity"
+                                            title="Pro: Rasmli blokllar"
+                                            style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700' }}>
+                                            🖼️ <ProLock />
+                                        </button>
+                                    )}
+                                    {(q.orderItems || []).length > 2 && (
+                                        <button onClick={() => {
+                                            const items = (q.orderItems || ORDER_DEFAULTS()).filter((_, i) => i !== idx);
+                                            upQ({ orderItems: items });
+                                        }} className="text-red-400 hover:text-red-300 text-lg font-bold transition-colors">×</button>
+                                    )}
+                                </div>
+                            ))}
+                            {(q.orderItems || ORDER_DEFAULTS()).length < 8 && (
+                                <button onClick={() => upQ({ orderItems: [...(q.orderItems || ORDER_DEFAULTS()), { text: '' }] })}
+                                    className="w-full py-2.5 rounded-xl border border-dashed text-xs font-bold transition-all hover:scale-105"
+                                    style={{ borderColor: 'rgba(255,215,0,0.3)', color: 'rgba(255,215,0,0.6)' }}>
+                                    + Element qo&apos;shish (maks 8)
+                                </button>
+                            )}
+                            <div className="glass-blue p-3 rounded-xl">
+                                <p className="text-white/50 text-xs font-bold">💡 Talabalar uchun tartib avtomatik aralashtriladi. Yuqoridagi tartib — to&apos;g&apos;ri tartib.</p>
+                            </div>
+                        </div>
+                    )}
 
                     {errors.length > 0 && (
                         <div className="glass p-4 rounded-2xl" style={{ border: '1px solid rgba(255,23,68,0.4)' }}>

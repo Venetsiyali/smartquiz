@@ -2,8 +2,16 @@ import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
 import { getRoom, saveRoomData, calculateScore, getLeaderboard } from '@/lib/gameState';
 
+interface AnswerBody {
+    pin: string;
+    playerId: string;
+    optionIndex?: number;       // MCQ / TrueFalse
+    submittedOrder?: number[];  // Order / Sorting question
+}
+
 export async function POST(req: Request) {
-    const { pin, playerId, optionIndex }: { pin: string; playerId: string; optionIndex: number } = await req.json();
+    const body: AnswerBody = await req.json();
+    const { pin, playerId } = body;
 
     const room = await getRoom(pin);
     if (!room || room.status !== 'question') {
@@ -15,14 +23,38 @@ export async function POST(req: Request) {
     }
 
     const question = room.questions[room.currentQuestionIndex];
-    const isCorrect = question.correctOptions.includes(optionIndex);
     const elapsed = Date.now() - (room.questionStartTime || Date.now());
     const totalMs = question.timeLimit * 1000;
     const remaining = Math.max(0, totalMs - elapsed);
 
+    // ── Sorting question scoring ──────────────────────────────────────────
+    const isOrderQuestion = question.type === 'order';
+    let isCorrect = false;
+    let orderScore = 0;
+    let correctCount = 0;
+    let streakFire = false;
+
+    if (isOrderQuestion && body.submittedOrder) {
+        const submitted = body.submittedOrder;
+        const correct = question.correctOptions; // [0,1,2,...] expected order
+        correctCount = submitted.reduce((acc, val, idx) => acc + (val === correct[idx] ? 1 : 0), 0);
+        const pct = correctCount / correct.length;
+        isCorrect = pct === 1;
+        // Score: up to 1000 for accuracy + up to 200 time bonus
+        const timeBonus = isCorrect ? Math.round((remaining / totalMs) * 200) : 0;
+        orderScore = Math.round(pct * 1000) + timeBonus;
+        // Streak fire: fully correct in < 10 seconds
+        streakFire = isCorrect && elapsed < 10000;
+    }
+
+    // ── MCQ / TrueFalse scoring ───────────────────────────────────────────
+    const optionIndex = body.optionIndex ?? -1;
+    if (!isOrderQuestion) {
+        isCorrect = question.correctOptions.includes(optionIndex);
+    }
+
     const player = room.players.find((p) => p.id === playerId);
     if (player) {
-        // Update streak
         if (isCorrect) {
             player.streak += 1;
             if (player.streak > player.longestStreak) player.longestStreak = player.streak;
@@ -30,7 +62,10 @@ export async function POST(req: Request) {
             player.streak = 0;
         }
 
-        const points = calculateScore(isCorrect, remaining, totalMs, player.streak);
+        const points = isOrderQuestion
+            ? orderScore
+            : calculateScore(isCorrect, remaining, totalMs, player.streak);
+
         player.score += points;
         player.totalAnswers += 1;
         player.totalResponseMs += elapsed;
@@ -40,16 +75,20 @@ export async function POST(req: Request) {
         room.answeredPlayerIds.push(playerId);
         await saveRoomData(room);
 
-        // Individual result to player channel
         await pusherServer.trigger(`player-${playerId}`, 'answer-result', {
             correct: isCorrect,
             points,
             totalScore: player.score,
             streak: player.streak,
+            streakFire,
             correctOptions: question.correctOptions,
             explanation: question.explanation || null,
             options: question.options,
-            selectedOption: optionIndex,
+            optionImages: question.optionImages || null,
+            selectedOption: isOrderQuestion ? null : optionIndex,
+            submittedOrder: isOrderQuestion ? body.submittedOrder : null,
+            correctCount: isOrderQuestion ? correctCount : null,
+            questionType: question.type || 'multiple',
         });
     } else {
         room.answeredPlayerIds.push(playerId);
@@ -68,6 +107,8 @@ export async function POST(req: Request) {
             correctOptions: question.correctOptions,
             explanation: question.explanation || null,
             options: question.options,
+            optionImages: question.optionImages || null,
+            questionType: question.type || 'multiple',
             leaderboard,
             isLastQuestion,
         });
