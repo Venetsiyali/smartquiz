@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
-type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
+type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
 
 interface AnswerOption { text: string; isCorrect: boolean; }
 interface OrderItem { text: string; imageUrl?: string; }
@@ -15,7 +15,9 @@ interface QuizQuestion {
     options: AnswerOption[]; orderItems?: OrderItem[]; matchPairs?: MatchPair[];
     timeLimit: number;
     imageUrl?: string; explanation?: string;
+    anagramWord?: string; // the word to guess (stored separate from clue)
 }
+
 
 const MULTI_DEFAULTS = (): AnswerOption[] => [
     { text: '', isCorrect: false }, { text: '', isCorrect: false },
@@ -303,6 +305,8 @@ export default function TeacherCreatePage() {
             upQ({ type, matchPairs: MATCH_DEFAULTS(), options: MULTI_DEFAULTS(), orderItems: undefined });
         } else if (type === 'blitz') {
             upQ({ type, options: BLITZ_DEFAULTS(), orderItems: undefined, matchPairs: undefined, timeLimit: 5 });
+        } else if (type === 'anagram') {
+            upQ({ type, options: MULTI_DEFAULTS(), orderItems: undefined, matchPairs: undefined, timeLimit: 30, anagramWord: '' });
         } else {
             upQ({ type, options: type === 'truefalse' ? TF_DEFAULTS() : MULTI_DEFAULTS(), orderItems: undefined, matchPairs: undefined });
         }
@@ -361,6 +365,10 @@ export default function TeacherCreatePage() {
             } else if (q.type === 'blitz') {
                 if (!q.options.some(o => o.isCorrect))
                     errs.push(`${i + 1}-savol: To'g'ri yoki Noto'g'rini belgilang`);
+            } else if (q.type === 'anagram') {
+                if (!q.anagramWord || q.anagramWord.trim().length < 2)
+                    errs.push(`${i + 1}-savol: Yashirin so'z kamida 2 ta harf bo'lishi kerak`);
+                if (!q.text.trim()) errs.push(`${i + 1}-savol: Maslahat matni kerak`);
             } else {
 
                 if (!q.options.some(o => o.isCorrect)) errs.push(`${i + 1}-savolda to'g'ri javob yo'q`);
@@ -406,6 +414,15 @@ export default function TeacherCreatePage() {
                         id: q.id, type: 'blitz', text: q.text,
                         options: ["TO'G'RI", "NOTO'G'RI"],
                         correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+                if (q.type === 'anagram') {
+                    return {
+                        id: q.id, type: 'anagram',
+                        text: q.text, // clue sentence
+                        options: [(q.anagramWord || '').toUpperCase().trim()], // word to find
+                        correctOptions: [],
                         timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
                     };
                 }
@@ -530,11 +547,12 @@ export default function TeacherCreatePage() {
                             ['order', "🔗 Mantiqiy Zanjir"],
                             ['match', "💎 Terminlar Jangi"],
                             ['blitz', "⚡ Bliz-Sohat"],
+                            ['anagram', "🔐 Yashirin Kod"],
                         ] as [QuestionType, string][]).map(([t, l]) => (
                             <button key={t} onClick={() => setType(t)}
                                 className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
                                 style={q.type === t
-                                    ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
+                                    ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : t === 'anagram' ? 'linear-gradient(135deg,#3730a3,#6366f1)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
                                     : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
                                 {l}
                             </button>
@@ -780,6 +798,65 @@ export default function TeacherCreatePage() {
                             </div>
                             <div className="glass p-3 rounded-xl" style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
                                 <p className="text-white/50 text-xs font-bold">⚡ Bliz rejimi: {q.timeLimit}s vaqt. Ballar: 100 × 1.5^(streak-1). Seriyali to&apos;g&apos;ri javoblar uchun eksponensial ko&apos;paytiruvchi!</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Anagram editor — Yashirin Kod */}
+                    {q.type === 'anagram' && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <p className="text-white/40 font-bold text-xs tracking-widest">YASHIRIN SO&apos;Z VA MASLAHAT</p>
+                                <span className="text-indigo-400 text-xs font-black">🔐</span>
+                            </div>
+
+                            {/* Clue — already in the main question textarea, explain it */}
+                            <div className="glass p-3 rounded-xl" style={{ border: '1px solid rgba(99,102,241,0.25)' }}>
+                                <p className="text-white/50 text-xs font-bold">💬 Yuqoridagi &quot;Savol matni&quot; — bu maslahat (clue). Talabalar uni ko&apos;rgan holda so&apos;zni tiklashadi.</p>
+                            </div>
+
+                            {/* Hidden word input */}
+                            <div className="space-y-1">
+                                <label className="text-indigo-300 font-bold text-xs tracking-widest">YASHIRIN SO&apos;Z (Talabalar ko&apos;rmaydi)</label>
+                                <input
+                                    type="text"
+                                    value={q.anagramWord || ''}
+                                    onChange={e => upQ({ anagramWord: e.target.value.toUpperCase() })}
+                                    placeholder="Masalan: RESPUBLIKA"
+                                    maxLength={20}
+                                    className="w-full glass px-4 py-3 rounded-xl font-black text-xl tracking-widest outline-none transition-all"
+                                    style={{
+                                        border: '2px solid rgba(99,102,241,0.4)',
+                                        color: '#818cf8',
+                                        background: 'rgba(99,102,241,0.08)',
+                                        letterSpacing: '0.2em',
+                                    }}
+                                />
+                                {q.anagramWord && (
+                                    <p className="text-white/30 text-xs font-bold mt-1">
+                                        {q.anagramWord.length} ta harf · Ballar: ~{q.anagramWord.length * 100} (vaqt bo&apos;yicha)
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Time limit */}
+                            <div className="space-y-1">
+                                <label className="text-white/40 font-bold text-xs tracking-widest">VAQT CHEGARASI</label>
+                                <div className="flex gap-2 flex-wrap">
+                                    {[15, 20, 30, 45, 60].map(t => (
+                                        <button key={t} onClick={() => upQ({ timeLimit: t })}
+                                            className="px-5 py-2.5 rounded-xl font-black text-base transition-all"
+                                            style={q.timeLimit === t
+                                                ? { background: 'linear-gradient(135deg,#3730a3,#6366f1)', color: 'white', boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }
+                                                : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                                            {t}s
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="glass p-3 rounded-xl" style={{ border: '1px solid rgba(99,102,241,0.2)' }}>
+                                <p className="text-white/50 text-xs font-bold">🔐 Harf ko&apos;makka har biri −200 ball jarima. Formula: so&apos;z_uzunligi × 100 × vaqt_ulushi − ko&apos;mak_jarima</p>
                             </div>
                         </div>
                     )}

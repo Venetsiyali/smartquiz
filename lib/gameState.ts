@@ -29,7 +29,7 @@ export interface MatchPair {
 
 export interface Question {
     id: string;
-    type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
+    type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
     text: string;
     options: string[];        // for 'order': stored in CORRECT sequence
     optionImages?: string[];  // Pro: optional image URL per option (order type)
@@ -109,6 +109,20 @@ export function calculateBlitzScore(
     const base = Math.min(1000, Math.round(100 * streakMult));
     const speedBonus = elapsedMs / timeLimitMs < 0.33 ? Math.round(base * 0.2) : 0;
     return base + speedBonus;
+}
+
+/** Anagram scoring: word_length × 100 × time_fraction − hint_penalty */
+export function calculateAnagramScore(
+    isCorrect: boolean,
+    wordLength: number,
+    completedMs: number,
+    timeLimitMs: number,
+    hintsUsed: number
+): number {
+    if (!isCorrect) return 0;
+    const timeFrac = Math.max(0.1, (timeLimitMs - completedMs) / timeLimitMs);
+    const base = Math.round(wordLength * 100 * timeFrac);
+    return Math.max(0, base - hintsUsed * 200);
 }
 
 /** Compute post-game award badges from final player list */

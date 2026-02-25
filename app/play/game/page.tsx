@@ -7,12 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SortGame from '@/components/SortGame';
 import MatchGame, { type MatchPair, type MatchResult } from '@/components/MatchGame';
 import BlitzGame from '@/components/BlitzGame';
-
+import AnagramGame from '@/components/AnagramGame';
 
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
-    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
+    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
     pairs?: MatchPair[];
+    anagramScrambled?: string; anagramWordLength?: number;
     timeLimit: number; imageUrl?: string; questionStartTime?: number;
 
 }
@@ -26,7 +27,9 @@ interface AnswerResult {
     correctCount?: number | null;
     questionType?: string;
     matchResult?: MatchResult | null;
+    correctWord?: string; // anagram
 }
+
 interface QuestionEndPayload {
     correctOptions: number[]; explanation?: string | null; options: string[];
     optionImages?: string[] | null;
@@ -70,6 +73,9 @@ export default function StudentGamePage() {
     // Blitz game state
     const [blitzSubmitted, setBlitzSubmitted] = useState(false);
     const [blitzResult, setBlitzResult] = useState<{ correct: boolean; points: number } | null>(null);
+    // Anagram game state
+    const [anagramSubmitted, setAnagramSubmitted] = useState(false);
+    const [anagramResult, setAnagramResult] = useState<{ correct: boolean; points: number; correctWord: string } | null>(null);
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -97,6 +103,8 @@ export default function StudentGamePage() {
         setMatchSubmitted(false);
         setBlitzSubmitted(false);
         setBlitzResult(null);
+        setAnagramSubmitted(false);
+        setAnagramResult(null);
 
         // Build sort items with randomized IDs (server already shuffled order)
         if (payload.type === 'order') {
@@ -164,6 +172,14 @@ export default function StudentGamePage() {
                 setBlitzResult({ correct: r.correct, points: r.points });
                 return;
             }
+            // Anagram: stay in question phase — AnagramGame shows its own result overlay
+            if (r.questionType === 'anagram') {
+                setAnagramSubmitted(true);
+                setAnagramResult({ correct: r.correct, points: r.points, correctWord: r.correctWord || '' });
+                // Auto-advance to review after 3s
+                setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 3000);
+                return;
+            }
             setPhase('feedback');
             vibrate(r.correct ? [80, 40, 80] : 300);
             setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 2000);
@@ -219,6 +235,19 @@ export default function StudentGamePage() {
         });
     };
 
+    const handleAnagramSubmit = async (answer: string, hintsUsed: number, completedMs: number) => {
+        if (anagramSubmitted || phase !== 'question') return;
+        setAnagramSubmitted(true);
+        vibrate(40);
+        await fetch('/api/game/answer', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pin: pinRef.current, playerId: playerIdRef.current,
+                anagramAnswer: answer, anagramHintsUsed: hintsUsed, anagramCompletedMs: completedMs,
+            }),
+        });
+    };
+
     const pct = question ? (timeLeft / question.timeLimit) * 100 : 100;
 
     const tColor = !question ? '#0056b3' : timeLeft > question.timeLimit * 0.6 ? '#00E676' : timeLeft > question.timeLimit * 0.3 ? '#FFD600' : '#FF1744';
@@ -238,6 +267,25 @@ export default function StudentGamePage() {
             onAnswer={handleBlitzAnswer}
             answered={blitzSubmitted}
             lastResult={blitzResult}
+        />
+    );
+
+    /* ── Anagram ── full screen takeover */
+    if (phase === 'question' && question?.type === 'anagram') return (
+        <AnagramGame
+            scrambled={question.anagramScrambled || question.text}
+            wordLength={question.anagramWordLength || (question.anagramScrambled?.length ?? question.text.length)}
+            clue={question.text}
+            timeLimit={question.timeLimit}
+            questionIndex={question.questionIndex}
+            total={question.total}
+            streak={streak}
+            totalScore={totalScore}
+            questionStartTime={question.questionStartTime}
+            imageUrl={question.imageUrl}
+            onSubmit={handleAnagramSubmit}
+            submitted={anagramSubmitted}
+            result={anagramResult}
         />
     );
 

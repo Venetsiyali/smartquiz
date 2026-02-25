@@ -13,7 +13,7 @@ interface LeaderboardEntry { nickname: string; avatar: string; score: number; st
 interface MatchPair { term: string; definition: string; }
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
-    type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
+    type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
     pairs?: MatchPair[];
     timeLimit: number; imageUrl?: string; questionStartTime?: number;
 }
@@ -169,6 +169,42 @@ export default function TeacherGamePage() {
                 });
             }}
         />
+    );
+
+    /* ── Anagram Question Phase — projector view ── */
+    if (phase === 'question' && question?.type === 'anagram') return (
+        <div className="bg-host min-h-screen flex flex-col items-center justify-center gap-8 p-8"
+            style={{
+                background: question.imageUrl
+                    ? `linear-gradient(to bottom, rgba(10,15,40,0.93) 0%, rgba(10,15,40,0.88) 100%), url(${question.imageUrl}) center/cover no-repeat`
+                    : undefined,
+            }}>
+            <div className="glass px-5 py-2 rounded-xl flex items-center gap-2" style={{ border: '1px solid rgba(99,102,241,0.4)' }}>
+                <span className="text-2xl">🔐</span>
+                <span className="font-black tracking-widest" style={{ color: '#818cf8' }}>YASHIRIN KOD</span>
+                <span className="text-white/40 font-bold text-sm ml-2">Savol {question.questionIndex + 1}/{question.total}</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-white text-center leading-tight max-w-4xl"
+                style={{ textShadow: '0 2px 24px rgba(0,0,0,0.6)' }}>{question.text}</h2>
+            {/* Timer */}
+            <div className="flex items-center gap-4">
+                <div className="relative w-20 h-20">
+                    <svg className="absolute" width="80" height="80" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+                        <circle cx="40" cy="40" r="34" fill="none" stroke={tColor} strokeWidth="6" strokeLinecap="round"
+                            strokeDasharray={`${2 * Math.PI * 34}`}
+                            strokeDashoffset={`${2 * Math.PI * 34 * (1 - pct / 100)}`}
+                            className="timer-ring" />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center font-black text-2xl" style={{ color: tColor }}>{timeLeft}</span>
+                </div>
+            </div>
+            <motion.p
+                animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }}
+                className="text-white/50 font-bold text-lg">
+                🔐 Talabalar so&apos;zni tiklashmoqda...
+            </motion.p>
+        </div>
     );
 
     /* ── Question Phase ── */

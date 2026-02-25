@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
 import { getRoom, saveRoomData, getLeaderboard, computeBadges } from '@/lib/gameState';
 
+function shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
 export async function POST(req: Request) {
     const { pin, fromIndex }: { pin: string; fromIndex?: number } = await req.json();
 
@@ -41,17 +50,39 @@ export async function POST(req: Request) {
 
     const question = freshRoom.questions[freshRoom.currentQuestionIndex];
 
+    // Shuffle for order questions; scramble for anagram
+    let broadcastOptions = question.options;
+    let broadcastOptionImages = question.optionImages;
+    let anagramScrambled: string | null = null;
+    if (question.type === 'order') {
+        const indices = question.options.map((_, i) => i);
+        const shuffledIndices = shuffle(indices);
+        broadcastOptions = shuffledIndices.map(i => question.options[i]);
+        if (question.optionImages) {
+            broadcastOptionImages = shuffledIndices.map(i => question.optionImages![i]);
+        }
+    } else if (question.type === 'anagram') {
+        const word = question.options[0] || '';
+        anagramScrambled = shuffle(word.split('')).join('');
+        // Ensure scrambled word is different from original if possible
+        if (word.length > 1 && anagramScrambled === word) {
+            anagramScrambled = shuffle(word.split('')).join('');
+        }
+        broadcastOptions = []; // don't reveal the answer
+    }
+
     await pusherServer.trigger(`game-${pin}`, 'question-start', {
         questionIndex: freshRoom.currentQuestionIndex,
         total: freshRoom.questions.length,
         type: question.type || 'blitz',
         text: question.text,
-        options: question.options,
-        optionImages: question.optionImages || null,
+        options: broadcastOptions, // Use broadcastOptions
+        optionImages: broadcastOptionImages || null, // Use broadcastOptionImages
         pairs: question.pairs || null,
         timeLimit: question.timeLimit,
         imageUrl: question.imageUrl || null,
         questionStartTime: freshRoom.questionStartTime,
+        anagramScrambled: anagramScrambled, // Add anagramScrambled
     });
 
     return NextResponse.json({ ok: true });

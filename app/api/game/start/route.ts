@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     // For order questions — shuffle options before broadcasting
     let broadcastOptions = question.options;
     let broadcastOptionImages = question.optionImages;
+    let anagramScrambled: string | null = null;
     if (question.type === 'order') {
         const indices = question.options.map((_, i) => i);
         const shuffledIndices = shuffle(indices);
@@ -38,6 +39,14 @@ export async function POST(req: Request) {
         if (question.optionImages) {
             broadcastOptionImages = shuffledIndices.map(i => question.optionImages![i]);
         }
+    } else if (question.type === 'anagram') {
+        const word = question.options[0] || '';
+        anagramScrambled = shuffle(word.split('')).join('');
+        // Make sure scrambled != original (shuffle again if needed)
+        if (word.length > 1 && anagramScrambled === word) {
+            anagramScrambled = shuffle(word.split('')).join('');
+        }
+        broadcastOptions = []; // don't send the answer
     }
 
     await pusherServer.trigger(`game-${pin}`, 'question-start', {
@@ -48,6 +57,8 @@ export async function POST(req: Request) {
         options: broadcastOptions,
         optionImages: broadcastOptionImages || null,
         pairs: question.pairs || null,
+        anagramScrambled,                      // scrambled string or null
+        anagramWordLength: question.type === 'anagram' ? (question.options[0] || '').length : null,
         timeLimit: question.timeLimit,
         imageUrl: question.imageUrl,
         questionStartTime: room.questionStartTime,

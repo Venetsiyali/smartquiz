@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData, calculateScore, calculateBlitzScore, getLeaderboard } from '@/lib/gameState';
+import { getRoom, saveRoomData, calculateScore, calculateBlitzScore, calculateAnagramScore, getLeaderboard } from '@/lib/gameState';
+
 
 
 interface MatchResultBody {
@@ -14,10 +15,14 @@ interface MatchResultBody {
 interface AnswerBody {
     pin: string;
     playerId: string;
-    optionIndex?: number;        // MCQ / TrueFalse
+    optionIndex?: number;        // MCQ / TrueFalse / Blitz
     submittedOrder?: number[];   // Order / Sorting
     matchResult?: MatchResultBody; // Match / Terminlar jangi
+    anagramAnswer?: string;      // Anagram: submitted word
+    anagramHintsUsed?: number;   // Anagram: how many hints used
+    anagramCompletedMs?: number; // Anagram: how long it took to complete
 }
+
 
 export async function POST(req: Request) {
     const body: AnswerBody = await req.json();
@@ -41,6 +46,51 @@ export async function POST(req: Request) {
     let points = 0;
     let isCorrect = false;
     let streakFire = false;
+
+    /* ── Anagram Scoring ─────────────────────────────────────────────── */
+    if (qType === 'anagram' && body.anagramAnswer !== undefined) {
+        const correctWord = (question.options[0] || '').toUpperCase();
+        isCorrect = body.anagramAnswer.toUpperCase() === correctWord;
+        const hintsUsed = body.anagramHintsUsed ?? 0;
+        const completedMs = body.anagramCompletedMs ?? elapsed;
+        const player = room.players.find(p => p.id === playerId);
+        if (player) {
+            if (isCorrect) { player.streak += 1; if (player.streak > player.longestStreak) player.longestStreak = player.streak; }
+            else { player.streak = 0; }
+            points = calculateAnagramScore(isCorrect, correctWord.length, completedMs, totalMs, hintsUsed);
+            streakFire = isCorrect && hintsUsed === 0 && completedMs < 15000;
+            player.score += points;
+            player.totalAnswers += 1;
+            player.totalResponseMs += elapsed;
+            if (elapsed < player.fastestAnswerMs) player.fastestAnswerMs = elapsed;
+            if (isCorrect) player.correctCount += 1;
+            room.answeredPlayerIds.push(playerId);
+            await saveRoomData(room);
+            await pusherServer.trigger(`player-${playerId}`, 'answer-result', {
+                correct: isCorrect, points, totalScore: player.score,
+                streak: player.streak, streakFire,
+                correctWord,          // reveal the word after submission
+                questionType: 'anagram',
+            });
+        } else {
+            room.answeredPlayerIds.push(playerId);
+            await saveRoomData(room);
+        }
+        // Auto-end if all answered
+        if (room.answeredPlayerIds.length >= room.players.length && room.players.length > 0) {
+            room.status = 'leaderboard';
+            await saveRoomData(room);
+            const leaderboard = getLeaderboard(room.players);
+            const isLastQuestion = room.currentQuestionIndex >= room.questions.length - 1;
+            await pusherServer.trigger(`game-${pin}`, 'question-end', {
+                correctOptions: question.correctOptions,
+                explanation: question.explanation || null,
+                options: [correctWord],
+                leaderboard, isLastQuestion, questionType: 'anagram',
+            });
+        }
+        return NextResponse.json({ ok: true });
+    }
 
     /* ── Match Scoring ─────────────────────────────────────────────── */
     if (qType === 'match' && body.matchResult) {
