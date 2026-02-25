@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
@@ -281,25 +281,28 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
 type ModalType = 'none' | 'ai' | 'file';
 
 export default function TeacherCreatePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-host flex items-center justify-center"><p className="text-white/50 text-xl font-bold">Yuklanmoqda...</p></div>}>
+            <TeacherCreateInner />
+        </Suspense>
+    );
+}
+
+function TeacherCreateInner() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const lockedModeQuery = searchParams.get('mode');
+
     const { isPro, plan } = useSubscription();
     const maxQ = isPro ? PLAN_LIMITS.pro.maxQuestions : PLAN_LIMITS.free.maxQuestions;
     const [title, setTitle] = useState('');
 
-    const [lockedMode, setLockedMode] = useState<string | null>(() => {
-        if (typeof window !== 'undefined') {
-            return new URLSearchParams(window.location.search).get('mode');
-        }
-        return null;
-    });
+    const [lockedMode, setLockedMode] = useState<string | null>(lockedModeQuery);
 
     const [questions, setQuestions] = useState<QuizQuestion[]>(() => {
         let initialType: QuestionType = 'multiple';
-        if (typeof window !== 'undefined') {
-            const m = new URLSearchParams(window.location.search).get('mode');
-            if (m === 'order' || m === 'match' || m === 'blitz' || m === 'anagram') {
-                initialType = m as QuestionType;
-            }
+        if (lockedModeQuery === 'order' || lockedModeQuery === 'match' || lockedModeQuery === 'blitz' || lockedModeQuery === 'anagram') {
+            initialType = lockedModeQuery as QuestionType;
         }
 
         let opts = MULTI_DEFAULTS();
@@ -320,12 +323,7 @@ export default function TeacherCreatePage() {
     const [modal, setModal] = useState<ModalType>('none');
 
     // Team mode
-    const [teamMode, setTeamMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return new URLSearchParams(window.location.search).get('mode') === 'team';
-        }
-        return false;
-    });
+    const [teamMode, setTeamMode] = useState(lockedModeQuery === 'team');
     const [teamCount, setTeamCount] = useState(3);
     const [teamNames, setTeamNames] = useState<string[]>(['', '', '', '', '', '']);
 
@@ -548,7 +546,15 @@ export default function TeacherCreatePage() {
             {/* Header */}
             <header className="flex items-center gap-3 p-4 border-b border-white/10 flex-wrap">
                 <button onClick={() => router.push('/')} className="text-white/50 hover:text-white text-2xl transition-colors">←</button>
-                <span className="text-xl font-black text-white">Zukk<span className="logo-z">oo</span></span>
+                <span className="text-xl font-black text-white">
+                    {lockedMode === 'classic' ? 'Zukkoo'
+                        : lockedMode === 'order' ? 'Mantiqiy Zanjir'
+                            : lockedMode === 'match' ? 'Terminlar Jangi'
+                                : lockedMode === 'blitz' ? 'Bliz-Sohat'
+                                    : lockedMode === 'anagram' ? 'Yashirin Kod'
+                                        : lockedMode === 'team' ? 'Jamoaviy Qutqaruv'
+                                            : <><span className="text-xl font-black text-white">Zukk<span className="logo-z">oo</span></span></>}
+                </span>
                 {isPro && <CrownBadge />}
                 <span className="text-white/30">·</span>
                 <input value={title} onChange={e => setTitle(e.target.value)}
@@ -717,35 +723,32 @@ export default function TeacherCreatePage() {
                 {/* Editor */}
                 <main className="flex-1 p-4 md:p-8 space-y-5">
                     {/* Type toggle */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-white/40 font-bold text-sm">Turi:</span>
-                        {([
-                            ['multiple', "📋 Ko'p tanlov"],
-                            ['truefalse', "✅ To'g'ri/Noto'g'ri"],
-                            ['order', "🔗 Mantiqiy Zanjir"],
-                            ['match', "💎 Terminlar Jangi"],
-                            ['blitz', "⚡ Bliz-Sohat"],
-                            ['anagram', "🔐 Yashirin Kod"],
-                        ] as [QuestionType, string][])
-                            .filter(([t]) => {
-                                if (lockedMode === 'classic') return t === 'multiple' || t === 'truefalse';
-                                if (lockedMode === 'order') return t === 'order';
-                                if (lockedMode === 'match') return t === 'match';
-                                if (lockedMode === 'blitz') return t === 'blitz';
-                                if (lockedMode === 'anagram') return t === 'anagram';
-                                // if team or no lock -> show all
-                                return true;
-                            })
-                            .map(([t, l]) => (
-                                <button key={t} onClick={() => setType(t)}
-                                    className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
-                                    style={q.type === t
-                                        ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : t === 'anagram' ? 'linear-gradient(135deg,#3730a3,#6366f1)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
-                                        : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                                    {l}
-                                </button>
-                            ))}
-                    </div>
+                    {(lockedMode === 'classic' || lockedMode === 'team' || lockedMode === null) && (
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-white/40 font-bold text-sm">Savol formati:</span>
+                            {([
+                                ['multiple', "📋 Ko'p tanlov"],
+                                ['truefalse', "✅ To'g'ri/Noto'g'ri"],
+                                ['order', "🔗 Mantiqiy Zanjir"],
+                                ['match', "💎 Terminlar Jangi"],
+                                ['blitz', "⚡ Bliz-Sohat"],
+                                ['anagram', "🔐 Yashirin Kod"],
+                            ] as [QuestionType, string][])
+                                .filter(([t]) => {
+                                    if (lockedMode === 'classic') return t === 'multiple' || t === 'truefalse';
+                                    return true;
+                                })
+                                .map(([t, l]) => (
+                                    <button key={t} onClick={() => setType(t)}
+                                        className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
+                                        style={q.type === t
+                                            ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : t === 'anagram' ? 'linear-gradient(135deg,#3730a3,#6366f1)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
+                                            : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+                                        {l}
+                                    </button>
+                                ))}
+                        </div>
+                    )}
 
                     {/* Question text */}
                     <div className="glass p-5 space-y-4">
