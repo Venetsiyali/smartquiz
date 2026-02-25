@@ -134,6 +134,10 @@ export default function LandingPage() {
                     {isPro && <CrownBadge />}
                 </div>
                 <div className="flex items-center gap-3">
+                    <button onClick={() => router.push('/muallif')}
+                        className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10">
+                        👤 Muallif
+                    </button>
                     <button onClick={() => router.push('/pricing')}
                         className="px-4 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105"
                         style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>

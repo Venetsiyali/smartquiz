@@ -566,6 +566,10 @@ function TeacherCreateInner() {
                     className="input-game min-w-28 max-w-[140px] text-sm"
                     style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '12px', display: isPro ? 'block' : 'none' }} />
                 <div className="ml-auto flex items-center gap-2">
+                    <button onClick={() => router.push('/muallif')}
+                        className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-2">
+                        👤 Muallif
+                    </button>
                     {/* File upload — Pro only */}
                     {isPro ? (
                         <button onClick={() => setModal('file')}
