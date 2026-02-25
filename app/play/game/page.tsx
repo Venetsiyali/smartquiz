@@ -8,6 +8,8 @@ import SortGame from '@/components/SortGame';
 import MatchGame, { type MatchPair, type MatchResult } from '@/components/MatchGame';
 import BlitzGame from '@/components/BlitzGame';
 import AnagramGame from '@/components/AnagramGame';
+import TeamHUD, { type TeamData } from '@/components/TeamHUD';
+
 
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
@@ -76,6 +78,11 @@ export default function StudentGamePage() {
     // Anagram game state
     const [anagramSubmitted, setAnagramSubmitted] = useState(false);
     const [anagramResult, setAnagramResult] = useState<{ correct: boolean; points: number; correctWord: string } | null>(null);
+    // Team mode state
+    const [myTeam, setMyTeam] = useState<TeamData | null>(null);
+    const [allTeams, setAllTeams] = useState<TeamData[]>([]);
+    const [teamCombo, setTeamCombo] = useState(false);
+    const [justCorrect, setJustCorrect] = useState(false);
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -184,7 +191,27 @@ export default function StudentGamePage() {
             vibrate(r.correct ? [80, 40, 80] : 300);
             setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 2000);
         });
-
+        // Team mode: assign my team and listen for updates
+        const myPlayerId = pid;
+        gameCh.bind('team-assigned', (data: { teams: TeamData[]; playerTeams: { id: string; teamId: string }[] }) => {
+            setAllTeams(data.teams);
+            const pt = data.playerTeams.find(p => p.id === myPlayerId);
+            if (pt) {
+                const t = data.teams.find(t => t.id === pt.teamId);
+                if (t) setMyTeam(t);
+            }
+        });
+        gameCh.bind('team-update', (data: { teams: TeamData[]; combo?: { teamId: string; bonus: number } | null }) => {
+            setAllTeams(data.teams);
+            setMyTeam(prev => {
+                if (!prev) return prev;
+                return data.teams.find(t => t.id === prev.id) || prev;
+            });
+            if (data.combo) {
+                setTeamCombo(true);
+                setTimeout(() => setTeamCombo(false), 2500);
+            }
+        });
 
         return () => {
             pusher.unsubscribe(`game-${pin}`); pusher.unsubscribe(`player-${pid}`);
@@ -254,20 +281,34 @@ export default function StudentGamePage() {
     const myNick = typeof window !== 'undefined' ? sessionStorage.getItem('playerNickname') || '' : '';
     const myAvatar = typeof window !== 'undefined' ? sessionStorage.getItem('playerAvatar') || '🤖' : '🤖';
 
+    /* ── TeamHUD — persistent overlay across all phases ── */
+    // (renders fixed overlay; safe to include before early-returns)
+    const teamHud = myTeam ? (
+        <TeamHUD
+            myTeam={myTeam}
+            allTeams={allTeams}
+            justAnsweredCorrect={justCorrect}
+            comboTriggered={teamCombo}
+        />
+    ) : null;
+
     /* ── Blitz ── full screen takeover */
     if (phase === 'question' && question?.type === 'blitz') return (
-        <BlitzGame
-            text={question.text}
-            timeLimit={question.timeLimit}
-            questionIndex={question.questionIndex}
-            total={question.total}
-            streak={streak}
-            totalScore={totalScore}
-            questionStartTime={question.questionStartTime}
-            onAnswer={handleBlitzAnswer}
-            answered={blitzSubmitted}
-            lastResult={blitzResult}
-        />
+        <>
+            {teamHud}
+            <BlitzGame
+                text={question.text}
+                timeLimit={question.timeLimit}
+                questionIndex={question.questionIndex}
+                total={question.total}
+                streak={streak}
+                totalScore={totalScore}
+                questionStartTime={question.questionStartTime}
+                onAnswer={handleBlitzAnswer}
+                answered={blitzSubmitted}
+                lastResult={blitzResult}
+            />
+        </>
     );
 
     /* ── Anagram ── full screen takeover */

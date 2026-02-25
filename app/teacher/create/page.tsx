@@ -291,6 +291,10 @@ export default function TeacherCreatePage() {
     const [active, setActive] = useState(0);
     const [errors, setErrors] = useState<string[]>([]);
     const [modal, setModal] = useState<ModalType>('none');
+    // Team mode
+    const [teamMode, setTeamMode] = useState(false);
+    const [teamCount, setTeamCount] = useState(3);
+    const [teamNames, setTeamNames] = useState<string[]>(['', '', '', '', '', '']);
 
     const q = questions[active];
 
@@ -380,10 +384,12 @@ export default function TeacherCreatePage() {
         return errs.length === 0;
     };
 
-    const startLobby = () => {
+    const startLobby = async () => {
         if (!validate()) return;
         const quiz = {
             title,
+            teamMode,
+            teamCount: teamMode ? teamCount : undefined,
             questions: questions.map(q => {
                 if (q.type === 'order') {
                     const items = (q.orderItems || []).filter(it => it.text.trim());
@@ -436,7 +442,36 @@ export default function TeacherCreatePage() {
             }),
         };
         sessionStorage.setItem('quiz', JSON.stringify(quiz));
-        router.push('/teacher/lobby');
+
+        try {
+            const res = await fetch('/api/game/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(quiz),
+            });
+            const data = await res.json();
+            if (!res.ok) { setErrors([data.error || "Xatolik"]); return; }
+            const pin = data.pin;
+            sessionStorage.setItem('gamePin', pin);
+
+            // If team mode: also set it up on the server
+            if (teamMode) {
+                await fetch('/api/game/team-setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pin,
+                        teamCount,
+                        teamNames: teamNames.slice(0, teamCount).filter(n => n.trim()),
+                    }),
+                });
+            }
+
+            router.push('/teacher/game');
+        } catch (e) {
+            console.error(e);
+            setErrors(["Server bilan bog'lanishda xatolik"]);
+        }
     };
 
     return (
@@ -509,10 +544,10 @@ export default function TeacherCreatePage() {
                                 <span className="flex-1 text-xs font-bold text-white/60 truncate">{q.text || 'Savol...'}</span>
                                 <span className="text-xs px-1 py-0.5 rounded font-bold shrink-0"
                                     style={{
-                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : q.type === 'match' ? 'rgba(167,139,250,0.15)' : q.type === 'blitz' ? 'rgba(239,68,68,0.15)' : 'rgba(0,86,179,0.15)',
-                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : q.type === 'match' ? '#a78bfa' : q.type === 'blitz' ? '#f87171' : '#60a5fa'
+                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : q.type === 'match' ? 'rgba(167,139,250,0.15)' : q.type === 'blitz' ? 'rgba(239,68,68,0.15)' : q.type === 'anagram' ? 'rgba(99,102,241,0.15)' : 'rgba(0,86,179,0.15)',
+                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : q.type === 'match' ? '#a78bfa' : q.type === 'blitz' ? '#f87171' : q.type === 'anagram' ? '#818cf8' : '#60a5fa'
                                     }}>
-                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : q.type === 'match' ? 'MG' : q.type === 'blitz' ? '⚡BS' : 'MC'}
+                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : q.type === 'match' ? 'MG' : q.type === 'blitz' ? '⚡BS' : q.type === 'anagram' ? '🔐ANG' : 'MC'}
                                 </span>
                                 {questions.length > 1 && (
                                     <button onClick={e => { e.stopPropagation(); delQ(i); }}
@@ -534,6 +569,74 @@ export default function TeacherCreatePage() {
                             👑 Pro → 50 ta savolga
                         </button>
                     )}
+
+                    {/* ── Jamoaviy Qutqaruv Panel ── */}
+                    <div className="mt-4 space-y-3">
+                        <button
+                            onClick={() => setTeamMode(t => !t)}
+                            className="w-full flex items-center justify-between px-3 py-3 rounded-2xl font-bold text-sm transition-all"
+                            style={{
+                                background: teamMode ? 'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15))' : 'rgba(255,255,255,0.05)',
+                                border: teamMode ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                                color: teamMode ? '#818cf8' : 'rgba(255,255,255,0.4)',
+                            }}>
+                            <span>🏁 Jamoaviy Qutqaruv</span>
+                            <span className="text-lg">{teamMode ? '✅' : '⬜'}</span>
+                        </button>
+
+                        {teamMode && (
+                            <div className="space-y-3 px-1">
+                                <div>
+                                    <p className="text-white/40 font-bold text-xs mb-1.5">JAMOA SONI</p>
+                                    <div className="flex gap-2">
+                                        {[2, 3, 4, 5, 6].map(n => (
+                                            <button key={n} onClick={() => setTeamCount(n)}
+                                                className="flex-1 py-2 rounded-xl font-black text-sm transition-all"
+                                                style={teamCount === n
+                                                    ? { background: 'linear-gradient(135deg,#3730a3,#6366f1)', color: 'white' }
+                                                    : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                                                {n}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Pro: custom team names */}
+                                {isPro ? (
+                                    <div className="space-y-1.5">
+                                        <p className="text-white/40 font-bold text-xs">JAMOA NOMLARI (ixtiyoriy)</p>
+                                        {Array.from({ length: teamCount }, (_, i) => (
+                                            <input key={i}
+                                                value={teamNames[i] || ''}
+                                                onChange={e => {
+                                                    const next = [...teamNames];
+                                                    next[i] = e.target.value;
+                                                    setTeamNames(next);
+                                                }}
+                                                placeholder={['Koderlar', 'Hakerlar', 'Analitiklar', 'Dizaynerlar', 'Menejerlar', 'Tadqiqotchilar'][i]}
+                                                className="w-full glass px-3 py-2 rounded-xl font-bold text-sm outline-none text-white/80"
+                                                style={{ border: '1px solid rgba(99,102,241,0.3)' }}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <button onClick={() => router.push('/pricing')}
+                                        className="w-full py-2 rounded-xl text-xs font-bold text-center transition-all hover:scale-105"
+                                        style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.25)', color: '#FFD700' }}>
+                                        👑 Pro → Jamoa nomlarini o&apos;zgartirish
+                                    </button>
+                                )}
+
+                                <div className="glass p-2.5 rounded-xl" style={{ border: '1px solid rgba(99,102,241,0.2)' }}>
+                                    <p className="text-white/40 text-xs font-bold">
+                                        🏁 Talabalar tasodifiy jamoalarga bo&apos;linadi.<br />
+                                        ❤️ Xato = jamoa joni −10%<br />
+                                        🔥 Butun jamoa to&apos;g'ri → Combo +100 ball
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </aside>
 
                 {/* Editor */}

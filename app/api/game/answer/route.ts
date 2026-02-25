@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData, calculateScore, calculateBlitzScore, calculateAnagramScore, getLeaderboard } from '@/lib/gameState';
+import { getRoom, saveRoomData, calculateScore, calculateBlitzScore, calculateAnagramScore, getLeaderboard, recalcTeamScores, getTeamLeaderboard } from '@/lib/gameState';
+
 
 
 
@@ -142,6 +143,43 @@ export async function POST(req: Request) {
 
         room.answeredPlayerIds.push(playerId);
         await saveRoomData(room);
+
+        // ── Team Mode Updates ──────────────────────────────────────────
+        if (room.teamMode && room.teams) {
+            const team = room.teams.find(t => t.id === player.teamId);
+            if (team) {
+                if (!team.answeredTotal.includes(playerId)) team.answeredTotal.push(playerId);
+                if (isCorrect && !team.answeredCorrectly.includes(playerId)) team.answeredCorrectly.push(playerId);
+
+                // Health penalty for wrong answer (shield check)
+                if (!isCorrect) {
+                    const shielded = team.shieldActiveUntil > Date.now();
+                    if (!shielded) {
+                        team.health = Math.max(0, team.health - 10);
+                    }
+                }
+
+                // Combo: all team members for this question answered correctly
+                const teamMembers = room.players.filter(p => p.teamId === team.id);
+                const allCorrect = teamMembers.every(p => team.answeredCorrectly.includes(p.id));
+                const allAnswered = teamMembers.every(p => team.answeredTotal.includes(p.id));
+                if (allAnswered && allCorrect && teamMembers.length > 0) {
+                    team.comboCount += 1;
+                    // Give every team member a combo bonus (+100)
+                    teamMembers.forEach(p => { p.score += 100; });
+                }
+
+                recalcTeamScores(room);
+                await saveRoomData(room);
+
+                const combo = allAnswered && allCorrect && teamMembers.length > 0;
+                await pusherServer.trigger(`game-${pin}`, 'team-update', {
+                    teams: getTeamLeaderboard(room.teams),
+                    triggeredBy: { playerId, teamId: team.id, correct: isCorrect },
+                    combo: combo ? { teamId: team.id, bonus: 100 } : null,
+                });
+            }
+        }
 
         await pusherServer.trigger(`player-${playerId}`, 'answer-result', {
             correct: isCorrect,

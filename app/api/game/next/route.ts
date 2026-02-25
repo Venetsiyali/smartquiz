@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData, getLeaderboard, computeBadges } from '@/lib/gameState';
+import { getRoom, saveRoomData, getLeaderboard, computeBadges, resetTeamQuestion, getTeamLeaderboard } from '@/lib/gameState';
+
 
 function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
@@ -31,6 +32,14 @@ export async function POST(req: Request) {
     room.status = 'question';
     room.questionStartTime = Date.now();
     room.answeredPlayerIds = [];
+    // Reset per-question team tracking
+    if (room.teamMode && room.teams) {
+        resetTeamQuestion(room.teams);
+        // Broadcast updated teams so host race track re-syncs
+        await pusherServer.trigger(`game-${pin}`, 'team-update', {
+            teams: getTeamLeaderboard(room.teams), triggeredBy: null, combo: null,
+        });
+    }
     await saveRoomData(room);
 
     const question = room.questions[room.currentQuestionIndex];

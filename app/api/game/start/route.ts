@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData } from '@/lib/gameState';
+import { getRoom, saveRoomData, assignTeams, resetTeamQuestion } from '@/lib/gameState';
+
 
 // Fisher-Yates shuffle (returns new array, original untouched)
 function shuffle<T>(arr: T[]): T[] {
@@ -24,7 +25,22 @@ export async function POST(req: Request) {
     room.currentQuestionIndex = 0;
     room.questionStartTime = Date.now();
     room.answeredPlayerIds = [];
+
+    // Team mode: assign players to teams and broadcast
+    if (room.teamMode && room.teams && room.teams.length > 0) {
+        assignTeams(room.players, room.teams);
+        resetTeamQuestion(room.teams);
+    }
+
     await saveRoomData(room);
+
+    // Broadcast team assignments before question-start
+    if (room.teamMode && room.teams) {
+        await pusherServer.trigger(`game-${pin}`, 'team-assigned', {
+            teams: room.teams,
+            playerTeams: room.players.map(p => ({ id: p.id, teamId: p.teamId })),
+        });
+    }
 
     const question = room.questions[0];
 

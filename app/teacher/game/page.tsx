@@ -7,6 +7,8 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription } from '@/lib/subscriptionContext';
 import BlitzRaceBar from '@/components/BlitzRaceBar';
+import TeamRaceTrack, { type TeamData } from '@/components/TeamRaceTrack';
+
 
 
 interface LeaderboardEntry { nickname: string; avatar: string; score: number; streak: number; rank: number; }
@@ -55,6 +57,9 @@ export default function TeacherGamePage() {
     const [blitzLeaderboard, setBlitzLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [blitzAnsweredCount, setBlitzAnsweredCount] = useState(0);
     const [blitzTotalPlayers, setBlitzTotalPlayers] = useState(0);
+    // Team mode state
+    const [teams, setTeams] = useState<TeamData[]>([]);
+    const [teamCombo, setTeamCombo] = useState<{ teamId: string; bonus: number } | null>(null);
 
     // AI Voice synthesis
     const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -113,6 +118,17 @@ export default function TeacherGamePage() {
             setBlitzLeaderboard(data.leaderboard);
             setBlitzAnsweredCount(data.answeredCount);
             setBlitzTotalPlayers(data.totalPlayers);
+        });
+        // Team mode listeners
+        channelRef.current.bind('team-assigned', (data: { teams: TeamData[] }) => {
+            setTeams(data.teams);
+        });
+        channelRef.current.bind('team-update', (data: { teams: TeamData[]; combo?: { teamId: string; bonus: number } | null }) => {
+            setTeams(data.teams);
+            if (data.combo) {
+                setTeamCombo(data.combo);
+                setTimeout(() => setTeamCombo(null), 2500);
+            }
         });
 
         channelRef.current.bind('question-end', (payload: QuestionEndPayload) => {
@@ -320,6 +336,26 @@ export default function TeacherGamePage() {
             <div className="h-2 bg-white/10">
                 <div className="h-full transition-all duration-1000" style={{ width: `${pct}%`, background: tColor, boxShadow: `0 0 14px ${tColor}` }} />
             </div>
+
+            {/* Team Race Track — fixed right overlay during question */}
+            {teams.length > 0 && (
+                <div className="fixed right-4 top-24 w-72 z-30">
+                    <TeamRaceTrack
+                        teams={teams}
+                        maxScore={Math.max(...teams.map(t => t.score), 1) * 1.5}
+                        combo={teamCombo}
+                        isPro={isPro}
+                        phase="question"
+                        onShield={async (teamId) => {
+                            const pin = typeof window !== 'undefined' ? sessionStorage.getItem('gamePin') || '' : '';
+                            await fetch('/api/game/team-shield', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ pin, teamId }),
+                            });
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 

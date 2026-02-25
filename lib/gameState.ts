@@ -18,6 +18,23 @@ export interface Player {
     totalAnswers: number;    // total questions answered
     totalResponseMs: number; // sum of response times in ms (for avg speed badge)
     fastestAnswerMs: number; // fastest single answer in ms
+    teamId?: string;         // team mode: which team this player belongs to
+    hintsUsed?: number;      // anagram: accumulated hints used
+}
+
+/** One team in team-mode */
+export interface Team {
+    id: string;               // 'team_a', 'team_b', ...
+    name: string;             // 'Koderlar', 'Hakerlar', ... (customisable via Pro)
+    emoji: string;            // rocket emoji themed per team
+    color: string;            // hex accent color
+    score: number;            // running total (sum of members)
+    health: number;           // 0-100, loses 10 on each wrong answer by a member
+    comboCount: number;       // how many times all members answered correctly
+    shieldActiveUntil: number;// ms timestamp (0 = no shield)
+    shieldUsed: boolean;      // can only use once per game
+    answeredCorrectly: string[]; // playerIds who got current question RIGHT
+    answeredTotal: string[];     // playerIds who answered current question
 }
 
 export interface MatchPair {
@@ -51,6 +68,11 @@ export interface GameRoom {
     status: 'lobby' | 'question' | 'leaderboard' | 'ended';
     questionStartTime?: number;
     answeredPlayerIds: string[];
+    // Team mode
+    teamMode?: boolean;
+    teamCount?: number;
+    teams?: Team[];
+    customTeamNames?: string[]; // Pro: teacher-set names
 }
 
 export async function getRoom(pin: string): Promise<GameRoom | null> {
@@ -67,6 +89,42 @@ export async function deleteRoom(pin: string): Promise<void> {
 
 export function generatePin(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/** Assign players to teams round-robin after shuffling */
+export function assignTeams(players: Player[], teams: Team[]): void {
+    // Fisher-Yates shuffle player order for fairness
+    const shuffled = [...players];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    shuffled.forEach((p, i) => {
+        const team = teams[i % teams.length];
+        p.teamId = team.id;
+    });
+    // Populate team member lists
+    teams.forEach(t => { t.answeredCorrectly = []; t.answeredTotal = []; });
+}
+
+/** Recalculate team.score from sum of members' individual scores */
+export function recalcTeamScores(room: GameRoom): void {
+    if (!room.teams) return;
+    room.teams.forEach(t => {
+        t.score = room.players.filter(p => p.teamId === t.id).reduce((s, p) => s + p.score, 0);
+    });
+}
+
+/** Reset per-question answered tracking on teams */
+export function resetTeamQuestion(teams: Team[]): void {
+    teams.forEach(t => { t.answeredCorrectly = []; t.answeredTotal = []; });
+}
+
+/** Sorted team leaderboard */
+export function getTeamLeaderboard(teams: Team[]) {
+    return [...teams]
+        .sort((a, b) => b.score - a.score)
+        .map((t, i) => ({ ...t, rank: i + 1 }));
 }
 
 export function getLeaderboard(players: Player[]) {
