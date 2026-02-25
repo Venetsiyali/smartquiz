@@ -36,7 +36,6 @@ export default function AuthorPage() {
                             src="https://avatars.githubusercontent.com/u/1?v=4"
                             alt="Rustamjon Nasridinov"
                             className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-[#0a0f25]"
-                            onError={(e) => { e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231e293b"/><text x="50" y="55" font-size="40" text-anchor="middle" fill="%2394a3b8" font-family="sans-serif">RN</text></svg>' }}
                         />
                     </div>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 pb-2">
