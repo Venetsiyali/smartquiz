@@ -29,7 +29,7 @@ export interface MatchPair {
 
 export interface Question {
     id: string;
-    type?: 'multiple' | 'truefalse' | 'order' | 'match';
+    type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
     text: string;
     options: string[];        // for 'order': stored in CORRECT sequence
     optionImages?: string[];  // Pro: optional image URL per option (order type)
@@ -95,6 +95,20 @@ export function calculateScore(
     // 1.2x multiplier for streak >= 3
     const multiplier = streak >= 3 ? 1.2 : 1;
     return Math.round(base * multiplier);
+}
+
+/** Blitz scoring: exponential streak multiplier + speed bonus */
+export function calculateBlitzScore(
+    isCorrect: boolean,
+    streak: number,
+    elapsedMs: number,
+    timeLimitMs: number
+): number {
+    if (!isCorrect) return 0;
+    const streakMult = Math.pow(1.5, Math.max(0, streak - 1));
+    const base = Math.min(1000, Math.round(100 * streakMult));
+    const speedBonus = elapsedMs / timeLimitMs < 0.33 ? Math.round(base * 0.2) : 0;
+    return base + speedBonus;
 }
 
 /** Compute post-game award badges from final player list */

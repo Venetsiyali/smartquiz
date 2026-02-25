@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData, calculateScore, getLeaderboard } from '@/lib/gameState';
+import { getRoom, saveRoomData, calculateScore, calculateBlitzScore, getLeaderboard } from '@/lib/gameState';
+
 
 interface MatchResultBody {
     totalPairs: number;
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
         streakFire = isCorrect && elapsed < 10000;
     }
 
-    /* ── MCQ / TrueFalse Scoring ────────────────────────────────────── */
+    /* ── MCQ / TrueFalse / Blitz Scoring ────────────────────────────── */
     else {
         const optionIndex = body.optionIndex ?? -1;
         isCorrect = question.correctOptions.includes(optionIndex);
@@ -76,7 +77,10 @@ export async function POST(req: Request) {
             player.streak = 0;
         }
 
-        if (qType !== 'match' && qType !== 'order') {
+        if (qType === 'blitz') {
+            points = calculateBlitzScore(isCorrect, player.streak, elapsed, totalMs);
+            streakFire = isCorrect && player.streak >= 3;
+        } else if (qType !== 'match' && qType !== 'order') {
             points = calculateScore(isCorrect, remaining, totalMs, player.streak);
         }
 
@@ -109,7 +113,18 @@ export async function POST(req: Request) {
         await saveRoomData(room);
     }
 
-    // Auto-end if all players answered
+    // For blitz: fire race bar update (no auto question-end — timer drives it)
+    if (qType === 'blitz') {
+        const liveLeaderboard = getLeaderboard(room.players);
+        await pusherServer.trigger(`game-${pin}`, 'blitz-answer-update', {
+            leaderboard: liveLeaderboard,
+            answeredCount: room.answeredPlayerIds.length,
+            totalPlayers: room.players.length,
+        });
+        return NextResponse.json({ ok: true });
+    }
+
+    // Auto-end if all players answered (non-blitz)
     if (room.answeredPlayerIds.length >= room.players.length && room.players.length > 0) {
         room.status = 'leaderboard';
         await saveRoomData(room);

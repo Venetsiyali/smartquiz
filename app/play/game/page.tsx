@@ -6,12 +6,15 @@ import { getPusherClient } from '@/lib/pusherClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import SortGame from '@/components/SortGame';
 import MatchGame, { type MatchPair, type MatchResult } from '@/components/MatchGame';
+import BlitzGame from '@/components/BlitzGame';
+
 
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
-    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order' | 'match';
+    optionImages?: string[]; type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
     pairs?: MatchPair[];
     timeLimit: number; imageUrl?: string; questionStartTime?: number;
+
 }
 interface AnswerResult {
     correct: boolean; points: number; totalScore: number; streak: number;
@@ -64,6 +67,10 @@ export default function StudentGamePage() {
     const [sortSubmitted, setSortSubmitted] = useState(false);
     // Match game state
     const [matchSubmitted, setMatchSubmitted] = useState(false);
+    // Blitz game state
+    const [blitzSubmitted, setBlitzSubmitted] = useState(false);
+    const [blitzResult, setBlitzResult] = useState<{ correct: boolean; points: number } | null>(null);
+
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pinRef = useRef('');
@@ -88,6 +95,9 @@ export default function StudentGamePage() {
         setQuestion(payload); setSelected(null); setResult(null); setPhase('question');
         setSortSubmitted(false);
         setMatchSubmitted(false);
+        setBlitzSubmitted(false);
+        setBlitzResult(null);
+
         // Build sort items with randomized IDs (server already shuffled order)
         if (payload.type === 'order') {
             setSortItems(payload.options.map((text, idx) => ({
@@ -120,7 +130,13 @@ export default function StudentGamePage() {
         const pusher = getPusherClient();
         const gameCh = pusher.subscribe(`game-${pin}`);
         gameCh.bind('question-start', (payload: QuestionPayload) => showQuestion(payload));
+        // Blitz: 1-second gap between questions
+        gameCh.bind('blitz-between', () => {
+            clearTimer();
+            setPhase('between');
+        });
         gameCh.bind('question-end', (payload: QuestionEndPayload) => {
+
             clearTimer();
             // If already in feedback/review, stay — review auto-advances to between
             if (phase === 'question') {
@@ -141,14 +157,18 @@ export default function StudentGamePage() {
         const playerCh = pusher.subscribe(`player-${pid}`);
         playerCh.bind('answer-result', (r: AnswerResult) => {
             clearTimer(); setResult(r); setTotalScore(r.totalScore);
-            setStreak(r.streak); setPhase('feedback');
+            setStreak(r.streak);
+            // Blitz: just flash result inline, stay in question phase (auto-advance from server)
+            if (r.questionType === 'blitz') {
+                setBlitzSubmitted(true);
+                setBlitzResult({ correct: r.correct, points: r.points });
+                return;
+            }
+            setPhase('feedback');
             vibrate(r.correct ? [80, 40, 80] : 300);
-            // After 2s feedback → review screen → between
-            setTimeout(() => {
-                setPhase('review');
-                startReviewTimer('between');
-            }, 2000);
+            setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 2000);
         });
+
 
         return () => {
             pusher.unsubscribe(`game-${pin}`); pusher.unsubscribe(`player-${pid}`);
@@ -189,13 +209,41 @@ export default function StudentGamePage() {
         });
     };
 
+    const handleBlitzAnswer = async (optionIndex: number) => {
+        if (blitzSubmitted || phase !== 'question') return;
+        setBlitzSubmitted(true);
+        vibrate(40);
+        await fetch('/api/game/answer', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, optionIndex }),
+        });
+    };
+
     const pct = question ? (timeLeft / question.timeLimit) * 100 : 100;
+
     const tColor = !question ? '#0056b3' : timeLeft > question.timeLimit * 0.6 ? '#00E676' : timeLeft > question.timeLimit * 0.3 ? '#FFD600' : '#FF1744';
     const myNick = typeof window !== 'undefined' ? sessionStorage.getItem('playerNickname') || '' : '';
     const myAvatar = typeof window !== 'undefined' ? sessionStorage.getItem('playerAvatar') || '🤖' : '🤖';
 
+    /* ── Blitz ── full screen takeover */
+    if (phase === 'question' && question?.type === 'blitz') return (
+        <BlitzGame
+            text={question.text}
+            timeLimit={question.timeLimit}
+            questionIndex={question.questionIndex}
+            total={question.total}
+            streak={streak}
+            totalScore={totalScore}
+            questionStartTime={question.questionStartTime}
+            onAnswer={handleBlitzAnswer}
+            answered={blitzSubmitted}
+            lastResult={blitzResult}
+        />
+    );
+
     /* ── Loading ── */
     if (phase === 'loading') return (
+
         <div className="bg-player min-h-screen flex items-center justify-center">
             <div className="text-center space-y-4">
                 <div className="text-7xl animate-bounce">🎮</div>

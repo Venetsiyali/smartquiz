@@ -6,15 +6,18 @@ import { getPusherClient } from '@/lib/pusherClient';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription } from '@/lib/subscriptionContext';
+import BlitzRaceBar from '@/components/BlitzRaceBar';
+
 
 interface LeaderboardEntry { nickname: string; avatar: string; score: number; streak: number; rank: number; }
 interface MatchPair { term: string; definition: string; }
 interface QuestionPayload {
     questionIndex: number; total: number; text: string; options: string[];
-    type?: 'multiple' | 'truefalse' | 'order' | 'match';
+    type?: 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
     pairs?: MatchPair[];
     timeLimit: number; imageUrl?: string; questionStartTime?: number;
 }
+
 interface QuestionEndPayload { correctOptions: number[]; explanation?: string | null; options: string[]; leaderboard: LeaderboardEntry[]; isLastQuestion: boolean; }
 interface Badge { nickname: string; avatar: string; badge: string; icon: string; desc: string; }
 interface GameEndPayload { leaderboard: LeaderboardEntry[]; badges: Badge[]; }
@@ -48,6 +51,11 @@ export default function TeacherGamePage() {
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const channelRef = useRef<any>(null);
     const [finalLeaderboard, setFinalLeaderboard] = useState<LeaderboardEntry[]>([]);
+    // Blitz race bar state
+    const [blitzLeaderboard, setBlitzLeaderboard] = useState<LeaderboardEntry[]>([]);
+    const [blitzAnsweredCount, setBlitzAnsweredCount] = useState(0);
+    const [blitzTotalPlayers, setBlitzTotalPlayers] = useState(0);
+
     // AI Voice synthesis
     const [voiceEnabled, setVoiceEnabled] = useState(false);
     const speakQuestion = useCallback((text: string) => {
@@ -93,10 +101,20 @@ export default function TeacherGamePage() {
 
         channelRef.current.bind('question-start', (payload: QuestionPayload) => {
             setQuestion(payload); setPhase('question'); setQuestionEnd(null);
+            // Reset blitz state on new question
+            if (payload.type === 'blitz') {
+                setBlitzAnsweredCount(0);
+            }
             startTimer(payload.timeLimit, pin);
-            // AI Voice: read question aloud if enabled
             if (voiceEnabled) speakQuestion(payload.text);
         });
+        // Blitz race bar: live updates as players answer
+        channelRef.current.bind('blitz-answer-update', (data: { leaderboard: LeaderboardEntry[]; answeredCount: number; totalPlayers: number }) => {
+            setBlitzLeaderboard(data.leaderboard);
+            setBlitzAnsweredCount(data.answeredCount);
+            setBlitzTotalPlayers(data.totalPlayers);
+        });
+
         channelRef.current.bind('question-end', (payload: QuestionEndPayload) => {
             clearTimer();
             if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
@@ -129,6 +147,28 @@ export default function TeacherGamePage() {
                 <p className="text-white/50 font-bold text-2xl">O&apos;yin boshlanmoqda...</p>
             </div>
         </div>
+    );
+
+    /* ── Blitz Question Phase — full BlitzRaceBar takeover ── */
+    if (phase === 'question' && question?.type === 'blitz') return (
+        <BlitzRaceBar
+            leaderboard={blitzLeaderboard}
+            answeredCount={blitzAnsweredCount}
+            totalPlayers={blitzTotalPlayers}
+            questionIndex={question.questionIndex}
+            total={question.total}
+            timeLeft={timeLeft}
+            timeLimit={question.timeLimit}
+            questionText={question.text}
+            pin={typeof window !== 'undefined' ? sessionStorage.getItem('gamePin') || '' : ''}
+            onSkip={async () => {
+                const pin = typeof window !== 'undefined' ? sessionStorage.getItem('gamePin') || '' : '';
+                await fetch('/api/game/blitz-next', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin, fromIndex: question.questionIndex }),
+                });
+            }}
+        />
     );
 
     /* ── Question Phase ── */

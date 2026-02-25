@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
-type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match';
+type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz';
+
 interface AnswerOption { text: string; isCorrect: boolean; }
 interface OrderItem { text: string; imageUrl?: string; }
 interface MatchPair { term: string; definition: string; termImage?: string; definitionImage?: string; }
@@ -32,6 +33,12 @@ const MATCH_DEFAULTS = (): MatchPair[] => [
     { term: '', definition: '' }, { term: '', definition: '' },
 ];
 const TIME_OPTIONS = [10, 20, 30, 60, 90, 120];
+const BLITZ_TIME_OPTIONS = [3, 4, 5]; // Blitz only — ultra short
+const BLITZ_DEFAULTS = (): AnswerOption[] => [
+    { text: "TO'G'RI", isCorrect: false },
+    { text: "NOTO'G'RI", isCorrect: false },
+];
+
 const OPTION_COLORS = [
     { cls: 'btn-red', icon: '🔴' }, { cls: 'btn-blue', icon: '🔵' },
     { cls: 'btn-yellow', icon: '🟡' }, { cls: 'btn-green', icon: '🟢' },
@@ -294,10 +301,13 @@ export default function TeacherCreatePage() {
             upQ({ type, orderItems: ORDER_DEFAULTS(), options: MULTI_DEFAULTS(), matchPairs: undefined });
         } else if (type === 'match') {
             upQ({ type, matchPairs: MATCH_DEFAULTS(), options: MULTI_DEFAULTS(), orderItems: undefined });
+        } else if (type === 'blitz') {
+            upQ({ type, options: BLITZ_DEFAULTS(), orderItems: undefined, matchPairs: undefined, timeLimit: 5 });
         } else {
             upQ({ type, options: type === 'truefalse' ? TF_DEFAULTS() : MULTI_DEFAULTS(), orderItems: undefined, matchPairs: undefined });
         }
     };
+
 
     const setOptText = useCallback((oi: number, val: string) => {
         setQuestions(prev => prev.map((x, i) => {
@@ -348,7 +358,11 @@ export default function TeacherCreatePage() {
                 const pairs = q.matchPairs || [];
                 if (pairs.filter(p => p.term.trim() && p.definition.trim()).length < 2)
                     errs.push(`${i + 1}-savol: kamida 2 ta juft kerak`);
+            } else if (q.type === 'blitz') {
+                if (!q.options.some(o => o.isCorrect))
+                    errs.push(`${i + 1}-savol: To'g'ri yoki Noto'g'rini belgilang`);
             } else {
+
                 if (!q.options.some(o => o.isCorrect)) errs.push(`${i + 1}-savolda to'g'ri javob yo'q`);
                 if (q.type === 'multiple' && q.options.filter(o => o.text.trim()).length < 2)
                     errs.push(`${i + 1}-savolda kamida 2 variant kerak`);
@@ -387,6 +401,15 @@ export default function TeacherCreatePage() {
                         timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
                     };
                 }
+                if (q.type === 'blitz') {
+                    return {
+                        id: q.id, type: 'blitz', text: q.text,
+                        options: ["TO'G'RI", "NOTO'G'RI"],
+                        correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+
                 return {
                     id: q.id, type: q.type, text: q.text,
                     options: q.options.map(o => o.text),
@@ -469,10 +492,10 @@ export default function TeacherCreatePage() {
                                 <span className="flex-1 text-xs font-bold text-white/60 truncate">{q.text || 'Savol...'}</span>
                                 <span className="text-xs px-1 py-0.5 rounded font-bold shrink-0"
                                     style={{
-                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : q.type === 'match' ? 'rgba(167,139,250,0.15)' : 'rgba(0,86,179,0.15)',
-                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : q.type === 'match' ? '#a78bfa' : '#60a5fa'
+                                        background: q.type === 'truefalse' ? 'rgba(0,230,118,0.15)' : q.type === 'order' ? 'rgba(255,215,0,0.15)' : q.type === 'match' ? 'rgba(167,139,250,0.15)' : q.type === 'blitz' ? 'rgba(239,68,68,0.15)' : 'rgba(0,86,179,0.15)',
+                                        color: q.type === 'truefalse' ? '#00E676' : q.type === 'order' ? '#FFD700' : q.type === 'match' ? '#a78bfa' : q.type === 'blitz' ? '#f87171' : '#60a5fa'
                                     }}>
-                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : q.type === 'match' ? 'MG' : 'MC'}
+                                    {q.type === 'truefalse' ? 'T/F' : q.type === 'order' ? 'ZN' : q.type === 'match' ? 'MG' : q.type === 'blitz' ? '⚡BS' : 'MC'}
                                 </span>
                                 {questions.length > 1 && (
                                     <button onClick={e => { e.stopPropagation(); delQ(i); }}
@@ -506,11 +529,12 @@ export default function TeacherCreatePage() {
                             ['truefalse', "✅ To'g'ri/Noto'g'ri"],
                             ['order', "🔗 Mantiqiy Zanjir"],
                             ['match', "💎 Terminlar Jangi"],
+                            ['blitz', "⚡ Bliz-Sohat"],
                         ] as [QuestionType, string][]).map(([t, l]) => (
                             <button key={t} onClick={() => setType(t)}
                                 className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
                                 style={q.type === t
-                                    ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
+                                    ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
                                     : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
                                 {l}
                             </button>
@@ -541,7 +565,7 @@ export default function TeacherCreatePage() {
                             <div>
                                 <label className="text-white/40 text-xs font-bold block mb-1">VAQT LIMITI</label>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {TIME_OPTIONS.map(t => (
+                                    {(q.type === 'blitz' ? BLITZ_TIME_OPTIONS : TIME_OPTIONS).map(t => (
                                         <button key={t} onClick={() => upQ({ timeLimit: t })}
                                             className="px-2.5 py-1.5 rounded-lg font-bold text-xs transition-all"
                                             style={q.timeLimit === t ? { background: '#FF1744', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
@@ -717,6 +741,45 @@ export default function TeacherCreatePage() {
                             )}
                             <div className="glass p-3 rounded-xl" style={{ border: '1px solid rgba(167,139,250,0.2)' }}>
                                 <p className="text-white/50 text-xs font-bold">💡 Talabalar atama va ta&apos;riflarni aralashtrilgan holda ko&apos;radi — mos juftlikni bosib topadi.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Blitz editor — Bliz-Sohat */}
+                    {q.type === 'blitz' && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <p className="text-white/40 font-bold text-xs tracking-widest">TO'G'RI JAVOBNI BELGILANG</p>
+                                <span className="text-red-400 text-xs font-black">⚡</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* TO'G'RI */}
+                                <button onClick={() => upQ({ options: [{ text: "TO'G'RI", isCorrect: true }, { text: "NOTO'G'RI", isCorrect: false }] })}
+                                    className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl transition-all hover:scale-105"
+                                    style={{
+                                        background: q.options[0]?.isCorrect ? 'linear-gradient(135deg,#15803d,#22c55e)' : 'rgba(34,197,94,0.08)',
+                                        border: q.options[0]?.isCorrect ? 'none' : '2px dashed rgba(34,197,94,0.3)',
+                                        boxShadow: q.options[0]?.isCorrect ? '0 8px 32px rgba(34,197,94,0.3)' : 'none',
+                                    }}>
+                                    <span className="text-4xl">✅</span>
+                                    <span className="font-black text-white text-xl">TO&apos;G&apos;RI</span>
+                                    <span className="text-2xl">{q.options[0]?.isCorrect ? '✅' : '⬜'}</span>
+                                </button>
+                                {/* NOTO'G'RI */}
+                                <button onClick={() => upQ({ options: [{ text: "TO'G'RI", isCorrect: false }, { text: "NOTO'G'RI", isCorrect: true }] })}
+                                    className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl transition-all hover:scale-105"
+                                    style={{
+                                        background: q.options[1]?.isCorrect ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : 'rgba(239,68,68,0.08)',
+                                        border: q.options[1]?.isCorrect ? 'none' : '2px dashed rgba(239,68,68,0.3)',
+                                        boxShadow: q.options[1]?.isCorrect ? '0 8px 32px rgba(239,68,68,0.3)' : 'none',
+                                    }}>
+                                    <span className="text-4xl">❌</span>
+                                    <span className="font-black text-white text-xl">NOTO&apos;G&apos;RI</span>
+                                    <span className="text-2xl">{q.options[1]?.isCorrect ? '✅' : '⬜'}</span>
+                                </button>
+                            </div>
+                            <div className="glass p-3 rounded-xl" style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
+                                <p className="text-white/50 text-xs font-bold">⚡ Bliz rejimi: {q.timeLimit}s vaqt. Ballar: 100 × 1.5^(streak-1). Seriyali to&apos;g&apos;ri javoblar uchun eksponensial ko&apos;paytiruvchi!</p>
                             </div>
                         </div>
                     )}
