@@ -17,7 +17,7 @@ const GAMES = [
         badge: 'BEPUL',
         badgeStyle: { background: 'rgba(0,230,118,0.22)', color: '#00E676', border: '1px solid rgba(0,230,118,0.5)' },
         desc: "Ko'p tanlov, To'g'ri/Noto'g'ri savollar. Real-vaqt reytingi.",
-        route: '/teacher/create',
+        route: '/play/1',
         pro: false,
     },
     {
@@ -30,7 +30,7 @@ const GAMES = [
         badge: 'BEPUL',
         badgeStyle: { background: 'rgba(0,230,118,0.22)', color: '#00E676', border: '1px solid rgba(0,230,118,0.5)' },
         desc: "Elementlarni to'g'ri tartibda joylashtiring. Mantiqiy fikrlash!",
-        route: '/teacher/create',
+        route: '/play/2',
         pro: false,
     },
     {
@@ -43,7 +43,7 @@ const GAMES = [
         badge: 'PRO',
         badgeStyle: { background: 'rgba(255,215,0,0.18)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.5)' },
         desc: "Juftliklarni mos ulashtiring. Terminlar va ta'riflar.",
-        route: '/teacher/create',
+        route: '/play/3',
         pro: true,
     },
     {
@@ -56,7 +56,7 @@ const GAMES = [
         badge: 'BEPUL',
         badgeStyle: { background: 'rgba(0,230,118,0.22)', color: '#00E676', border: '1px solid rgba(0,230,118,0.5)' },
         desc: "To'g'ri yoki noto'g'ri — tez qaror qil! Vaqt bilan poyga.",
-        route: '/teacher/create',
+        route: '/play/4',
         pro: false,
     },
     {
@@ -69,7 +69,7 @@ const GAMES = [
         badge: 'PRO',
         badgeStyle: { background: 'rgba(255,215,0,0.18)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.5)' },
         desc: "Aralashgan harflardan to'g'ri so'zni toping. Tezlik va ziyraklik!",
-        route: '/teacher/create',
+        route: '/play/5',
         pro: true,
     },
     {
@@ -82,7 +82,7 @@ const GAMES = [
         badge: 'PRO',
         badgeStyle: { background: 'rgba(255,215,0,0.18)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.5)' },
         desc: "Jamoa bilan birgalikda g'alaba qozonish. Combo va qalqon!",
-        route: '/teacher/create',
+        route: '/play/6',
         pro: true,
     },
 ];
