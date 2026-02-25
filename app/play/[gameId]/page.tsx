@@ -205,7 +205,7 @@ export default function GameDetailPage({
 
     useEffect(() => {
         // Automatically show instruction modal for all games
-        if (['1', '2', '3', '4', '5'].includes(gameId as string)) {
+        if (['1', '2', '3', '4', '5', '6'].includes(gameId as string)) {
             setShowInstructions(true);
         }
     }, [gameId]);
@@ -463,7 +463,7 @@ export default function GameDetailPage({
 
             {/* ── Instruction Modal ── */}
             <AnimatePresence>
-                {showInstructions && ['1', '2', '3', '4', '5'].includes(gameId as string) && (
+                {showInstructions && ['1', '2', '3', '4', '5', '6'].includes(gameId as string) && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -981,6 +981,118 @@ export default function GameDetailPage({
                                         >
                                             Kodni aniqlashni boshladik! 🕵️‍♂️
                                         </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {gameId === '6' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.5, y: -100 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, y: 100 }}
+                                transition={{ type: "spring", bounce: 0.6, duration: 0.8 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl backdrop-blur-md"
+                                style={{
+                                    background: 'rgba(10,5,25,0.85)',
+                                    border: '2px solid rgba(234,179,8,0.4)',
+                                    boxShadow: '0 0 60px rgba(234,179,8,0.2)'
+                                }}
+                            >
+                                {/* Floating Particles Simulation inside Modal */}
+                                <motion.div animate={{ y: [0, -20, 0], opacity: [0.2, 0.5, 0.2] }} transition={{ repeat: Infinity, duration: 4 }} className="absolute z-0 w-2 h-2 rounded-full bg-yellow-400 blur-sm top-1/4 left-1/4" />
+                                <motion.div animate={{ y: [0, 30, 0], opacity: [0.2, 0.6, 0.2] }} transition={{ repeat: Infinity, duration: 6 }} className="absolute z-0 w-3 h-3 rounded-full bg-yellow-300 blur-sm top-1/2 right-1/4" />
+                                <motion.div animate={{ x: [0, 20, 0], opacity: [0.1, 0.4, 0.1] }} transition={{ repeat: Infinity, duration: 5 }} className="absolute z-0 w-1.5 h-1.5 rounded-full bg-white blur-sm bottom-1/4 left-1/3" />
+
+                                {/* Header Gradient */}
+                                <div className="h-2 w-full relative z-10" style={{ background: 'linear-gradient(90deg, #ca8a04, #eab308, #fef08a)' }} />
+
+                                <div className="p-6 md:p-8 space-y-6 relative z-10">
+                                    {/* Title */}
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
+                                            Jamoaviy qutqaruv:<br />
+                                            <span style={{ color: '#fef08a' }}>Birlikda - kuch! 🤝</span>
+                                        </h2>
+                                    </div>
+
+                                    {/* Collaborative Progress Animation */}
+                                    <div className="flex flex-col items-center justify-center py-4 relative pointer-events-none select-none">
+                                        <div className="w-full h-8 rounded-full border border-yellow-600/30 overflow-hidden relative" style={{ background: 'rgba(234,179,8,0.1)' }}>
+                                            <motion.div
+                                                animate={{ width: ['10%', '80%', '10%'] }}
+                                                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+                                                className="h-full relative rounded-full"
+                                                style={{ background: 'linear-gradient(90deg, #ca8a04, #eab308)' }}
+                                            >
+                                                {/* Pushing Avatars */}
+                                                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flex -space-x-2 drop-shadow-lg">
+                                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-8 h-8 rounded-full border-2 border-yellow-400 bg-blue-500 flex items-center justify-center text-xs">🧑‍🚀</motion.div>
+                                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-8 h-8 rounded-full border-2 border-yellow-400 bg-green-500 flex items-center justify-center text-xs">👨‍🚀</motion.div>
+                                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.2 }} className="w-8 h-8 rounded-full border-2 border-yellow-400 bg-purple-500 flex items-center justify-center text-xs">👩‍🚀</motion.div>
+                                                </div>
+                                            </motion.div>
+                                        </div>
+                                    </div>
+
+                                    {/* Rules List */}
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(234,179,8,0.15)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🧑‍🤝‍🧑</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Siz jamoaning bir qismisiz, har bir javobingiz guruh uchun muhim.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(234,179,8,0.15)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🚀</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                To&apos;g&apos;ri javoblar jamoani marraga yaqinlashtiradi.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(234,179,8,0.15)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">💔</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Xato qilmang, aks holda jamoangizning umumiy &apos;joni&apos; kamayadi.
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="pt-2">
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            animate={{ boxShadow: ['0 0 15px rgba(234,179,8,0.4)', '0 0 30px rgba(234,179,8,0.8)', '0 0 15px rgba(234,179,8,0.4)'] }}
+                                            transition={{ repeat: Infinity, duration: 2 }}
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-[15px] md:text-lg text-black transition-all flex items-center justify-center gap-2"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #facc15, #ca8a04)',
+                                                border: '2px solid #fef08a'
+                                            }}
+                                        >
+                                            Jamoani qutqarishga tayyorman! 🚀
+                                        </motion.button>
                                     </div>
                                 </div>
                             </motion.div>
