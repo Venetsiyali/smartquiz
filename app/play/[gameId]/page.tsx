@@ -190,38 +190,6 @@ function StatCard({ label, value, color, bg, border }: {
     );
 }
 
-// ─── Dynamic Metadata ─────────────────────────────────────────────────────────
-export async function generateMetadata({ params }: { params: { gameId: string } }) {
-    const game = GAME_CONFIG[params.gameId];
-    if (!game) return { title: 'O\'yin topilmadi | Zukkoo.uz' };
-
-    return {
-        title: `${game.name} — ${game.sub}`,
-        description: game.desc,
-        openGraph: {
-            title: `${game.name} — ${game.sub} | Zukkoo.uz`,
-            description: game.desc,
-            url: `https://zukkoo.uz/play/${params.gameId}`,
-            images: [
-                {
-                    url: `https://zukkoo.uz${game.image}`,
-                    width: 1200,
-                    height: 630,
-                    alt: game.name,
-                }
-            ],
-            type: 'website',
-            locale: 'uz_UZ',
-            siteName: 'Zukkoo Platformasi',
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title: `${game.name} | Zukkoo.uz`,
-            description: game.desc,
-            images: [`https://zukkoo.uz${game.image}`],
-        }
-    };
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function GameDetailPage({
