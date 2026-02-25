@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -192,11 +191,10 @@ function StatCard({ label, value, color, bg, border }: {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function GameDetailPage({
-    params,
+    params: { gameId },
 }: {
-    params: Promise<{ gameId: string }>;
+    params: { gameId: string };
 }) {
-    const { gameId } = use(params);
     const router = useRouter();
     const { isPro } = useSubscription();
     const cfg = GAME_CONFIG[gameId];
