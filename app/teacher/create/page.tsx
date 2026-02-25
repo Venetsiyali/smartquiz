@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
@@ -295,6 +295,18 @@ export default function TeacherCreatePage() {
     const [teamMode, setTeamMode] = useState(false);
     const [teamCount, setTeamCount] = useState(3);
     const [teamNames, setTeamNames] = useState<string[]>(['', '', '', '', '', '']);
+    // Teacher name for dashboard greeting
+    const [teacherName, setTeacherName] = useState('');
+
+    useEffect(() => {
+        const saved = localStorage.getItem('zk_teacher_name') || '';
+        setTeacherName(saved);
+    }, []);
+
+    const saveTeacherName = (name: string) => {
+        setTeacherName(name);
+        if (name.trim()) localStorage.setItem('zk_teacher_name', name.trim());
+    };
 
     const q = questions[active];
 
@@ -489,6 +501,10 @@ export default function TeacherCreatePage() {
                     placeholder="Quiz nomi..."
                     className="input-game flex-1 min-w-48 max-w-xs text-sm"
                     style={{ textAlign: 'left', padding: '10px 16px', borderRadius: '12px' }} />
+                <input value={teacherName} onChange={e => saveTeacherName(e.target.value)}
+                    placeholder="Ismingiz..."
+                    className="input-game min-w-28 max-w-[140px] text-sm"
+                    style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '12px', display: isPro ? 'block' : 'none' }} />
                 <div className="ml-auto flex items-center gap-2">
                     {/* File upload — Pro only */}
                     {isPro ? (
