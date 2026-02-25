@@ -22,39 +22,40 @@ export async function POST(req: Request) {
 
     const langInstruction =
         language === 'uz'
-            ? "O'zbek tilida yoz. Savollar va javoblar o'zbek tilida bo'lsin."
+            ? "Barcha savollar, javoblar va izohlar faqat O'ZBEK tilida bo'lishi shart."
             : language === 'ru'
-                ? 'Пиши на русском языке.'
-                : 'Write in English.';
+                ? 'Все вопросы, варианты ответов и объяснения должны быть ИСКЛЮЧИТЕЛЬНО НА РУССКОМ ЯЗЫКЕ. Никакого узбекского языка.'
+                : 'All questions, options, and explanations MUST BE STRICTLY IN ENGLISH. No Uzbek language.';
 
     const prompt = `${langInstruction}
 
-Mavzu: "${topic}"
-${count} ta test savoli tuz.
+Mavzu/Topic/Тема: "${topic}"
+${count} ta test savoli tuz. (Generate ${count} questions / Создай ${count} вопросов)
 
-QAT'IY QOIDALAR:
-1. Har bir savolda TO'G'RI javobni HAR XIL pozitsiyaga qo'y.
-   - 1-savol: to'g'ri javob indeksi 2 (C)
-   - 2-savol: to'g'ri javob indeksi 0 (A)
-   - 3-savol: to'g'ri javob indeksi 3 (D)
-   - 4-savol: to'g'ri javob indeksi 1 (B)
-   - 5-savol: to'g'ri javob indeksi 2 (C)
-   ... va hokazo. HECH QACHON to'g'ri javobni ketma-ket bir xil pozitsiyaga qo'yma.
-2. Noto'g'ri javoblar real va ishonchli ko'rinsin — o'quvchinni chalg'itsin.
-3. Savollar qiyin va o'ylantiruvchi bo'lsin.
-4. Har bir savol uchun "explanation" — qisqa izoh (1-2 jumla) yoz: nima uchun to'g'ri javob to'g'riligini tushuntir.
+QAT'IY QOIDALAR (STRICT RULES):
+1. Har bir savolda TO'G'RI javobni HAR XIL pozitsiyaga qo'y (Mix correct answer positions).
+2. Noto'g'ri javoblar real va ishonchli ko'rinsin (Plausible distractors).
+3. Savollar qiyin va o'ylantiruvchi bo'lsin (Challenging questions).
+4. Har bir savol uchun "explanation" — qisqa izoh yoz (1-2 sentences explanation).
 
-Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
+Faqat quyidagi JSON formatda javob ber (Respond ONLY in JSON):
 {
   "questions": [
     {
-      "text": "Savol matni?",
+      "text": "Question text?",
       "options": ["variant0", "variant1", "variant2", "variant3"],
-      "correctOptions": [to'g'ri_variant_indeksi],
-      "explanation": "Bu to'g'ri, chunki..."
+      "correctOptions": [correct_index],
+      "explanation": "Explanation here..."
     }
   ]
 }`;
+
+    const systemPrompt =
+        language === 'ru'
+            ? "Вы — профессиональный ИИ-ассистент по созданию образовательных тестов. Вы отвечаете СТРОГО на РУССКОМ языке. Выдавайте результат ТОЛЬКО в формате JSON, без какого-либо дополнительного текста."
+            : language === 'en'
+                ? "You are a professional educational test generator AI assistant. You answer STRICTLY in ENGLISH. Output ONLY valid JSON, with absolutely no markdown or surrounding text."
+                : "Sen ta'lim sohasida mukammal test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, boshqa hech narsa qo'shma.";
 
     try {
         const completion = await groq.chat.completions.create({
@@ -62,8 +63,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
             messages: [
                 {
                     role: 'system',
-                    content:
-                        "Sen ta'lim sohasida mukammal test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, boshqa hech narsa qo'shma. TO'G'RI JAVOBNI HAR DOIM HAR XIL POZITSIYAGA QO'Y — A, B, C, D pozitsiyalari teng taqsimlansin.",
+                    content: systemPrompt,
                 },
                 {
                     role: 'user',
