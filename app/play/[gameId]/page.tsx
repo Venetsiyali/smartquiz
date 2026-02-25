@@ -204,8 +204,8 @@ export default function GameDetailPage({
     const [showInstructions, setShowInstructions] = useState(false);
 
     useEffect(() => {
-        // Automatically show instruction modal for Zukkoo (1), Mantiqiy Zanjir (2), Terminlar Jangi (3), Bliz-Sohat (4)
-        if (gameId === '1' || gameId === '2' || gameId === '3' || gameId === '4') {
+        // Automatically show instruction modal for all games
+        if (['1', '2', '3', '4', '5'].includes(gameId as string)) {
             setShowInstructions(true);
         }
     }, [gameId]);
@@ -463,7 +463,7 @@ export default function GameDetailPage({
 
             {/* ── Instruction Modal ── */}
             <AnimatePresence>
-                {showInstructions && (gameId === '1' || gameId === '2' || gameId === '3' || gameId === '4') && (
+                {showInstructions && ['1', '2', '3', '4', '5'].includes(gameId as string) && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -871,6 +871,116 @@ export default function GameDetailPage({
                                         >
                                             GAZINI BOSDIK! 🏎️
                                         </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {gameId === '5' && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl backdrop-blur-xl"
+                                style={{
+                                    background: 'rgba(15,10,30,0.85)',
+                                    border: '1px solid rgba(139,92,246,0.3)',
+                                    boxShadow: '0 0 50px rgba(139,92,246,0.2)'
+                                }}
+                            >
+                                {/* Foggy CSS Effect Simulation inside Modal */}
+                                <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ background: 'radial-gradient(circle at top, rgba(167,139,250,0.4) 0%, transparent 60%)', mixBlendMode: 'screen' }} />
+
+                                {/* Header Gradient */}
+                                <div className="h-2 w-full relative z-10" style={{ background: 'linear-gradient(90deg, #6d28d9, #8b5cf6, #c4b5fd)' }} />
+
+                                <div className="p-6 md:p-8 space-y-6 relative z-10">
+                                    {/* Title with Magnifying Glass */}
+                                    <div className="relative">
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg z-10 relative">
+                                            Yashirin kod:<br />
+                                            <span style={{ color: '#c4b5fd' }}>Detektivlik qobiliyatingizni sinab ko&apos;ring! 🔍</span>
+                                        </h2>
+                                        {/* Orbiting Magnifying Glass */}
+                                        <motion.div
+                                            animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                                            transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                                            className="absolute top-1/2 left-1/2 -mt-8 -ml-8 w-16 h-16 origin-[60px_60px] opacity-30 select-none pointer-events-none text-4xl"
+                                        >
+                                            🔎
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Letter Layout Simulation */}
+                                    <div className="flex flex-col items-center justify-center py-2 h-24 relative pointer-events-none select-none gap-2">
+                                        <div className="flex gap-2">
+                                            <motion.div animate={{ rotate: [0, -10, 0], y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl text-white border shadow-md" style={{ background: 'rgba(139,92,246,0.2)', borderColor: 'rgba(139,92,246,0.5)' }}>D</motion.div>
+                                            <motion.div animate={{ rotate: [0, 15, 0], y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl text-white border shadow-md" style={{ background: 'rgba(139,92,246,0.2)', borderColor: 'rgba(139,92,246,0.5)' }}>O</motion.div>
+                                            <motion.div animate={{ rotate: [0, -5, 0], y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl text-white border shadow-md" style={{ background: 'rgba(139,92,246,0.2)', borderColor: 'rgba(139,92,246,0.5)' }}>K</motion.div>
+                                        </div>
+                                        <div className="flex gap-1 mt-2">
+                                            <div className="w-12 h-2 rounded-full" style={{ background: 'rgba(196,181,253,0.3)' }} />
+                                            <div className="w-12 h-2 rounded-full" style={{ background: 'rgba(196,181,253,0.3)' }} />
+                                            <div className="w-12 h-2 rounded-full" style={{ background: 'rgba(196,181,253,0.3)' }} />
+                                        </div>
+                                    </div>
+
+                                    {/* Rules List */}
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(139,92,246,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🧩</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Chalkash harflardan ma&apos;noli IT terminini yig&apos;ing.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(139,92,246,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🔓</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Har bir harfni o&apos;rniga qo&apos;yib, yashirin kodni oching.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(139,92,246,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">💡</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Qiynalsangiz, &apos;Yordam&apos; tugmasidan foydalaning (lekin u ballni oladi!).
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="pt-2">
+                                        <button
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-[15px] md:text-lg text-white transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)',
+                                                boxShadow: '0 8px 25px rgba(139,92,246,0.4)',
+                                                border: '1px solid rgba(196,181,253,0.5)'
+                                            }}
+                                        >
+                                            Kodni aniqlashni boshladik! 🕵️‍♂️
+                                        </button>
                                     </div>
                                 </div>
                             </motion.div>
