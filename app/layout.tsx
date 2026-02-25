@@ -41,20 +41,72 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const jsonLd = {
         '@context': 'https://schema.org',
-        '@type': ['EducationalOrganization', 'SoftwareApplication'],
-        name: 'Zukkoo.uz',
-        url: 'https://zukkoo.uz',
-        description: "O'zbekistonning eng faol interaktiv ta'lim va gamifikatsiya platformasi.",
-        applicationCategory: 'EducationalApplication',
-        operatingSystem: 'Web',
-        offers: {
-            '@type': 'Offer',
-            price: '0',
-            priceCurrency: 'UZS',
-        },
-        inLanguage: ['uz', 'ru', 'en']
+        '@graph': [
+            {
+                '@type': 'EducationalOrganization',
+                '@id': 'https://zukkoo.uz/#organization',
+                name: 'Zukkoo.uz',
+                url: 'https://zukkoo.uz',
+                description: "Interaktiv ta'lim va gamifikatsiya platformasi.",
+                parentOrganization: {
+                    '@type': 'CollegeOrUniversity',
+                    name: "Muhammad al-Xorazmiy nomidagi Toshkent axborot texnologiyalari universiteti (TATU)",
+                    department: {
+                        '@type': 'Organization',
+                        name: "Axborot va ta'lim texnologiyalari kafedrasi"
+                    }
+                },
+                inLanguage: ['uz', 'ru', 'en'],
+                knowsAbout: ['Viktorinalar', 'Ta\'lim texnologiyalari', 'Gamifikatsiya', 'Interaktiv o\'qitish']
+            },
+            {
+                '@type': 'SoftwareApplication',
+                '@id': 'https://zukkoo.uz/#software',
+                name: 'Zukkoo Platformasi',
+                applicationCategory: 'EducationalApplication',
+                operatingSystem: 'Web',
+                offers: {
+                    '@type': 'Offer',
+                    price: '0',
+                    priceCurrency: 'UZS'
+                },
+                inLanguage: ['uz', 'ru', 'en']
+            },
+            {
+                '@type': 'Course',
+                '@id': 'https://zukkoo.uz/#course',
+                name: 'Zukkoo — Interactive Learning Course',
+                description: "O'quvchilar va talabalar uchun 6 xil turdagi interaktiv ta'limiy o'yinlar to'plami.",
+                provider: {
+                    '@id': 'https://zukkoo.uz/#organization'
+                },
+                courseMode: 'online',
+                educationalCredentialAwarded: 'Zukkoo peshqadamlik reytingi'
+            },
+            {
+                '@type': 'FAQPage',
+                '@id': 'https://zukkoo.uz/#faq',
+                mainEntity: [
+                    {
+                        '@type': 'Question',
+                        name: 'Zukkoo nima?',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: "Zukkoo — bu o'qituvchilar va talabalar uchun real-vaqt rejimida viktorinalar, jamoaviy bellashuvlar va interaktiv o'yinlar yaratish va o'ynash imkonini beruvchi gamifikatsiya platformasi. Kahoot analogi."
+                        }
+                    },
+                    {
+                        '@type': 'Question',
+                        name: "Zukkoo'da qanday o'ynaladi?",
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: "O'qituvchi o'yin yaratadi va ekranda PIN-kod yoki ro'yxatdan o'tish uchun QR kodni ko'rsatadi. O'yinchilar qatnashish uchun o'z smartfonlari orqali zukkoo.uz/play ga kirib ushbu kodni kiritishadi va jonli reytingda bellashadilar."
+                        }
+                    }
+                ]
+            }
+        ]
     };
-
     return (
         <html lang="uz">
             <head>
