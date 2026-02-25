@@ -204,8 +204,8 @@ export default function GameDetailPage({
     const [showInstructions, setShowInstructions] = useState(false);
 
     useEffect(() => {
-        // Automatically show instruction modal for Zukkoo (1), Mantiqiy Zanjir (2), Terminlar Jangi (3)
-        if (gameId === '1' || gameId === '2' || gameId === '3') {
+        // Automatically show instruction modal for Zukkoo (1), Mantiqiy Zanjir (2), Terminlar Jangi (3), Bliz-Sohat (4)
+        if (gameId === '1' || gameId === '2' || gameId === '3' || gameId === '4') {
             setShowInstructions(true);
         }
     }, [gameId]);
@@ -463,7 +463,7 @@ export default function GameDetailPage({
 
             {/* ── Instruction Modal ── */}
             <AnimatePresence>
-                {showInstructions && (gameId === '1' || gameId === '2' || gameId === '3') && (
+                {showInstructions && (gameId === '1' || gameId === '2' || gameId === '3' || gameId === '4') && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -768,6 +768,109 @@ export default function GameDetailPage({
                                         >
                                             Jangga tayyorman! ⚔️
                                         </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {gameId === '4' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 1.1 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 50 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl"
+                                style={{
+                                    background: 'rgba(20,5,5,0.9)',
+                                    border: '2px solid rgba(220,38,38,0.5)',
+                                    boxShadow: '0 0 60px rgba(220,38,38,0.3)'
+                                }}
+                            >
+                                {/* Header Gradient */}
+                                <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #991b1b, #dc2626, #ef4444)' }} />
+
+                                <div className="p-6 md:p-8 space-y-6">
+                                    {/* Title Shake */}
+                                    <motion.div
+                                        animate={{ x: [-2, 2, -2, 2, 0] }}
+                                        transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", repeatDelay: 2 }}
+                                    >
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
+                                            Bliz-Sohat:<br />
+                                            <span style={{ color: '#ef4444' }}>Bilimlar poygasiga tayyormisiz? ⚡</span>
+                                        </h2>
+                                    </motion.div>
+
+                                    {/* High-stakes Timer Animation */}
+                                    <div className="flex items-center justify-center py-2 h-20 relative pointer-events-none select-none">
+                                        <motion.div
+                                            animate={{ scale: [1, 1.2, 1], color: ['#ef4444', '#f87171', '#ef4444'] }}
+                                            transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
+                                            className="text-6xl font-black italic drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]"
+                                            style={{ textShadow: '2px 2px 0 #7f1d1d' }}
+                                        >
+                                            03
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Rules List */}
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(220,38,38,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">⏱️</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Har bir savolga bor-yo&apos;g&apos;i 3-5 soniya vaqtingiz bor.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(220,38,38,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🚦</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Faqat ikkita tanlov: To&apos;g&apos;ri (<span className="text-green-400">Yashil</span>) yoki Noto&apos;g&apos;ri (<span className="text-red-400">Qizil</span>).
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(220,38,38,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">⚠️</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Xato qilmang, aks holda tezlikni yo&apos;qotasiz!
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="pt-2">
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            animate={{ boxShadow: ['0 0 20px rgba(220,38,38,0.5)', '0 0 40px rgba(220,38,38,0.8)', '0 0 20px rgba(220,38,38,0.5)'] }}
+                                            transition={{ repeat: Infinity, duration: 2 }}
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-[15px] md:text-xl text-white flex items-center justify-center gap-2 italic tracking-wider"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #b91c1c, #ef4444)',
+                                                border: '2px solid rgba(248,113,113,0.8)'
+                                            }}
+                                        >
+                                            GAZINI BOSDIK! 🏎️
+                                        </motion.button>
                                     </div>
                                 </div>
                             </motion.div>
