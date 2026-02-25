@@ -204,8 +204,8 @@ export default function GameDetailPage({
     const [showInstructions, setShowInstructions] = useState(false);
 
     useEffect(() => {
-        // Automatically show instruction modal for Zukkoo (gameId 1) on load
-        if (gameId === '1') {
+        // Automatically show instruction modal for Zukkoo (1) and Mantiqiy Zanjir (2) on load
+        if (gameId === '1' || gameId === '2') {
             setShowInstructions(true);
         }
     }, [gameId]);
@@ -461,9 +461,9 @@ export default function GameDetailPage({
                 </div>
             </div>
 
-            {/* ── Instruction Modal (Zukkoo - Neon Blue Arena) ── */}
+            {/* ── Instruction Modal ── */}
             <AnimatePresence>
-                {showInstructions && gameId === '1' && (
+                {showInstructions && (gameId === '1' || gameId === '2') && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -471,88 +471,196 @@ export default function GameDetailPage({
                         className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)' }}
                     >
-                        <motion.div
-                            initial={{ y: -50, opacity: 0, scale: 0.95 }}
-                            animate={{ y: 0, opacity: 1, scale: 1 }}
-                            exit={{ y: 20, opacity: 0, scale: 0.95 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                            className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl"
-                            style={{
-                                background: 'rgba(15,23,42,0.85)',
-                                border: '1px solid rgba(59,130,246,0.3)',
-                                boxShadow: '0 0 40px rgba(59,130,246,0.2)'
-                            }}
-                        >
-                            {/* Header Gradient */}
-                            <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa)' }} />
+                        {gameId === '1' && (
+                            <motion.div
+                                initial={{ y: -50, opacity: 0, scale: 0.95 }}
+                                animate={{ y: 0, opacity: 1, scale: 1 }}
+                                exit={{ y: 20, opacity: 0, scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl"
+                                style={{
+                                    background: 'rgba(15,23,42,0.85)',
+                                    border: '1px solid rgba(59,130,246,0.3)',
+                                    boxShadow: '0 0 40px rgba(59,130,246,0.2)'
+                                }}
+                            >
+                                {/* Header Gradient */}
+                                <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa)' }} />
 
-                            <div className="p-6 md:p-8 space-y-6">
-                                {/* Title */}
-                                <div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
-                                        Zukkoo: Klassik Quiz<br />
-                                        <span style={{ color: '#60a5fa' }}>Qoidalari 🏆</span>
-                                    </h2>
+                                <div className="p-6 md:p-8 space-y-6">
+                                    {/* Title */}
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
+                                            Zukkoo: Klassik Quiz<br />
+                                            <span style={{ color: '#60a5fa' }}>Qoidalari 🏆</span>
+                                        </h2>
+                                    </div>
+
+                                    {/* Rules List */}
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(59,130,246,0.1)' }}
+                                        >
+                                            <div className="text-2xl">🎯</div>
+                                            <p className="text-sm font-bold text-white/90 leading-snug">
+                                                4 ta variantdan bitta to&apos;g&apos;ri javobni toping.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(59,130,246,0.1)' }}
+                                        >
+                                            <div className="text-2xl">⏱️</div>
+                                            <p className="text-sm font-bold text-white/90 leading-snug">
+                                                Vaqtga e&apos;tibor bering: qanchalik tez topsangiz, shunchalik ko&apos;p ball!
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(59,130,246,0.1)' }}
+                                        >
+                                            <div className="text-2xl">📊</div>
+                                            <p className="text-sm font-bold text-white/90 leading-snug">
+                                                Har bir savoldan keyin asosiy ekranda reytingni kuzatib boring.
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="pt-2">
+                                        <button
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-lg text-white transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                                                boxShadow: '0 8px 25px rgba(59,130,246,0.4)',
+                                                border: '1px solid rgba(96,165,250,0.5)'
+                                            }}
+                                        >
+                                            Tushunarli, boshladik! 🚀
+                                        </button>
+                                    </div>
                                 </div>
+                            </motion.div>
+                        )}
 
-                                {/* Rules List */}
-                                <div className="space-y-4">
-                                    <motion.div
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: 0.1 }}
-                                        className="flex gap-4 items-start p-3 rounded-2xl"
-                                        style={{ background: 'rgba(59,130,246,0.1)' }}
-                                    >
-                                        <div className="text-2xl">🎯</div>
-                                        <p className="text-sm font-bold text-white/90 leading-snug">
-                                            4 ta variantdan bitta to&apos;g&apos;ri javobni toping.
-                                        </p>
-                                    </motion.div>
+                        {gameId === '2' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl"
+                                style={{
+                                    background: 'rgba(2,26,20,0.85)',
+                                    border: '1px solid rgba(16,185,129,0.3)',
+                                    boxShadow: '0 0 40px rgba(16,185,129,0.2)'
+                                }}
+                            >
+                                {/* Header Gradient */}
+                                <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #047857, #10b981, #34d399)' }} />
 
-                                    <motion.div
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="flex gap-4 items-start p-3 rounded-2xl"
-                                        style={{ background: 'rgba(59,130,246,0.1)' }}
-                                    >
-                                        <div className="text-2xl">⏱️</div>
-                                        <p className="text-sm font-bold text-white/90 leading-snug">
-                                            Vaqtga e&apos;tibor bering: qanchalik tez topsangiz, shunchalik ko&apos;p ball!
-                                        </p>
-                                    </motion.div>
+                                <div className="p-6 md:p-8 space-y-6">
+                                    {/* Title */}
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
+                                            Mantiqiy zanjir:<br />
+                                            <span style={{ color: '#34d399' }}>Algoritmni tiklang! 🧱</span>
+                                        </h2>
+                                    </div>
 
-                                    <motion.div
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: 0.3 }}
-                                        className="flex gap-4 items-start p-3 rounded-2xl"
-                                        style={{ background: 'rgba(59,130,246,0.1)' }}
-                                    >
-                                        <div className="text-2xl">📊</div>
-                                        <p className="text-sm font-bold text-white/90 leading-snug">
-                                            Har bir savoldan keyin asosiy ekranda reytingni kuzatib boring.
-                                        </p>
-                                    </motion.div>
+                                    {/* Drag Animation Simulation */}
+                                    <div className="flex flex-col items-center justify-center py-2 relative h-28 pointer-events-none select-none">
+                                        <div className="w-full max-w-[220px] h-10 rounded-xl" style={{ background: 'rgba(16,185,129,0.15)', border: '2px dashed rgba(16,185,129,0.4)', marginBottom: '8px' }} />
+                                        <div className="w-full max-w-[220px] h-10 rounded-xl" style={{ background: 'rgba(16,185,129,0.15)', border: '2px dashed rgba(16,185,129,0.4)' }} />
+                                        <motion.div
+                                            animate={{ y: [0, -48, 0] }}
+                                            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                            className="absolute w-full max-w-[220px] h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-lg"
+                                            style={{ background: 'linear-gradient(135deg,#047857,#059669)', color: 'white', bottom: 8, boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}
+                                        >
+                                            Blok!
+                                            <motion.div
+                                                animate={{ scale: [1, 0.8, 1], opacity: [0.6, 1, 0.6] }}
+                                                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                className="absolute -bottom-4 right-6 text-2xl drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]"
+                                            >
+                                                👆
+                                            </motion.div>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Rules List */}
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(16,185,129,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🧩</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Bloklarni ushlab, to&apos;g&apos;ri ketma-ketlikda yuqoridan pastga joylang.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(16,185,129,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">⚡</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Zanjir qanchalik aniq va tez bo&apos;lsa, ball shunchalik baland!
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(16,185,129,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">✨</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Xato qilsangiz, tizim sizga to&apos;g&apos;ri yo&apos;lni ko&apos;rsatadi.
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="pt-2">
+                                        <button
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-[15px] md:text-lg text-white transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #059669, #10b981)',
+                                                boxShadow: '0 8px 25px rgba(16,185,129,0.4)',
+                                                border: '1px solid rgba(52,211,153,0.5)'
+                                            }}
+                                        >
+                                            Zanjirni qurishni boshladik! ⚡
+                                        </button>
+                                    </div>
                                 </div>
-
-                                {/* CTA Button */}
-                                <div className="pt-2">
-                                    <button
-                                        onClick={() => setShowInstructions(false)}
-                                        className="w-full py-4 rounded-2xl font-black text-lg text-white transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2"
-                                        style={{
-                                            background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                                            boxShadow: '0 8px 25px rgba(59,130,246,0.4)',
-                                            border: '1px solid rgba(96,165,250,0.5)'
-                                        }}
-                                    >
-                                        Tushunarli, boshladik! 🚀
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
