@@ -18,25 +18,21 @@ export default function TeacherLobbyPage() {
     const joinUrl = typeof window !== 'undefined' && pin ? `${window.location.origin}/play?pin=${pin}` : '';
 
     useEffect(() => {
-        const rawQuiz = sessionStorage.getItem('quiz');
-        if (!rawQuiz) { router.push('/teacher/create'); return; }
-        const quiz = JSON.parse(rawQuiz);
+        // The game has already been created in /teacher/create, so just grab the pin
+        const existingPin = sessionStorage.getItem('gamePin');
+        if (!existingPin) {
+            router.push('/teacher/create');
+            return;
+        }
 
-        fetch('/api/game/create', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quizTitle: quiz.title, questions: quiz.questions }),
-        })
-            .then(r => r.json())
-            .then(({ pin: newPin }) => {
-                setPin(newPin); setIsCreating(false);
-                sessionStorage.setItem('gamePin', newPin);
-                const pusher = getPusherClient();
-                channelRef.current = pusher.subscribe(`game-${newPin}`);
-                channelRef.current.bind('player-joined', ({ players: updated }: { players: Player[] }) => {
-                    setPlayers(updated);
-                });
-            })
-            .catch(() => setError("O'yin yaratishda xatolik"));
+        setPin(existingPin);
+        setIsCreating(false);
+
+        const pusher = getPusherClient();
+        channelRef.current = pusher.subscribe(`game-${existingPin}`);
+        channelRef.current.bind('player-joined', ({ players: updated }: { players: Player[] }) => {
+            setPlayers(updated);
+        });
     }, [router]);
 
     useEffect(() => {

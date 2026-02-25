@@ -531,7 +531,7 @@ function TeacherCreateInner() {
                 });
             }
 
-            router.push('/teacher/game');
+            router.push('/teacher/lobby');
         } catch (e) {
             console.error(e);
             setErrors(["Server bilan bog'lanishda xatolik"]);
