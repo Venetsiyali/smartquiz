@@ -204,8 +204,8 @@ export default function GameDetailPage({
     const [showInstructions, setShowInstructions] = useState(false);
 
     useEffect(() => {
-        // Automatically show instruction modal for Zukkoo (1) and Mantiqiy Zanjir (2) on load
-        if (gameId === '1' || gameId === '2') {
+        // Automatically show instruction modal for Zukkoo (1), Mantiqiy Zanjir (2), Terminlar Jangi (3)
+        if (gameId === '1' || gameId === '2' || gameId === '3') {
             setShowInstructions(true);
         }
     }, [gameId]);
@@ -463,7 +463,7 @@ export default function GameDetailPage({
 
             {/* ── Instruction Modal ── */}
             <AnimatePresence>
-                {showInstructions && (gameId === '1' || gameId === '2') && (
+                {showInstructions && (gameId === '1' || gameId === '2' || gameId === '3') && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -656,6 +656,117 @@ export default function GameDetailPage({
                                             }}
                                         >
                                             Zanjirni qurishni boshladik! ⚡
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {gameId === '3' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl"
+                                style={{
+                                    background: 'rgba(8,15,37,0.85)',
+                                    border: '1px solid rgba(6,182,212,0.3)',
+                                    boxShadow: '0 0 50px rgba(6,182,212,0.2)'
+                                }}
+                            >
+                                {/* Header Gradient */}
+                                <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #0284c7, #06b6d4, #22d3ee)' }} />
+
+                                <div className="p-6 md:p-8 space-y-6">
+                                    {/* Title */}
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
+                                            Terminlar jangi:<br />
+                                            <span style={{ color: '#22d3ee' }}>Bilim uchqunini hosil qiling! 🔥</span>
+                                        </h2>
+                                    </div>
+
+                                    {/* Matching Animation Simulation */}
+                                    <div className="flex items-center justify-center gap-2 py-4 h-24 relative pointer-events-none select-none">
+                                        <motion.div
+                                            animate={{ x: [0, 40, 0], scale: [1, 1.1, 1] }}
+                                            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                            className="w-24 h-16 rounded-xl flex items-center justify-center font-bold text-xs shadow-lg z-10"
+                                            style={{ background: 'linear-gradient(135deg,#0369a1,#0ea5e9)', color: 'white', border: '1px solid rgba(14,165,233,0.5)', boxShadow: '0 4px 15px rgba(14,165,233,0.4)' }}
+                                        >
+                                            Termin
+                                        </motion.div>
+                                        <motion.div
+                                            animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }}
+                                            transition={{ repeat: Infinity, duration: 2, ease: "easeOut", times: [0, 0.5, 1] }}
+                                            className="absolute z-0 w-16 h-16 rounded-full"
+                                            style={{ background: 'radial-gradient(circle, rgba(34,211,238,0.8) 0%, transparent 70%)' }}
+                                        />
+                                        <motion.div
+                                            animate={{ x: [0, -40, 0], scale: [1, 1.1, 1] }}
+                                            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                            className="w-24 h-16 rounded-xl flex items-center justify-center font-bold text-xs shadow-lg z-10"
+                                            style={{ background: 'linear-gradient(135deg,#0f766e,#14b8a6)', color: 'white', border: '1px solid rgba(20,184,166,0.5)', boxShadow: '0 4px 15px rgba(20,184,166,0.4)' }}
+                                        >
+                                            Izoh
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Rules List */}
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(6,182,212,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🔗</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Termin va uning izohini ketma-ket bosib, juftlang.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(6,182,212,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">⏳</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                To&apos;g&apos;ri juftliklar g&apos;oyib bo&apos;ladi, xatolar esa vaqtingizni oladi.
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(6,182,212,0.1)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">✅</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                Hamma juftlikni topsangiz, raund yakunlanadi.
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="pt-2">
+                                        <button
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-[15px] md:text-lg text-white transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
+                                                boxShadow: '0 8px 25px rgba(6,182,212,0.4)',
+                                                border: '1px solid rgba(34,211,238,0.5)'
+                                            }}
+                                        >
+                                            Jangga tayyorman! ⚔️
                                         </button>
                                     </div>
                                 </div>
