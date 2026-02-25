@@ -285,18 +285,57 @@ export default function TeacherCreatePage() {
     const { isPro, plan } = useSubscription();
     const maxQ = isPro ? PLAN_LIMITS.pro.maxQuestions : PLAN_LIMITS.free.maxQuestions;
     const [title, setTitle] = useState('');
-    const [questions, setQuestions] = useState<QuizQuestion[]>([
-        { id: uuidv4(), type: 'multiple', text: '', options: MULTI_DEFAULTS(), timeLimit: 20 }
-    ]);
+
+    const [lockedMode, setLockedMode] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') {
+            return new URLSearchParams(window.location.search).get('mode');
+        }
+        return null;
+    });
+
+    const [questions, setQuestions] = useState<QuizQuestion[]>(() => {
+        let initialType: QuestionType = 'multiple';
+        if (typeof window !== 'undefined') {
+            const m = new URLSearchParams(window.location.search).get('mode');
+            if (m === 'order' || m === 'match' || m === 'blitz' || m === 'anagram') {
+                initialType = m as QuestionType;
+            }
+        }
+
+        let opts = MULTI_DEFAULTS();
+        let ord = undefined;
+        let mtch = undefined;
+        if (initialType === 'order') ord = ORDER_DEFAULTS();
+        if (initialType === 'match') mtch = MATCH_DEFAULTS();
+        if (initialType === 'blitz') opts = BLITZ_DEFAULTS();
+
+        return [{
+            id: uuidv4(), type: initialType, text: '', options: opts, orderItems: ord, matchPairs: mtch,
+            timeLimit: initialType === 'blitz' ? 5 : (initialType === 'anagram' ? 30 : 20)
+        }];
+    });
+
     const [active, setActive] = useState(0);
     const [errors, setErrors] = useState<string[]>([]);
     const [modal, setModal] = useState<ModalType>('none');
+
     // Team mode
-    const [teamMode, setTeamMode] = useState(false);
+    const [teamMode, setTeamMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return new URLSearchParams(window.location.search).get('mode') === 'team';
+        }
+        return false;
+    });
     const [teamCount, setTeamCount] = useState(3);
     const [teamNames, setTeamNames] = useState<string[]>(['', '', '', '', '', '']);
+
     // Teacher name for dashboard greeting
-    const [teacherName, setTeacherName] = useState('');
+    const [teacherName, setTeacherName] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('zk_teacher_name') || '';
+        }
+        return '';
+    });
 
     useEffect(() => {
         const saved = localStorage.getItem('zk_teacher_name') || '';
@@ -348,7 +387,22 @@ export default function TeacherCreatePage() {
             if (!isPro) setErrors([`Bepul tarif: max ${maxQ} ta savol. Pro versiyaga o'ting!`]);
             return;
         }
-        const nq: QuizQuestion = { id: uuidv4(), type: 'multiple', text: '', options: MULTI_DEFAULTS(), timeLimit: 20 };
+        let initialType: QuestionType = 'multiple';
+        if (lockedMode === 'order' || lockedMode === 'match' || lockedMode === 'blitz' || lockedMode === 'anagram') {
+            initialType = lockedMode as QuestionType;
+        }
+
+        let opts = MULTI_DEFAULTS();
+        let ord = undefined;
+        let mtch = undefined;
+        if (initialType === 'order') ord = ORDER_DEFAULTS();
+        if (initialType === 'match') mtch = MATCH_DEFAULTS();
+        if (initialType === 'blitz') opts = BLITZ_DEFAULTS();
+
+        const nq: QuizQuestion = {
+            id: uuidv4(), type: initialType, text: '', options: opts, orderItems: ord, matchPairs: mtch,
+            timeLimit: initialType === 'blitz' ? 5 : (initialType === 'anagram' ? 30 : 20)
+        };
         setQuestions(p => [...p, nq]);
         setActive(questions.length);
     };
@@ -587,72 +641,77 @@ export default function TeacherCreatePage() {
                     )}
 
                     {/* ── Jamoaviy Qutqaruv Panel ── */}
-                    <div className="mt-4 space-y-3">
-                        <button
-                            onClick={() => setTeamMode(t => !t)}
-                            className="w-full flex items-center justify-between px-3 py-3 rounded-2xl font-bold text-sm transition-all"
-                            style={{
-                                background: teamMode ? 'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15))' : 'rgba(255,255,255,0.05)',
-                                border: teamMode ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                                color: teamMode ? '#818cf8' : 'rgba(255,255,255,0.4)',
-                            }}>
-                            <span>🏁 Jamoaviy Qutqaruv</span>
-                            <span className="text-lg">{teamMode ? '✅' : '⬜'}</span>
-                        </button>
+                    {lockedMode === 'team' || lockedMode === null ? (
+                        <div className="mt-4 space-y-3">
+                            <button
+                                onClick={() => setTeamMode(t => !t)}
+                                disabled={lockedMode === 'team'}
+                                className="w-full flex items-center justify-between px-3 py-3 rounded-2xl font-bold text-sm transition-all"
+                                style={{
+                                    background: teamMode ? 'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15))' : 'rgba(255,255,255,0.05)',
+                                    border: teamMode ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                                    color: teamMode ? '#818cf8' : 'rgba(255,255,255,0.4)',
+                                    opacity: lockedMode === 'team' ? 1 : undefined,
+                                    cursor: lockedMode === 'team' ? 'default' : 'pointer',
+                                }}>
+                                <span>🏁 Jamoaviy Qutqaruv</span>
+                                <span className="text-lg">{teamMode ? '✅' : '⬜'}</span>
+                            </button>
 
-                        {teamMode && (
-                            <div className="space-y-3 px-1">
-                                <div>
-                                    <p className="text-white/40 font-bold text-xs mb-1.5">JAMOA SONI</p>
-                                    <div className="flex gap-2">
-                                        {[2, 3, 4, 5, 6].map(n => (
-                                            <button key={n} onClick={() => setTeamCount(n)}
-                                                className="flex-1 py-2 rounded-xl font-black text-sm transition-all"
-                                                style={teamCount === n
-                                                    ? { background: 'linear-gradient(135deg,#3730a3,#6366f1)', color: 'white' }
-                                                    : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
-                                                {n}
-                                            </button>
-                                        ))}
+                            {teamMode && (
+                                <div className="space-y-3 px-1">
+                                    <div>
+                                        <p className="text-white/40 font-bold text-xs mb-1.5">JAMOA SONI</p>
+                                        <div className="flex gap-2">
+                                            {[2, 3, 4, 5, 6].map(n => (
+                                                <button key={n} onClick={() => setTeamCount(n)}
+                                                    className="flex-1 py-2 rounded-xl font-black text-sm transition-all"
+                                                    style={teamCount === n
+                                                        ? { background: 'linear-gradient(135deg,#3730a3,#6366f1)', color: 'white' }
+                                                        : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                                                    {n}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Pro: custom team names */}
+                                    {isPro ? (
+                                        <div className="space-y-1.5">
+                                            <p className="text-white/40 font-bold text-xs">JAMOA NOMLARI (ixtiyoriy)</p>
+                                            {Array.from({ length: teamCount }, (_, i) => (
+                                                <input key={i}
+                                                    value={teamNames[i] || ''}
+                                                    onChange={e => {
+                                                        const next = [...teamNames];
+                                                        next[i] = e.target.value;
+                                                        setTeamNames(next);
+                                                    }}
+                                                    placeholder={['Koderlar', 'Hakerlar', 'Analitiklar', 'Dizaynerlar', 'Menejerlar', 'Tadqiqotchilar'][i]}
+                                                    className="w-full glass px-3 py-2 rounded-xl font-bold text-sm outline-none text-white/80"
+                                                    style={{ border: '1px solid rgba(99,102,241,0.3)' }}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <button onClick={() => router.push('/pricing')}
+                                            className="w-full py-2 rounded-xl text-xs font-bold text-center transition-all hover:scale-105"
+                                            style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.25)', color: '#FFD700' }}>
+                                            👑 Pro → Jamoa nomlarini o&apos;zgartirish
+                                        </button>
+                                    )}
+
+                                    <div className="glass p-2.5 rounded-xl" style={{ border: '1px solid rgba(99,102,241,0.2)' }}>
+                                        <p className="text-white/40 text-xs font-bold">
+                                            🏁 Talabalar tasodifiy jamoalarga bo&apos;linadi.<br />
+                                            ❤️ Xato = jamoa joni −10%<br />
+                                            🔥 Butun jamoa to&apos;g'ri → Combo +100 ball
+                                        </p>
                                     </div>
                                 </div>
-
-                                {/* Pro: custom team names */}
-                                {isPro ? (
-                                    <div className="space-y-1.5">
-                                        <p className="text-white/40 font-bold text-xs">JAMOA NOMLARI (ixtiyoriy)</p>
-                                        {Array.from({ length: teamCount }, (_, i) => (
-                                            <input key={i}
-                                                value={teamNames[i] || ''}
-                                                onChange={e => {
-                                                    const next = [...teamNames];
-                                                    next[i] = e.target.value;
-                                                    setTeamNames(next);
-                                                }}
-                                                placeholder={['Koderlar', 'Hakerlar', 'Analitiklar', 'Dizaynerlar', 'Menejerlar', 'Tadqiqotchilar'][i]}
-                                                className="w-full glass px-3 py-2 rounded-xl font-bold text-sm outline-none text-white/80"
-                                                style={{ border: '1px solid rgba(99,102,241,0.3)' }}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <button onClick={() => router.push('/pricing')}
-                                        className="w-full py-2 rounded-xl text-xs font-bold text-center transition-all hover:scale-105"
-                                        style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.25)', color: '#FFD700' }}>
-                                        👑 Pro → Jamoa nomlarini o&apos;zgartirish
-                                    </button>
-                                )}
-
-                                <div className="glass p-2.5 rounded-xl" style={{ border: '1px solid rgba(99,102,241,0.2)' }}>
-                                    <p className="text-white/40 text-xs font-bold">
-                                        🏁 Talabalar tasodifiy jamoalarga bo&apos;linadi.<br />
-                                        ❤️ Xato = jamoa joni −10%<br />
-                                        🔥 Butun jamoa to&apos;g'ri → Combo +100 ball
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    ) : null}
                 </aside>
 
                 {/* Editor */}
@@ -667,15 +726,25 @@ export default function TeacherCreatePage() {
                             ['match', "💎 Terminlar Jangi"],
                             ['blitz', "⚡ Bliz-Sohat"],
                             ['anagram', "🔐 Yashirin Kod"],
-                        ] as [QuestionType, string][]).map(([t, l]) => (
-                            <button key={t} onClick={() => setType(t)}
-                                className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
-                                style={q.type === t
-                                    ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : t === 'anagram' ? 'linear-gradient(135deg,#3730a3,#6366f1)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
-                                    : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                                {l}
-                            </button>
-                        ))}
+                        ] as [QuestionType, string][])
+                            .filter(([t]) => {
+                                if (lockedMode === 'classic') return t === 'multiple' || t === 'truefalse';
+                                if (lockedMode === 'order') return t === 'order';
+                                if (lockedMode === 'match') return t === 'match';
+                                if (lockedMode === 'blitz') return t === 'blitz';
+                                if (lockedMode === 'anagram') return t === 'anagram';
+                                // if team or no lock -> show all
+                                return true;
+                            })
+                            .map(([t, l]) => (
+                                <button key={t} onClick={() => setType(t)}
+                                    className="px-4 py-2 rounded-xl font-bold text-sm transition-all"
+                                    style={q.type === t
+                                        ? { background: t === 'order' ? 'linear-gradient(135deg,#B8860B,#FFD700)' : t === 'match' ? 'linear-gradient(135deg,#6d28d9,#a78bfa)' : t === 'blitz' ? 'linear-gradient(135deg,#b91c1c,#ef4444)' : t === 'anagram' ? 'linear-gradient(135deg,#3730a3,#6366f1)' : '#0056b3', color: 'white', boxShadow: '0 4px 16px rgba(0,86,179,0.4)' }
+                                        : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+                                    {l}
+                                </button>
+                            ))}
                     </div>
 
                     {/* Question text */}

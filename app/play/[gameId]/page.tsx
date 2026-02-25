@@ -328,7 +328,10 @@ export default function GameDetailPage({
                             ) : (
                                 <>
                                     <button
-                                        onClick={() => router.push('/teacher/create')}
+                                        onClick={() => {
+                                            const m = gameId === '1' ? 'classic' : gameId === '2' ? 'order' : gameId === '3' ? 'match' : gameId === '4' ? 'blitz' : gameId === '5' ? 'anagram' : 'team';
+                                            router.push(`/teacher/create?mode=${m}`);
+                                        }}
                                         className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-base transition-all hover:scale-105 hover:brightness-110"
                                         style={{ background: theme.btnGradient, color: 'white', boxShadow: `0 6px 24px ${theme.glow.replace('0.6', '0.4')}` }}>
                                         🎓 Quiz yaratish
