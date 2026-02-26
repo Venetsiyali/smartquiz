@@ -169,7 +169,7 @@ export default function StudentGamePage() {
             setPhase('ended'); vibrate([100, 50, 200]);
         });
         gameCh.bind('return-to-lobby', () => {
-            router.push('/play/lobby');
+            router.push('/play/waiting');
         });
 
         const playerCh = pusher.subscribe(`player-${pid}`);
