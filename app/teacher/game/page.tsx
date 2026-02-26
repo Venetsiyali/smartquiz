@@ -61,6 +61,9 @@ export default function TeacherGamePage() {
     const [teams, setTeams] = useState<TeamData[]>([]);
     const [teamCombo, setTeamCombo] = useState<{ teamId: string; bonus: number } | null>(null);
 
+    // Auto-next timer state
+    const [autoNextTime, setAutoNextTime] = useState<number | null>(null);
+
     // AI Voice synthesis
     const [voiceEnabled, setVoiceEnabled] = useState(false);
     const speakQuestion = useCallback((text: string) => {
@@ -131,10 +134,17 @@ export default function TeacherGamePage() {
             }
         });
 
+        // Initialize countdown when reaching the leaderboard phase
         channelRef.current.bind('question-end', (payload: QuestionEndPayload) => {
             clearTimer();
             if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
-            setQuestionEnd(payload); setPhase('leaderboard');
+            setQuestionEnd(payload);
+            setPhase('leaderboard');
+            if (!payload.isLastQuestion) {
+                setAutoNextTime(5);
+            } else {
+                setAutoNextTime(null);
+            }
         });
         channelRef.current.bind('game-end', (payload: GameEndPayload) => {
             clearTimer(); setFinalLeaderboard(payload.leaderboard); setBadges(payload.badges || []); setPhase('badges');
@@ -147,8 +157,24 @@ export default function TeacherGamePage() {
         return () => { pusher.unsubscribe(`game-${pin}`); clearTimer(); if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); };
     }, [router, startTimer, voiceEnabled, speakQuestion]);
 
+    // Handle auto-next timer
+    useEffect(() => {
+        if (autoNextTime === null || phase !== 'leaderboard') return;
+        if (autoNextTime <= 0) {
+            handleNext();
+            setAutoNextTime(null);
+            return;
+        }
+        const timer = setTimeout(() => {
+            setAutoNextTime(prev => (prev !== null ? prev - 1 : null));
+        }, 1000);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoNextTime, phase]);
+
     const handleNext = async () => {
         const pin = pinRef.current; if (!pin) return;
+        setAutoNextTime(null); // Clear timer to prevent double submission
         await fetch('/api/game/next', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
     };
 
@@ -403,8 +429,8 @@ export default function TeacherGamePage() {
                     </motion.div>
                 ))}
             </div>
-            <button onClick={handleNext} className="btn-primary text-xl px-10 py-5">
-                {questionEnd.isLastQuestion ? '🏁 Yakunlash' : '➡️ Keyingi Savol'}
+            <button onClick={handleNext} className="btn-primary text-xl px-10 py-5 flex items-center justify-center gap-2 transition-all">
+                {questionEnd.isLastQuestion ? '🏁 Yakunlash' : `➡️ Keyingi Savol ${autoNextTime !== null ? `(${autoNextTime}s)` : ''}`}
             </button>
         </div>
     );
