@@ -324,7 +324,7 @@ export default function TeacherGamePage() {
                 {(question.type === 'multiple' || question.type === 'truefalse' || !question.type) && (
                     <div className="grid grid-cols-2 gap-5 w-full max-w-5xl">
                         {question.options.map((opt, i) => (
-                            <div key={i} className={`btn-answer text-xl md:text-2xl justify-start`} style={i >= 2 ? { color: '#0a1a0a' } : {}}>
+                            <div key={i} className={`btn-answer text-xl md:text-2xl justify-start`}>
                                 <span className="text-3xl">{OPTION_COLORS[i].icon}</span>
                                 <span className="font-extrabold mr-2">{OPTION_COLORS[i].label}.</span>
                                 <span>{opt}</span>
