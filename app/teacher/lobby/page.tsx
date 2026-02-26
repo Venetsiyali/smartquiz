@@ -28,6 +28,16 @@ export default function TeacherLobbyPage() {
         setPin(existingPin);
         setIsCreating(false);
 
+        // Fetch existing players if continuing a game
+        fetch(`/api/game/state?pin=${existingPin}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.players) {
+                    setPlayers(data.players);
+                }
+            })
+            .catch(err => console.error("Holatni olishda xatolik:", err));
+
         const pusher = getPusherClient();
         channelRef.current = pusher.subscribe(`game-${existingPin}`);
         channelRef.current.bind('player-joined', ({ players: updated }: { players: Player[] }) => {

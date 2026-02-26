@@ -14,6 +14,12 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
         status: room.status,
+        players: room.players.map(p => ({
+            id: p.id,
+            nickname: p.nickname,
+            avatar: p.avatar,
+            streak: p.streak
+        })),
         currentQuestion: currentQ
             ? {
                 questionIndex: room.currentQuestionIndex,
