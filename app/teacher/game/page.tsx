@@ -152,6 +152,19 @@ export default function TeacherGamePage() {
         await fetch('/api/game/next', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
     };
 
+    const handlePlayAgain = async () => {
+        const pin = pinRef.current; if (!pin) return;
+        try {
+            await fetch('/api/game/reset-for-continue', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin })
+            });
+            router.push(`/teacher/create?continuePin=${pin}`);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const pct = question ? (timeLeft / question.timeLimit) * 100 : 100;
     const tColor = !question ? '#0056b3' : timeLeft > question.timeLimit * 0.6 ? '#00E676' : timeLeft > question.timeLimit * 0.3 ? '#FFD600' : '#FF1744';
 
@@ -433,7 +446,12 @@ export default function TeacherGamePage() {
                 ))}
             </div>
 
-            <button onClick={() => router.push('/')} className="btn-primary text-lg px-10 py-4">🏠 Bosh sahifaga</button>
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-xl">
+                <button onClick={() => router.push('/')} className="btn-primary flex-1 text-lg px-8 py-4 bg-gray-600 hover:bg-gray-500 text-white shadow-none">🏠 Bosh sahifaga</button>
+                <button onClick={handlePlayAgain} className="btn-primary flex-1 text-lg px-8 py-4 bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+                    🔄 Yana o&apos;ynash <br /><span className="text-xs opacity-70">(Shu o&apos;yinchilar bilan)</span>
+                </button>
+            </div>
         </div>
     );
 

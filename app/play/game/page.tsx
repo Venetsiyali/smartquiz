@@ -168,6 +168,9 @@ export default function StudentGamePage() {
             setLeaderboard(lb); setBadges(bs || []);
             setPhase('ended'); vibrate([100, 50, 200]);
         });
+        gameCh.bind('return-to-lobby', () => {
+            router.push('/play/lobby');
+        });
 
         const playerCh = pusher.subscribe(`player-${pid}`);
         playerCh.bind('answer-result', (r: AnswerResult) => {

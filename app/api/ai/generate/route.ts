@@ -52,10 +52,10 @@ Faqat quyidagi JSON formatda javob ber (Respond ONLY in JSON):
 
     const systemPrompt =
         language === 'ru'
-            ? "Вы — профессиональный ИИ-ассистент по созданию образовательных тестов. Вы отвечаете СТРОГО на РУССКОМ языке. Выдавайте результат ТОЛЬКО в формате JSON, без какого-либо дополнительного текста."
+            ? "Вы — профессиональный ИИ-ассистент по созданию образовательных тестов. Вы отвечаете СТРОГО на РУССКОМ языке. Выдавайте результат ТОЛЬКО в формате JSON, используя только стандартные двойные кавычки (\"), без дополнительного текста."
             : language === 'en'
-                ? "You are a professional educational test generator AI assistant. You answer STRICTLY in ENGLISH. Output ONLY valid JSON, with absolutely no markdown or surrounding text."
-                : "Sen ta'lim sohasida mukammal test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, boshqa hech narsa qo'shma.";
+                ? "You are a professional educational test generator AI assistant. You answer STRICTLY in ENGLISH. Output ONLY valid JSON using standard double quotes (\"), with absolutely no markdown or surrounding text."
+                : "Sen ta'lim sohasida mukammal test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, doim standart qo'shtirnoq (\") ishlating („“ ishlatmang).";
 
     try {
         const completion = await groq.chat.completions.create({
@@ -71,7 +71,7 @@ Faqat quyidagi JSON formatda javob ber (Respond ONLY in JSON):
                 },
             ],
             temperature: 0.7,
-            max_tokens: 2048,
+            max_tokens: 3500, // increased max tokens to allow for 30 questions
         });
 
         const raw = completion.choices[0]?.message?.content || '';
@@ -81,7 +81,11 @@ Faqat quyidagi JSON formatda javob ber (Respond ONLY in JSON):
             return NextResponse.json({ error: "AI javob formati noto'g'ri" }, { status: 500 });
         }
 
-        const parsed = JSON.parse(jsonMatch[0]);
+        let jsonString = jsonMatch[0];
+        // Replace typographic smart quotes which break JSON.parse
+        jsonString = jsonString.replace(/[„“”]/g, '"');
+
+        const parsed = JSON.parse(jsonString);
 
         if (!parsed.questions || !Array.isArray(parsed.questions)) {
             return NextResponse.json({ error: "AI savollarni to'g'ri formatlamadi" }, { status: 500 });

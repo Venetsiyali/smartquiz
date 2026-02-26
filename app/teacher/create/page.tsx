@@ -302,6 +302,7 @@ function TeacherCreateInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const lockedModeQuery = searchParams.get('mode');
+    const continuePin = searchParams?.get('continuePin');
 
     const { isPro, plan } = useSubscription();
     const maxQ = isPro ? PLAN_LIMITS.pro.maxQuestions : PLAN_LIMITS.free.maxQuestions;
@@ -518,6 +519,19 @@ function TeacherCreateInner() {
         sessionStorage.setItem('quiz', JSON.stringify(quiz));
 
         try {
+            if (continuePin) {
+                const res = await fetch('/api/game/add-questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: continuePin, quizTitle: title, questions: quiz.questions }),
+                });
+                const data = await res.json();
+                if (!res.ok) { setErrors([data.error || "Xatolik"]); return; }
+                sessionStorage.setItem('gamePin', continuePin);
+                router.push('/teacher/lobby');
+                return;
+            }
+
             const res = await fetch('/api/game/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -557,13 +571,15 @@ function TeacherCreateInner() {
             <header className="flex items-center gap-3 p-4 border-b border-white/10 flex-wrap">
                 <button onClick={() => router.push('/')} className="text-white/50 hover:text-white text-2xl transition-colors">←</button>
                 <span className="text-xl font-black text-white">
-                    {lockedMode === 'classic' ? 'Zukkoo'
-                        : lockedMode === 'order' ? 'Mantiqiy Zanjir'
-                            : lockedMode === 'match' ? 'Terminlar Jangi'
-                                : lockedMode === 'blitz' ? 'Bliz-Sohat'
-                                    : lockedMode === 'anagram' ? 'Yashirin Kod'
-                                        : lockedMode === 'team' ? 'Jamoaviy Qutqaruv'
-                                            : <><span className="text-xl font-black text-white">Zukk<span className="logo-z">oo</span></span></>}
+                    {continuePin ?
+                        <span className="text-[#00E676]">Yangi savollar <span className="opacity-50 text-sm">({continuePin})</span></span>
+                        : lockedMode === 'classic' ? 'Zukkoo'
+                            : lockedMode === 'order' ? 'Mantiqiy Zanjir'
+                                : lockedMode === 'match' ? 'Terminlar Jangi'
+                                    : lockedMode === 'blitz' ? 'Bliz-Sohat'
+                                        : lockedMode === 'anagram' ? 'Yashirin Kod'
+                                            : lockedMode === 'team' ? 'Jamoaviy Qutqaruv'
+                                                : <><span className="text-xl font-black text-white">Zukk<span className="logo-z">oo</span></span></>}
                 </span>
                 {isPro && <CrownBadge />}
                 <span className="text-white/30">·</span>
@@ -610,7 +626,9 @@ function TeacherCreateInner() {
                             🤖 AI <ProLock />
                         </button>
                     )}
-                    <button onClick={startLobby} className="btn-primary text-sm px-5 py-2.5">🚀 Lobby</button>
+                    <button onClick={startLobby} className="btn-primary text-sm px-5 py-2.5">
+                        {continuePin ? '✅ Davom etish' : '🚀 Lobby'}
+                    </button>
                 </div>
             </header>
 
