@@ -431,7 +431,6 @@ function TeacherCreateInner() {
 
     const validate = () => {
         const errs: string[] = [];
-        if (!continuePin && !title.trim()) errs.push('Quiz nomini kiriting');
         if (questions.length === 0) errs.push('Kamida 1 ta savol qo\'shing');
         questions.forEach((q, i) => {
             if (!q.text.trim()) errs.push(`${i + 1}-savol bo'sh`);
@@ -587,8 +586,8 @@ function TeacherCreateInner() {
                 {/* Title input - only show when creating a new game */}
                 {!continuePin && (
                     <input value={title} onChange={e => setTitle(e.target.value)}
-                        placeholder="Quiz nomi..."
-                        className="input-game flex-1 min-w-48 max-w-xs text-sm"
+                        placeholder="Quiz nomi (ixtiyoriy)..."
+                        className="input-game flex-1 min-w-48 max-w-xs text-sm border-none focus:ring-2 focus:ring-blue-500/50"
                         style={{ textAlign: 'left', padding: '10px 16px', borderRadius: '12px' }} />
                 )}
                 <input value={teacherName} onChange={e => saveTeacherName(e.target.value)}
