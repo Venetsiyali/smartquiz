@@ -431,7 +431,8 @@ function TeacherCreateInner() {
 
     const validate = () => {
         const errs: string[] = [];
-        if (!title.trim()) errs.push('Quiz nomi kerak');
+        if (!continuePin && !title.trim()) errs.push('Quiz nomini kiriting');
+        if (questions.length === 0) errs.push('Kamida 1 ta savol qo\'shing');
         questions.forEach((q, i) => {
             if (!q.text.trim()) errs.push(`${i + 1}-savol bo'sh`);
             if (q.type === 'order') {
@@ -583,10 +584,13 @@ function TeacherCreateInner() {
                 </span>
                 {isPro && <CrownBadge />}
                 <span className="text-white/30">·</span>
-                <input value={title} onChange={e => setTitle(e.target.value)}
-                    placeholder="Quiz nomi..."
-                    className="input-game flex-1 min-w-48 max-w-xs text-sm"
-                    style={{ textAlign: 'left', padding: '10px 16px', borderRadius: '12px' }} />
+                {/* Title input - only show when creating a new game */}
+                {!continuePin && (
+                    <input value={title} onChange={e => setTitle(e.target.value)}
+                        placeholder="Quiz nomi..."
+                        className="input-game flex-1 min-w-48 max-w-xs text-sm"
+                        style={{ textAlign: 'left', padding: '10px 16px', borderRadius: '12px' }} />
+                )}
                 <input value={teacherName} onChange={e => saveTeacherName(e.target.value)}
                     placeholder="Ismingiz..."
                     className="input-game min-w-28 max-w-[140px] text-sm"
