@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useSubscription, CrownBadge } from '@/lib/subscriptionContext';
 import { motion } from 'framer-motion';
+import Header from '@/components/Header';
 
 const GAMES = [
     {
@@ -120,38 +121,7 @@ export default function LandingPage() {
             </div>
 
             {/* Nav */}
-            <nav className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl font-black"
-                        style={{ background: 'linear-gradient(135deg, #0056b3, #FFD600)' }}>Z</div>
-                    <span className="text-2xl font-black text-white">
-                        Zukk<span className="logo-z">oo</span>
-                    </span>
-                    <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold"
-                        style={{ background: 'rgba(0,86,179,0.3)', border: '1px solid rgba(0,86,179,0.5)', color: '#60a5fa' }}>
-                        TUIT · ATT
-                    </span>
-                    {isPro && <CrownBadge />}
-                </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => router.push('/muallif')}
-                        className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10">
-                        👤 Muallif
-                    </button>
-                    <button onClick={() => router.push('/pricing')}
-                        className="px-4 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105"
-                        style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
-                        👑 Narxlar
-                    </button>
-                    <button onClick={() => router.push('/play')}
-                        className="px-5 py-2.5 rounded-xl font-bold text-white/80 hover:text-white hover:bg-white/10 transition-all text-sm">
-                        📱 O&apos;yinga kirish
-                    </button>
-                    <button onClick={() => router.push('/teacher/create')} className="btn-primary text-sm px-5 py-2.5">
-                        🎓 O&apos;qituvchi
-                    </button>
-                </div>
-            </nav>
+            <Header />
 
             <main className="relative z-10 flex-1 flex flex-col items-center px-4 py-8 md:px-12">
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { SubscriptionProvider } from '@/lib/subscriptionContext';
+import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
     title: {
@@ -116,9 +117,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body>
-                <SubscriptionProvider>
-                    {children}
-                </SubscriptionProvider>
+                <Providers>
+                    <SubscriptionProvider>
+                        {children}
+                    </SubscriptionProvider>
+                </Providers>
             </body>
         </html>
     );
