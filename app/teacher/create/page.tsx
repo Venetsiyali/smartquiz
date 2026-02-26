@@ -48,6 +48,7 @@ const OPTION_COLORS = [
 
 /* ── File Upload Modal ── */
 function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void }) {
+    const { isPro } = useSubscription();
     const [file, setFile] = useState<File | null>(null);
     const [count, setCount] = useState(5);
     const [lang, setLang] = useState('uz');
@@ -120,13 +121,16 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                     <div>
                         <label className="text-white/50 font-bold text-xs block mb-1.5">SONI</label>
                         <div className="flex flex-wrap gap-1.5">
-                            {[3, 5, 8, 10, 15].map(n => (
-                                <button key={n} onClick={() => setCount(n)}
-                                    className="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
-                                    style={count === n ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                                    {n}
-                                </button>
-                            ))}
+                            {[3, 5, 8, 10, 15, 20, 30].map(n => {
+                                const locked = (n > 10) && !isPro;
+                                return (
+                                    <button key={n} onClick={() => !locked && setCount(n)}
+                                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${locked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        style={count === n ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+                                        {n} {locked && <ProLock />}
+                                    </button>
+                                )
+                            })}
                         </div>
                     </div>
                     <div>
@@ -196,6 +200,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
 
 /* ── AI Text Modal ── */
 function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void }) {
+    const { isPro } = useSubscription();
     const [topic, setTopic] = useState('');
     const [count, setCount] = useState(5);
     const [lang, setLang] = useState('uz');
@@ -238,10 +243,15 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                     placeholder="Mavzuni kiriting (masalan: Optika, Algebra, Tarix...)"
                     className="input-game" onKeyDown={e => e.key === 'Enter' && generate()} />
                 <div className="flex gap-3 flex-wrap">
-                    {[3, 5, 8, 10].map(n => (
-                        <button key={n} onClick={() => setCount(n)} className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
-                            style={count === n ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{n} ta</button>
-                    ))}
+                    {[3, 5, 8, 10, 20, 30].map(n => {
+                        const locked = (n > 10) && !isPro;
+                        return (
+                            <button key={n} onClick={() => !locked && setCount(n)} className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${locked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                style={count === n ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+                                {n} ta {locked && <ProLock />}
+                            </button>
+                        )
+                    })}
                     {[{ c: 'uz', l: '🇺🇿 UZ' }, { c: 'ru', l: '🇷🇺 RU' }, { c: 'en', l: '🇬🇧 EN' }].map(x => (
                         <button key={x.c} onClick={() => setLang(x.c)} className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
                             style={lang === x.c ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{x.l}</button>
