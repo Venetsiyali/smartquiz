@@ -6,34 +6,52 @@ import { Providers } from '@/components/Providers';
 export const metadata: Metadata = {
     title: {
         template: '%s | Zukkoo.uz',
-        default: "Zukkoo.uz — Interaktiv ta'lim va gamifikatsiya platformasi",
+        default: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
     },
-    description: "Zukkoo — interaktiv viktorinalar, jamoaviy o'yinlar va mantiqiy bellashuvlarni o'zida jamlagan zamonaviy ta'lim platformasi. Oliy ta'lim va maktablar uchun mukammal Kahoot analogi.",
-    keywords: ['zukkoo', 'ta\'lim', 'viktorina', 'gamifikatsiya', 'quiz', 'interaktiv', 'o\'zbekiston', 'tuit', 'att'],
-    authors: [{ name: 'Zukkoo Team' }],
-    creator: 'Zukkoo.uz',
+    description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+    keywords: [
+        'zukkoo', 'zukkoo.uz', 'interaktiv ta\'lim', 'gamifikatsiya', 'quiz',
+        'online quiz', 'viktorina', 'smart education', 'TATU', 'interaktiv o\'yinlar',
+        'kahoot analogi', 'o\'zbek ta\'lim platformasi', 'o\'zbekiston', 'att', 'tuit',
+        'PhD tadqiqot', 'Rustamjon Nasridinov', 'gidrologik monitoring'
+    ],
+    authors: [{ name: 'Rustamjon Nasridinov', url: 'https://zukkoo.uz' }],
+    creator: 'Rustamjon Nasridinov',
+    publisher: 'Zukkoo.uz',
+    metadataBase: new URL('https://zukkoo.uz'),
     openGraph: {
-        title: "Zukkoo.uz — Interaktiv ta'lim sayyohiga aylaning",
-        description: "Zukkoo bilan o'rganish zerikarli emas! Jamoaviy o'yinlar, viktorinalar, yashirin kodlar g'olibiga aylaning.",
+        title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+        description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
         url: 'https://zukkoo.uz',
-        siteName: 'Zukkoo Platformasi',
+        siteName: 'Zukkoo.uz',
         images: [
             {
-                url: 'https://zukkoo.uz/og-image.jpg', // You should place an og-image.jpg in the public folder
+                url: '/images/zukkoo-hero.jpg',
                 width: 1200,
-                height: 630,
-                alt: 'Zukkoo.uz Platform',
+                height: 600,
+                alt: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
             },
         ],
         locale: 'uz_UZ',
         type: 'website',
     },
+    twitter: {
+        card: 'summary_large_image',
+        title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+        description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+        images: ['/images/zukkoo-hero.jpg'],
+        creator: '@zukkoo_uz',
+    },
     alternates: {
         canonical: 'https://zukkoo.uz',
-        languages: {
-            'uz-UZ': 'https://zukkoo.uz',
-            'ru-RU': 'https://zukkoo.uz/ru',
-            'en-US': 'https://zukkoo.uz/en',
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-image-preview': 'large',
         },
     },
     icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" },
@@ -108,12 +126,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }
         ]
     };
+
+    const personJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Rustamjon Nasridinov',
+        jobTitle: 'PhD Tadqiqotchi, Katta O\'qituvchi',
+        affiliation: {
+            '@type': 'CollegeOrUniversity',
+            name: 'Muhammad al-Xorazmiy nomidagi Toshkent axborot texnologiyalari universiteti (TATU)',
+            url: 'https://tatu.uz',
+        },
+        knowsAbout: [
+            'Gidrologik monitoring', 'Ta\'lim texnologiyalari',
+            'Gamifikatsiya', 'Interaktiv ta\'lim', 'Zukkoo platformasi',
+        ],
+        url: 'https://zukkoo.uz',
+        sameAs: ['https://tatu.uz'],
+    };
     return (
         <html lang="uz">
             <head>
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
                 />
             </head>
             <body>
