@@ -165,7 +165,7 @@ export default async function RootLayout({
     };
 
     return (
-        <html lang={locale}>
+        <html lang={locale} suppressHydrationWarning>
             <head>
                 <script
                     type="application/ld+json"
@@ -176,7 +176,7 @@ export default async function RootLayout({
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
                 />
             </head>
-            <body>
+            <body suppressHydrationWarning>
                 <NextIntlClientProvider locale={locale} messages={messages}>
                     <Providers>
                         <SubscriptionProvider>

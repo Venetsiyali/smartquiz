@@ -77,15 +77,15 @@ export default function LandingPage() {
     const router = useRouter();
     const { isPro } = useSubscription();
     const [userName, setUserName] = useState('');
+    const [greetingKey, setGreetingKey] = useState('morning');
     const t = useTranslations('Home');
     const tGames = useTranslations('Games');
 
     useEffect(() => {
         const name = localStorage.getItem('zk_teacher_name') || '';
         setUserName(name);
+        setGreetingKey(getGreetingKey());
     }, []);
-
-    const greetingKey = getGreetingKey();
 
     return (
         <div className="bg-landing min-h-screen flex flex-col">
