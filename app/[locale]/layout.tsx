@@ -50,6 +50,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             languages: {
                 'uz': 'https://zukkoo.uz/uz',
                 'ru': 'https://zukkoo.uz/ru',
+                'en': 'https://zukkoo.uz/en',
             },
         },
         robots: {
@@ -75,9 +76,9 @@ export default async function RootLayout({
     const locale = params?.locale;
     console.log("==== ROOT LAYOUT PARAMS ====", params, "LOCALE:", locale);
 
-    const safeLocale = (typeof locale === 'string' && ['uz', 'ru'].includes(locale)) ? locale : 'uz';
+    const safeLocale = (typeof locale === 'string' && ['uz', 'ru', 'en'].includes(locale)) ? locale : 'uz';
 
-    if (!locale || !['uz', 'ru'].includes(locale)) {
+    if (!locale || !['uz', 'ru', 'en'].includes(locale)) {
         console.log("NOT FOUND TRIGGERED FOR LOCALE IN LAYOUT:", locale);
         // notFound();
     }

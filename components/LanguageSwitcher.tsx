@@ -35,22 +35,32 @@ export default function LanguageSwitcher() {
             <button
                 onClick={() => switchLocale('uz')}
                 disabled={isPending}
-                className={`px-3 py-1 text-xs font-bold rounded-full transition-all duration-300 ${locale === 'uz'
-                        ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]'
-                        : 'text-white/50 hover:text-white hover:bg-white/10'
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300 ${locale === 'uz'
+                    ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]'
+                    : 'text-white/50 hover:text-white hover:bg-white/10'
                     }`}
             >
-                UZ
+                <span className="text-sm">🇺🇿</span> UZ
             </button>
             <button
                 onClick={() => switchLocale('ru')}
                 disabled={isPending}
-                className={`px-3 py-1 text-xs font-bold rounded-full transition-all duration-300 ${locale === 'ru'
-                        ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]'
-                        : 'text-white/50 hover:text-white hover:bg-white/10'
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300 ${locale === 'ru'
+                    ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]'
+                    : 'text-white/50 hover:text-white hover:bg-white/10'
                     }`}
             >
-                RU
+                <span className="text-sm">🇷🇺</span> RU
+            </button>
+            <button
+                onClick={() => switchLocale('en')}
+                disabled={isPending}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300 ${locale === 'en'
+                    ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                    : 'text-white/50 hover:text-white hover:bg-white/10'
+                    }`}
+            >
+                <span className="text-sm">🇬🇧</span> EN
             </button>
         </div>
     );

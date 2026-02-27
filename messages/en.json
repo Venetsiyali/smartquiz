@@ -1,0 +1,126 @@
+{
+    "Header": {
+        "dashboard": "Dashboard",
+        "settings": "Settings",
+        "logout": "Logout",
+        "login": "Log In",
+        "author": "Author",
+        "adminPanel": "Admin Panel",
+        "user": "User"
+    },
+    "Home": {
+        "greeting": {
+            "night": "Good Night",
+            "morning": "Good Morning",
+            "afternoon": "Good Afternoon",
+            "evening": "Good Evening"
+        },
+        "hero": {
+            "hello": "Hello",
+            "whatToPlay": "What shall we play today?",
+            "mode": "Mode",
+            "pro": "👑 Pro",
+            "free": "🎮 Free",
+            "enterGame": "📱 Enter Game",
+            "gameTypes": "GAME MODES",
+            "createQuiz": "✨ Create Quiz",
+            "goPro": "👑 Upgrade to Pro"
+        },
+        "footer": "© 2026 Zukkoo · TUIT ICT Department · All rights reserved"
+    },
+    "Games": {
+        "classic": {
+            "name": "Quiz Arena",
+            "sub": "Classic Quiz",
+            "badge": "FREE",
+            "desc": "Multiple choice, True/False questions. Real-time leaderboard!"
+        },
+        "order": {
+            "name": "Logic Chain",
+            "sub": "Sorting Game",
+            "badge": "FREE",
+            "desc": "Arrange items in the correct logical order. Test your reasoning!"
+        },
+        "match": {
+            "name": "Battle of Terms",
+            "sub": "Matching Game",
+            "badge": "PRO",
+            "desc": "Connect pairs. Perfect for mastering terms and definitions."
+        },
+        "blitz": {
+            "name": "Blitz-Watch",
+            "sub": "True/False Duel",
+            "badge": "FREE",
+            "desc": "True or false? Decide in a split second! Race against the clock."
+        },
+        "anagram": {
+            "name": "Hidden Code",
+            "sub": "Anagram",
+            "badge": "PRO",
+            "desc": "Uncover the hidden word from scrambled letters. Speed & smarts!"
+        },
+        "team": {
+            "name": "Team Rescue",
+            "sub": "Team Mode",
+            "badge": "PRO",
+            "desc": "Win together! Build combos, use shields, stop opponents."
+        },
+        "card": {
+            "proNeeded": "Pro Required",
+            "proMode": "👑 Pro Mode",
+            "start": "Play Now"
+        }
+    },
+    "Auth": {
+        "errors": {
+            "enterEmailPass": "Enter email and password",
+            "default": "An error occurred",
+            "network": "Network error",
+            "incompleteCode": "Enter the full 6-digit code",
+            "system": "System error"
+        },
+        "hero": {
+            "title": "The future of education is here",
+            "desc": "Take your students to the next level with Zukkoo"
+        },
+        "form": {
+            "loginTitle": "Log into Zukkoo",
+            "loginDesc": "Enter your email to sign in",
+            "otpTitle": "Verification Code",
+            "otpDesc": "A 6-digit code has been sent to your email",
+            "emailLabel": "Email Address",
+            "emailPlace": "name@gmail.com",
+            "passLabel": "Password",
+            "passPlace": "Enter password...",
+            "continue": "Continue",
+            "loginBtn": "Sign In",
+            "back": "Back",
+            "or": "or",
+            "google": "Sign in with Google"
+        }
+    },
+    "Settings": {
+        "title": "Settings",
+        "subtitle": "Account preferences",
+        "nameTitle": "Change Name",
+        "nameInput": "Your Name",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "passTitle": "Change Password",
+        "passEmptyNote": "Google accounts don't have passwords. Set a new one below.",
+        "passUpdateNote": "Enter your old password and create a new one.",
+        "oldPass": "Old Password (if applicable)",
+        "newPass": "New Password (min 6 chars)",
+        "confirmPass": "Confirm New Password",
+        "updatePassBtn": "Update Password",
+        "logoutTitle": "Sign Out",
+        "logoutBtn": "Log Out",
+        "errors": {
+            "default": "An error occurred",
+            "network": "Network error",
+            "mismatch": "New passwords do not match",
+            "nameSuccess": "Name updated successfully!",
+            "passSuccess": "Password updated! Please log in again."
+        }
+    }
+}
