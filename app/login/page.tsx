@@ -2,13 +2,21 @@
 
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
 export default function LoginPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [step, setStep] = useState<"credentials" | "otp">("credentials");
+
+    // Form States
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [error, setError] = useState("");
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     useEffect(() => {
         if (status === "authenticated") {
@@ -19,6 +27,100 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         await signIn("google", { callbackUrl: "/" });
+    };
+
+    const handleSendOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+        if (!email || !password) {
+            setError("Email va parolni kiriting");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const res = await fetch("/api/auth/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.error || "Xatolik yuz berdi");
+                setIsLoading(false);
+                return;
+            }
+
+            // Move to OTP step
+            setStep("otp");
+            setIsLoading(false);
+        } catch (err) {
+            setError("Tarmoq xatosi");
+            setIsLoading(false);
+        }
+    };
+
+    const handleOtpChange = (index: number, value: string) => {
+        if (value.length > 1) {
+            // Handle paste
+            const pastedData = value.split("").slice(0, 6);
+            const newOtp = [...otp];
+            pastedData.forEach((char, i) => {
+                if (index + i < 6) newOtp[index + i] = char;
+            });
+            setOtp(newOtp);
+            // Focus last filled
+            const nextIndex = Math.min(index + pastedData.length, 5);
+            inputRefs.current[nextIndex]?.focus();
+            return;
+        }
+
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+
+        // Auto focus next
+        if (value && index < 5) {
+            inputRefs.current[index + 1]?.focus();
+        }
+    };
+
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Backspace" && !otp[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handleVerifyLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const otpString = otp.join("");
+        if (otpString.length !== 6) {
+            setError("6 xonali kodni to'liq kiriting");
+            return;
+        }
+
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const res = await signIn("credentials", {
+                redirect: false,
+                email,
+                password,
+                otp: otpString,
+            });
+
+            if (res?.error) {
+                setError(res.error);
+                setIsLoading(false);
+            } else {
+                router.push("/");
+            }
+        } catch (err) {
+            setError("Tizim xatosi");
+            setIsLoading(false);
+        }
     };
 
     if (status === "loading" || status === "authenticated") {
@@ -35,7 +137,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-[#0a0f1c] flex flex-col md:flex-row relative overflow-hidden">
-            {/* Background cyber grid and glow */}
+            {/* Background elements */}
             <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -52,7 +154,7 @@ export default function LoginPage() {
                         priority
                         unoptimized
                     />
-                    <div className="absolute bottom-0 left-0 r-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent z-20">
+                    <div className="absolute bottom-0 left-0 right-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent z-20">
                         <h2 className="text-3xl font-black text-white mb-2">Kelajak ta'limi shu yerda</h2>
                         <p className="text-white/70">O'quvchilaringizni Zukkoo bilan yangi darajaga olib chiqing</p>
                     </div>
@@ -61,41 +163,122 @@ export default function LoginPage() {
 
             {/* Right Panel: Login Form */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-8 relative z-10">
-                <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 shadow-2xl relative overflow-hidden">
-                    {/* Glassmorphism shine */}
+                <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden transition-all duration-500">
                     <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
 
-                    <div className="text-center mb-10 relative z-10">
+                    <div className="text-center mb-8 relative z-10">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 mb-6 shadow-inner">
                             <span className="text-2xl">🎓</span>
                         </div>
                         <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-                            Zukkoo.uz ga xush kelibsiz
+                            {step === "credentials" ? "Zukkoo-ga kirish" : "Tasdiqlash kodi"}
                         </h1>
                         <p className="text-white/50 text-sm font-medium">
-                            Platformaga kirish uchun profilingizni tasdiqlang
+                            {step === "credentials"
+                                ? "Platformaga kirish uchun pochtangizni kiriting"
+                                : `Pochtaga 6-xonali kod yuborildi: ${email}`}
                         </p>
                     </div>
 
-                    <div className="space-y-4 relative z-10">
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm font-medium text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    {step === "credentials" ? (
+                        <form onSubmit={handleSendOTP} className="space-y-4 relative z-10">
+                            <div>
+                                <label className="block text-white/70 text-sm font-medium mb-1.5 ml-1">Email manzili</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                                    placeholder="ism@gmail.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-white/70 text-sm font-medium mb-1.5 ml-1">Parol</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                                    placeholder="Parolni kiriting..."
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full mt-2 h-12 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold text-base transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]"
+                            >
+                                {isLoading ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : "Davom etish"}
+                            </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleVerifyLogin} className="space-y-6 relative z-10">
+                            <div className="flex justify-between gap-2 max-w-sm mx-auto">
+                                {otp.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        type="text"
+                                        maxLength={1}
+                                        value={digit}
+                                        ref={el => { inputRefs.current[index] = el }}
+                                        onChange={e => handleOtpChange(index, e.target.value)}
+                                        onKeyDown={e => handleOtpKeyDown(index, e)}
+                                        className="w-12 h-14 bg-white/5 border border-white/20 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-blue-500 focus:bg-blue-500/10 transition-all"
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full h-12 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold text-base transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]"
+                                >
+                                    {isLoading ? (
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : "Tizimga kirish"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setStep("credentials")}
+                                    disabled={isLoading}
+                                    className="w-full h-12 flex items-center justify-center text-white/50 hover:text-white rounded-xl font-medium text-sm transition-all hover:bg-white/5"
+                                >
+                                    Ortga qaytish
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    <div className="relative flex items-center py-6 z-10">
+                        <div className="flex-grow border-t border-white/10"></div>
+                        <span className="flex-shrink-0 mx-4 text-white/30 text-sm font-medium">yoki</span>
+                        <div className="flex-grow border-t border-white/10"></div>
+                    </div>
+
+                    <div className="relative z-10">
                         <button
                             onClick={handleGoogleLogin}
                             disabled={isLoading}
-                            className="w-full h-14 flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-900 rounded-xl font-bold text-base transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed group shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.2)]"
+                            className="w-full h-12 flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-900 rounded-xl font-bold text-[15px] transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed group shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.2)]"
                         >
-                            {isLoading ? (
-                                <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                                <>
-                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                                    </svg>
-                                    Google orqali kirish
-                                </>
-                            )}
+                            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                            </svg>
+                            Google bilan birga
                         </button>
                     </div>
                 </div>

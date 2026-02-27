@@ -92,6 +92,14 @@ export default function Header() {
                                 >
                                     📊 Dashboard
                                 </button>
+                                {session.user.role === "ADMIN" && (
+                                    <button
+                                        onClick={() => router.push('/admin')}
+                                        className="w-full text-left px-4 py-2 text-sm text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors flex items-center gap-2"
+                                    >
+                                        🛠️ Admin Panel
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleLogout}
                                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex items-center gap-2 mt-1"

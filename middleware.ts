@@ -1,6 +1,16 @@
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
+    callbacks: {
+        authorized({ req, token }) {
+            // Only allow ADMIN role on /admin paths
+            if (req.nextUrl.pathname.startsWith("/admin")) {
+                return token?.role === "ADMIN";
+            }
+            // For other protected routes just require any valid login
+            return !!token;
+        },
+    },
     pages: {
         signIn: "/login",
     },
@@ -8,9 +18,9 @@ export default withAuth({
 
 export const config = {
     // Protect dashboard, teacher routes, and specific game instances (not the main lobby/join screens if they don't require auth)
-    // Re-adjust matcher as needed for your app. The prompt mentioned /dashboard and barcha /play/[gameId] sahifalar
     matcher: [
+        "/admin/:path*",
         "/dashboard/:path*",
-        "/play/:gameId", // Protects dynamic game routes (assuming format /play/123)
+        "/play/:gameId",
     ],
 };

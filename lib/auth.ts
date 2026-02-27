@@ -1,8 +1,11 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import type { Adapter } from "next-auth/adapters";
+import { sendWelcomeEmail } from "./mailer";
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma) as Adapter,
@@ -11,21 +14,82 @@ export const authOptions: NextAuthOptions = {
             clientId: process.env.GOOGLE_CLIENT_ID || "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
         }),
+        CredentialsProvider({
+            name: "Credentials",
+            credentials: {
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" },
+                otp: { label: "OTP", type: "text" },
+            },
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password || !credentials?.otp) {
+                    throw new Error("Ma'lumotlar to'liq emas");
+                }
+
+                // Verify OTP First
+                const verificationToken = await prisma.verificationToken.findFirst({
+                    where: {
+                        identifier: credentials.email,
+                        token: credentials.otp,
+                        expires: { gt: new Date() }
+                    }
+                });
+
+                if (!verificationToken) {
+                    throw new Error("Kod noto'g'ri yoki uning muddati tugagan");
+                }
+
+                // Verify User
+                let user = await prisma.user.findUnique({
+                    where: { email: credentials.email }
+                });
+
+                if (user) {
+                    if (!user.password) {
+                        throw new Error("Bu hisob Google orqali ochilgan. Google bilan kiring.");
+                    }
+                    const isValid = await bcrypt.compare(credentials.password, user.password);
+                    if (!isValid) throw new Error("Noto'g'ri parol");
+                } else {
+                    const hashedPassword = await bcrypt.hash(credentials.password, 10);
+                    user = await prisma.user.create({
+                        data: {
+                            email: credentials.email,
+                            password: hashedPassword,
+                            name: credentials.email.split("@")[0],
+                        }
+                    });
+                }
+
+                // Cleanup
+                await prisma.verificationToken.deleteMany({
+                    where: { identifier: credentials.email }
+                });
+
+                return user;
+            }
+        }),
     ],
+    events: {
+        async createUser({ user }) {
+            // Send welcome email upon registration
+            if (user.email && user.name) {
+                await sendWelcomeEmail(user.email, user.name);
+            }
+        }
+    },
     session: {
         strategy: "jwt",
     },
     callbacks: {
         async jwt({ token, user, trigger, session }) {
             if (user) {
-                // Initial generation: Inject ID, role, and plan
                 token.id = user.id;
-                // @ts-ignore - Prisma extensions via user
-                token.role = user.role || "TEACHER";
+                // @ts-ignore
+                token.role = user.role || "STUDENT";
                 // @ts-ignore
                 token.plan = user.plan || "FREE";
 
-                // Track lastLogin upon logging in
                 await prisma.user.update({
                     where: { id: user.id },
                     data: { lastLogin: new Date() },

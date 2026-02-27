@@ -14,6 +14,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/client": "^5.22.0",
+    "@react-email/components": "^1.0.8",
+    "@react-email/render": "^2.0.4",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.0.0",
     "@types/qrcode.react": "^1.0.5",
@@ -36,6 +38,8 @@
     "qrcode.react": "^3.1.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-email": "^5.2.8",
+    "resend": "^6.9.2",
     "typescript": "^5.0.0",
     "uuid": "^9.0.0"
   },

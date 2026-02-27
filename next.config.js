@@ -6,6 +6,16 @@ const nextConfig = {
         // that were removed in ESLint 9 — skip ESLint during build to avoid crash.
         ignoreDuringBuilds: true,
     },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'lh3.googleusercontent.com',
+                port: '',
+                pathname: '/**',
+            },
+        ],
+    },
 };
 
 module.exports = nextConfig;
