@@ -22,23 +22,36 @@ export async function POST(req: Request) {
 
     const langInstruction =
         language === 'uz'
-            ? "Barcha savollar, javoblar va izohlar faqat O'ZBEK tilida bo'lishi shart."
+            ? "Generate all content strictly in O'zbek language."
             : language === 'ru'
-                ? 'Все вопросы, варианты ответов и объяснения должны быть ИСКЛЮЧИТЕЛЬНО НА РУССКОМ ЯЗЫКЕ. Никакого узбекского языка.'
-                : 'All questions, options, and explanations MUST BE STRICTLY IN ENGLISH. No Uzbek language.';
+                ? "Generate all content strictly in Russian language."
+                : "Generate questions strictly in English.";
+
+    const systemPrompt = `Role: You are the "Zukkoo AI Content Engine," a sophisticated educational tool designed for the Zukkoo.uz platform. Your task is to generate high-quality, engaging, and pedagogically sound questions for 6 specific game modes.
+Language Rule: You MUST detect the requested language (${language}) and generate all content strictly in that language.
+Game Specifications:
+Quiz Arena (Classic): 1 question, 4 options (A, B, C, D), 1 correct answer index.
+Logic Chain (Sorting): Arrange 4-6 concepts in a logical or chronological sequence.
+Battle of Terms (Matching): Pair 5-8 terms with their correct definitions.
+Blitz-Watch (True/False): Quick assertions where the user must decide if it's "True" or "False".
+Hidden Code (Anagrams): 1 key term with 1 helpful hint.
+Team Rescue (Advanced): High-difficulty quiz questions for collaborative solving.
+
+Format Requirements:
+Output ONLY valid JSON using standard double quotes ("). No markdown or explanations outside JSON.`;
 
     const prompt = `${langInstruction}
 
-Mavzu/Topic/Тема: "${topic}"
-${count} ta test savoli tuz. (Generate ${count} questions / Создай ${count} вопросов)
+Topic: "${topic}"
+Generate ${count} questions.
 
-QAT'IY QOIDALAR (STRICT RULES):
-1. Har bir savolda TO'G'RI javobni HAR XIL pozitsiyaga qo'y (Mix correct answer positions).
-2. Noto'g'ri javoblar real va ishonchli ko'rinsin (Plausible distractors).
-3. Savollar qiyin va o'ylantiruvchi bo'lsin (Challenging questions).
-4. Har bir savol uchun "explanation" — qisqa izoh yoz (1-2 sentences explanation).
+STRICT RULES:
+1. Mix correct answer positions.
+2. Plausible distractors.
+3. Challenging questions.
+4. 1-2 sentences explanation.
 
-Faqat quyidagi JSON formatda javob ber (Respond ONLY in JSON):
+Respond ONLY in JSON:
 {
   "questions": [
     {
@@ -49,13 +62,6 @@ Faqat quyidagi JSON formatda javob ber (Respond ONLY in JSON):
     }
   ]
 }`;
-
-    const systemPrompt =
-        language === 'ru'
-            ? "Вы — профессиональный ИИ-ассистент по созданию образовательных тестов. Вы отвечаете СТРОГО на РУССКОМ языке. Выдавайте результат ТОЛЬКО в формате JSON, используя только стандартные двойные кавычки (\"), без дополнительного текста."
-            : language === 'en'
-                ? "You are a professional educational test generator AI assistant. You answer STRICTLY in ENGLISH. Output ONLY valid JSON using standard double quotes (\"), with absolutely no markdown or surrounding text."
-                : "Sen ta'lim sohasida mukammal test savollari tuzuvchi AI yordamchisisiz. Faqat so'ralgan JSON formatda javob ber, doim standart qo'shtirnoq (\") ishlating („“ ishlatmang).";
 
     try {
         const completion = await groq.chat.completions.create({

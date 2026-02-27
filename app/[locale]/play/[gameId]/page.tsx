@@ -201,7 +201,11 @@ export default function GameDetailPage({
     const router = useRouter();
     const { isPro } = useSubscription();
     const t = useTranslations('GamePlay');
+    const tGamesList = useTranslations('GamesList');
     const cfg = GAME_CONFIG[gameId];
+
+    // Determine specific JSON Key mapped to this GameID
+    const gKey = gameId === '1' ? 'quizArena' : gameId === '2' ? 'logicChain' : gameId === '3' ? 'battleOfTerms' : gameId === '4' ? 'blitzWatch' : gameId === '5' ? 'hiddenCode' : 'teamRescue';
 
     // Instruction modal state
     const [showInstructions, setShowInstructions] = useState(false);
@@ -295,7 +299,7 @@ export default function GameDetailPage({
                                 {cfg.emoji}
                             </div>
                             <h1 className="text-4xl md:text-5xl font-black text-white leading-none mb-1">
-                                {cfg.name}
+                                {tGamesList(`${gKey}.title`)}
                             </h1>
                             <p className="text-sm font-black tracking-widest" style={{ color: theme.accent }}>
                                 {cfg.sub.toUpperCase()} · {cfg.style.toUpperCase()}
@@ -304,7 +308,7 @@ export default function GameDetailPage({
 
                         {/* Description */}
                         <p className="text-white/70 text-base font-semibold leading-relaxed max-w-md">
-                            {cfg.desc}
+                            {tGamesList(`${gKey}.description`)}
                         </p>
 
                         {/* Features */}
@@ -393,7 +397,7 @@ export default function GameDetailPage({
                                 <div className="absolute inset-0"
                                     style={{ background: `radial-gradient(ellipse at center, ${theme.glow.replace('0.6', '0.3')} 0%, transparent 70%)` }} />
                                 <div className="absolute bottom-3 left-4">
-                                    <p className="text-white font-black text-xl">{cfg.name}</p>
+                                    <p className="text-white font-black text-xl">{tGamesList(`${gKey}.title`)}</p>
                                     <p className="text-white/50 text-xs font-bold">{cfg.sub}</p>
                                 </div>
                             </div>
@@ -402,21 +406,21 @@ export default function GameDetailPage({
                             <div className="p-4 space-y-4">
                                 <div className="flex gap-3">
                                     <StatCard
-                                        label="BALL"
+                                        label={t('stats.score')}
                                         value="1,250"
                                         color={cfg.scoreColor}
                                         bg={theme.statBg}
                                         border={theme.border}
                                     />
                                     <StatCard
-                                        label="VAQT"
+                                        label={t('stats.time')}
                                         value="0:18"
                                         color={cfg.timerColor}
                                         bg={theme.statBg}
                                         border={theme.border}
                                     />
                                     <StatCard
-                                        label="SAVOL"
+                                        label={t('stats.question')}
                                         value="3/10"
                                         color="rgba(255,255,255,0.6)"
                                         bg={theme.statBg}
@@ -427,7 +431,7 @@ export default function GameDetailPage({
                                 {/* Progress bar */}
                                 <div>
                                     <div className="flex justify-between text-xs font-bold text-white/40 mb-1.5">
-                                        <span>PROGRESS</span>
+                                        <span>{t('stats.progress')}</span>
                                         <span>30%</span>
                                     </div>
                                     <div className="w-full h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
@@ -444,7 +448,7 @@ export default function GameDetailPage({
                                 {/* Players online */}
                                 <div className="flex items-center justify-between px-3 py-2.5 rounded-xl"
                                     style={{ background: theme.statBg, border: `1px solid ${theme.border}` }}>
-                                    <span className="text-xs font-black text-white/40 tracking-widest">JONLI O&apos;YINCHILAR</span>
+                                    <span className="text-xs font-black text-white/40 tracking-widest">{t('online')}</span>
                                     <div className="flex items-center gap-1.5">
                                         <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: theme.accent }} />
                                         <span className="font-black text-sm" style={{ color: theme.accent }}>24</span>

@@ -115,6 +115,44 @@
         "pinCode": "PIN CODE",
         "waitingTeacher": "Waiting for the teacher to start the game"
     },
+    "Common": {
+        "start": "Start Game",
+        "score": "Score",
+        "time": "Time",
+        "next": "Next",
+        "finish": "Finish",
+        "correct": "Correct!",
+        "wrong": "Wrong Answer",
+        "gameOver": "Game Over",
+        "tryAgain": "Try Again",
+        "backToDashboard": "Back to Dashboard"
+    },
+    "GamesList": {
+        "quizArena": {
+            "title": "Quiz Arena",
+            "description": "Test your knowledge in a classic quiz format."
+        },
+        "logicChain": {
+            "title": "Logic Chain",
+            "description": "Arrange the items in the correct logical sequence."
+        },
+        "battleOfTerms": {
+            "title": "Battle of Terms",
+            "description": "Match the correct terms with their definitions."
+        },
+        "blitzWatch": {
+            "title": "Blitz-Watch",
+            "description": "Quickly decide if the statement is True or False."
+        },
+        "hiddenCode": {
+            "title": "Hidden Code",
+            "description": "Unscramble the letters to find the hidden scientific term."
+        },
+        "teamRescue": {
+            "title": "Team Rescue",
+            "description": "Collaborate with your team to solve advanced challenges."
+        }
+    },
     "Auth": {
         "errors": {
             "enterEmailPass": "Enter email and password",

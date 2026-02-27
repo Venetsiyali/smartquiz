@@ -115,6 +115,44 @@
         "pinCode": "PIN KOD",
         "waitingTeacher": "O'qituvchi o'yinni boshlashini kutmoqda"
     },
+    "Common": {
+        "start": "O'yinni boshlash",
+        "score": "Ball",
+        "time": "Vaqt",
+        "next": "Keyingi",
+        "finish": "Tugatish",
+        "correct": "To'g'ri!",
+        "wrong": "Noto'g'ri javob",
+        "gameOver": "O'yin tugadi",
+        "tryAgain": "Qayta urinib ko'rish",
+        "backToDashboard": "Dashboardga qaytish"
+    },
+    "GamesList": {
+        "quizArena": {
+            "title": "Zukkoo",
+            "description": "Klassik viktorina formatida bilimingizni sinab ko'ring."
+        },
+        "logicChain": {
+            "title": "Mantiqiy zanjir",
+            "description": "Elementlarni to'g'ri mantiqiy ketma-ketlikda joylashtiring."
+        },
+        "battleOfTerms": {
+            "title": "Terminlar jangi",
+            "description": "To'g'ri terminlarni ularning ta'riflari bilan moslashtiring."
+        },
+        "blitzWatch": {
+            "title": "Bliz-Sohat",
+            "description": "Bayonotning to'g'ri yoki noto'g'ri ekanligini tezda hal qiling."
+        },
+        "hiddenCode": {
+            "title": "Yashirin kod",
+            "description": "Yashirin ilmiy terminni topish uchun harflarni joyiga qoying."
+        },
+        "teamRescue": {
+            "title": "Jamoaviy qutqaruv",
+            "description": "Murakkab vazifalarni hal qilish uchun jamoangiz bilan hamkorlik qiling."
+        }
+    },
     "Auth": {
         "errors": {
             "enterEmailPass": "Email va parolni kiriting",
