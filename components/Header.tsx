@@ -87,10 +87,10 @@ export default function Header() {
                                     <p className="text-xs text-white/50 truncate">{session.user.email}</p>
                                 </div>
                                 <button
-                                    onClick={() => router.push('/dashboard')}
+                                    onClick={() => router.push('/settings')}
                                     className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
                                 >
-                                    📊 Dashboard
+                                    ⚙️ Sozlamalar
                                 </button>
                                 {session.user.role === "ADMIN" && (
                                     <button
