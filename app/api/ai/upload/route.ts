@@ -63,10 +63,10 @@ export async function POST(req: Request) {
 
     const langInstruction =
         language === 'uz'
-            ? "O'zbek tilida yoz."
+            ? "Barcha savollar, javoblar va izohlar faqat O'ZBEK tilida bo'lishi shart."
             : language === 'ru'
-                ? 'Пиши на русском языке.'
-                : 'Write in English.';
+                ? 'Все вопросы, варианты ответов и объяснения должны быть ИСКЛЮЧИТЕЛЬНО НА РУССКОМ ЯЗЫКЕ.'
+                : 'All questions, options, and explanations MUST BE STRICTLY IN ENGLISH. No Uzbek language.';
 
     const prompt = `${langInstruction}
 
@@ -94,13 +94,20 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
   ]
 }`;
 
+    const systemPrompt =
+        language === 'ru'
+            ? "Вы — профессиональный ИИ-ассистент по созданию образовательных тестов на основе текста. Вы отвечаете СТРОГО на РУССКОМ языке. Выдавайте результат ТОЛЬКО в формате JSON."
+            : language === 'en'
+                ? "You are a professional educational test generator AI assistant. You answer STRICTLY in ENGLISH. Output ONLY valid JSON."
+                : "Sen matn asosida test savollari tuzuvchi AI yordamchisisiz. Faqat JSON formatda javob ber.";
+
     try {
         const completion = await groq.chat.completions.create({
             model: 'llama-3.3-70b-versatile',
             messages: [
                 {
                     role: 'system',
-                    content: "Sen matn asosida test savollari tuzuvchi AI yordamchisisiz. Faqat JSON formatda javob ber.",
+                    content: systemPrompt,
                 },
                 { role: 'user', content: prompt },
             ],

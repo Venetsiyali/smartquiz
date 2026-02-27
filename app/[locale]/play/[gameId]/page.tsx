@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription } from '@/lib/subscriptionContext';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 // ─── Game Config ──────────────────────────────────────────────────────────────
 const GAME_CONFIG: Record<string, {
@@ -199,6 +200,7 @@ export default function GameDetailPage({
 }) {
     const router = useRouter();
     const { isPro } = useSubscription();
+    const t = useTranslations('GamePlay');
     const cfg = GAME_CONFIG[gameId];
 
     // Instruction modal state
@@ -216,8 +218,8 @@ export default function GameDetailPage({
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-white/50 text-xl font-bold mb-4">O&apos;yin topilmadi</p>
-                    <button onClick={() => router.push('/')} className="text-blue-400 font-bold hover:underline">← Bosh sahifa</button>
+                    <p className="text-white/50 text-xl font-bold mb-4">{t('notFound')}</p>
+                    <button onClick={() => router.push('/')} className="text-blue-400 font-bold hover:underline">{t('home')}</button>
                 </div>
             </div>
         );
@@ -264,7 +266,7 @@ export default function GameDetailPage({
                         onClick={() => router.push('/')}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105"
                         style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}>
-                        🏠 Dashbordga qaytish
+                        {t('backToDash')}
                     </button>
 
                     <div className="flex items-center gap-2">
@@ -328,13 +330,13 @@ export default function GameDetailPage({
                                         onClick={() => router.push('/pricing')}
                                         className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-base transition-all hover:scale-105 hover:brightness-110"
                                         style={{ background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#0a0a0a', boxShadow: '0 6px 24px rgba(255,215,0,0.35)' }}>
-                                        👑 Pro rejimga o&apos;tish
+                                        {t('buttons.goPro')}
                                     </button>
                                     <button
                                         onClick={() => router.push('/')}
                                         className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-sm text-white/50 hover:text-white transition-colors"
                                         style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        ← Orqaga
+                                        {t('buttons.back')}
                                     </button>
                                 </>
                             ) : (
@@ -346,13 +348,13 @@ export default function GameDetailPage({
                                         }}
                                         className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-base transition-all hover:scale-105 hover:brightness-110"
                                         style={{ background: theme.btnGradient, color: 'white', boxShadow: `0 6px 24px ${theme.glow.replace('0.6', '0.4')}` }}>
-                                        🎓 Quiz yaratish
+                                        {t('buttons.create')}
                                     </button>
                                     <button
                                         onClick={() => router.push('/play')}
                                         className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-105"
                                         style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
-                                        📱 O&apos;yinga kirish
+                                        {t('buttons.play')}
                                     </button>
                                 </>
                             )}

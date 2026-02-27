@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,6 +57,7 @@ function vibrate(pattern: number | number[]) {
 type PagePhase = 'loading' | 'question' | 'feedback' | 'review' | 'between' | 'ended';
 
 export default function StudentGamePage() {
+    const t = useTranslations('GameSession');
     const router = useRouter();
     const [question, setQuestion] = useState<QuestionPayload | null>(null);
     const [selected, setSelected] = useState<number | null>(null);
@@ -339,7 +341,7 @@ export default function StudentGamePage() {
         <div className="bg-player min-h-screen flex items-center justify-center">
             <div className="text-center space-y-4">
                 <div className="text-7xl animate-bounce">🎮</div>
-                <p className="text-white/50 font-bold text-lg animate-pulse">Savol yuklanmoqda...</p>
+                <p className="text-white/50 font-bold text-lg animate-pulse">{t('loading')}</p>
             </div>
         </div>
     );
@@ -403,7 +405,7 @@ export default function StudentGamePage() {
                     )}
                     {matchSubmitted && (
                         <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">
-                            ✅ Bajarildi! Boshqalar kutilmoqda...
+                            {t('matchWaiting')}
                         </p>
                     )}
                 </div>
@@ -446,7 +448,7 @@ export default function StudentGamePage() {
                         ))}
                     </div>
                     {selected !== null && (
-                        <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">⏳ Boshqalar javob berishini kutmoqda...</p>
+                        <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">{t('waiting')}</p>
                     )}
                 </>
             )}
@@ -467,11 +469,11 @@ export default function StudentGamePage() {
             </motion.div>
 
             <div>
-                <h2 className="text-3xl font-black text-white">{result.correct ? "To'g'ri!" : "Noto'g'ri!"}</h2>
+                <h2 className="text-3xl font-black text-white">{result.correct ? t('correct') : t('incorrect')}</h2>
                 {result.correct && streak >= 3 && (
                     <motion.p animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: 2, duration: 0.5 }}
                         className="text-orange-400 font-extrabold text-lg mt-1">
-                        🔥 {streak} ketma-ket! (+1.2x)
+                        {t('streak', { streak })}
                     </motion.p>
                 )}
             </div>
@@ -488,7 +490,7 @@ export default function StudentGamePage() {
             {phase === 'review' && (
                 <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                     className="w-full max-w-sm space-y-3">
-                    <p className="text-white/50 font-bold text-xs tracking-widest">JAVOBLAR KO&apos;RSATMASI</p>
+                    <p className="text-white/50 font-bold text-xs tracking-widest">{t('answersGuide')}</p>
 
                     {/* Options with highlight */}
                     <div className="space-y-2">
@@ -514,12 +516,12 @@ export default function StudentGamePage() {
                     {result.explanation && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
                             className="glass-blue p-4 rounded-2xl text-left">
-                            <p className="text-blue-300 font-black text-xs tracking-widest mb-1">💡 BILASIZMI?</p>
+                            <p className="text-blue-300 font-black text-xs tracking-widest mb-1">{t('didYouKnow')}</p>
                             <p className="text-white/80 text-sm font-semibold leading-relaxed">{result.explanation}</p>
                         </motion.div>
                     )}
 
-                    <p className="text-white/30 text-xs font-bold animate-pulse">Davom etish: {reviewCountdown}s...</p>
+                    <p className="text-white/30 text-xs font-bold animate-pulse">{t('continueIn', { time: reviewCountdown })}</p>
                 </motion.div>
             )}
         </div>
@@ -530,7 +532,7 @@ export default function StudentGamePage() {
         const myEntry = leaderboard.find(e => e.nickname === myNick);
         return (
             <div className="bg-player min-h-screen flex flex-col items-center justify-center p-5">
-                <h2 className="text-2xl font-black text-white mb-5">🏆 Natijalar</h2>
+                <h2 className="text-2xl font-black text-white mb-5">{t('results')}</h2>
                 <div className="w-full max-w-sm space-y-2.5 mb-5">
                     {leaderboard.slice(0, 10).map((e, i) => (
                         <motion.div key={i} initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.08 }}
@@ -549,7 +551,7 @@ export default function StudentGamePage() {
                 </div>
                 {myEntry && (
                     <div className="glass-blue px-6 py-3 rounded-2xl mb-4 text-center">
-                        <p className="text-white/50 text-xs font-bold">Sizning ballingiz</p>
+                        <p className="text-white/50 text-xs font-bold">{t('yourScore')}</p>
                         <p className="text-2xl font-black" style={{ color: '#FFD600' }}>{myNick} · {myEntry.score.toLocaleString()}</p>
                     </div>
                 )}
@@ -557,7 +559,7 @@ export default function StudentGamePage() {
                     {[0, 1, 2].map(i => <div key={i} className="w-3 h-3 rounded-full animate-bounce"
                         style={{ background: ['#0056b3', '#FFD600', '#00E676'][i], animationDelay: `${i * 0.2}s` }} />)}
                 </div>
-                <p className="text-white/40 font-bold mt-2 text-sm animate-pulse">Keyingi savol kutilmoqda...</p>
+                <p className="text-white/40 font-bold mt-2 text-sm animate-pulse">{t('nextQuestion')}</p>
             </div>
         );
     }
@@ -569,7 +571,7 @@ export default function StudentGamePage() {
         return (
             <div className="bg-player min-h-screen flex flex-col items-center justify-center p-5 text-center space-y-4">
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-7xl">🎉</motion.div>
-                <h1 className="text-3xl font-black text-white">O&apos;yin Tugadi!</h1>
+                <h1 className="text-3xl font-black text-white">{t('gameOver')}</h1>
 
                 {myBadge && (
                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
@@ -582,9 +584,9 @@ export default function StudentGamePage() {
 
                 {myEntry && (
                     <div className="glass-blue px-8 py-4 rounded-2xl">
-                        <p className="text-white/50 font-bold text-xs">SIZNING NATIJANGIZ</p>
+                        <p className="text-white/50 font-bold text-xs">{t('yourResult')}</p>
                         <p className="text-5xl mt-1">{RANK_ICONS[Math.min(myEntry.rank - 1, RANK_ICONS.length - 1)]}</p>
-                        <p className="text-2xl font-extrabold mt-1" style={{ color: '#FFD600' }}>{myEntry.score.toLocaleString()} ball</p>
+                        <p className="text-2xl font-extrabold mt-1" style={{ color: '#FFD600' }}>{myEntry.score.toLocaleString()}</p>
                     </div>
                 )}
 
@@ -599,7 +601,7 @@ export default function StudentGamePage() {
                     ))}
                 </div>
 
-                <button onClick={() => router.push('/')} className="btn-primary w-full max-w-sm justify-center">🏠 Bosh sahifa</button>
+                <button onClick={() => router.push('/')} className="btn-primary w-full max-w-sm justify-center">{t('home')}</button>
             </div>
         );
     }

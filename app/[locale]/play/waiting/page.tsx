@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
+import { useTranslations } from 'next-intl';
 
 export default function WaitingPage() {
+    const t = useTranslations('WaitingRoom');
     const router = useRouter();
     const [nickname, setNickname] = useState('');
     const [pin, setPin] = useState('');
@@ -44,12 +46,12 @@ export default function WaitingPage() {
                 </div>
 
                 <div>
-                    <p className="text-white/40 font-bold text-xs tracking-widest mb-1">XUSH KELIBSIZ</p>
+                    <p className="text-white/40 font-bold text-xs tracking-widest mb-1">{t('welcome')}</p>
                     <h1 className="text-4xl font-black text-white">{nickname}</h1>
                 </div>
 
                 <div className="glass-blue p-5 rounded-2xl">
-                    <p className="text-white/40 font-bold text-xs tracking-widest mb-1">PIN KOD</p>
+                    <p className="text-white/40 font-bold text-xs tracking-widest mb-1">{t('pinCode')}</p>
                     <p className="text-4xl font-black tracking-widest" style={{ color: '#FFD600', textShadow: '0 0 20px rgba(255,214,0,0.5)' }}>{pin}</p>
                 </div>
 
@@ -59,7 +61,7 @@ export default function WaitingPage() {
                             style={{ background: ['#0056b3', '#FFD600', '#00E676'][i], animationDelay: `${i * 0.2}s` }} />
                     ))}
                 </div>
-                <p className="text-white/50 font-bold">O&apos;qituvchi o&apos;yinni boshlashini kutmoqda{dots}</p>
+                <p className="text-white/50 font-bold">{t('waitingTeacher')}{dots}</p>
             </div>
         </div>
     );

@@ -71,6 +71,50 @@
             "start": "Play Now"
         }
     },
+    "GamePlay": {
+        "notFound": "Game not found",
+        "home": "← Home",
+        "backToDash": "🏠 Back to Dashboard",
+        "stats": {
+            "score": "SCORE",
+            "time": "TIME",
+            "question": "QUESTION",
+            "progress": "PROGRESS"
+        },
+        "online": "LIVE PLAYERS",
+        "proRequired": "This game requires Pro mode",
+        "buttons": {
+            "goPro": "👑 Upgrade to Pro",
+            "back": "← Back",
+            "create": "🎓 Create Quiz",
+            "play": "📱 Enter Game",
+            "startRules": "Understood, let's start! 🚀"
+        }
+    },
+    "GameSession": {
+        "loading": "Loading question...",
+        "waiting": "⏳ Waiting for others to answer...",
+        "matchWaiting": "✅ Done! Waiting for others...",
+        "correct": "Correct!",
+        "incorrect": "Incorrect!",
+        "streak": "🔥 {streak} in a row! (+1.2x)",
+        "added": "ADDED",
+        "total": "Total: {score}",
+        "answersGuide": "ANSWERS GUIDE",
+        "didYouKnow": "💡 DID YOU KNOW?",
+        "continueIn": "Continue in: {time}s...",
+        "results": "🏆 Results",
+        "yourScore": "Your score",
+        "nextQuestion": "Waiting for next question...",
+        "gameOver": "Game Over!",
+        "yourResult": "YOUR RESULT",
+        "home": "🏠 Home Page"
+    },
+    "WaitingRoom": {
+        "welcome": "WELCOME",
+        "pinCode": "PIN CODE",
+        "waitingTeacher": "Waiting for the teacher to start the game"
+    },
     "Auth": {
         "errors": {
             "enterEmailPass": "Enter email and password",

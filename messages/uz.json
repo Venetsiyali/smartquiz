@@ -71,6 +71,50 @@
             "start": "Boshlash"
         }
     },
+    "GamePlay": {
+        "notFound": "O'yin topilmadi",
+        "home": "← Bosh sahifa",
+        "backToDash": "🏠 Dashbordga qaytish",
+        "stats": {
+            "score": "BALL",
+            "time": "VAQT",
+            "question": "SAVOL",
+            "progress": "PROGRESS"
+        },
+        "online": "JONLI O'YINCHILAR",
+        "proRequired": "Bu o'yin Pro rejim talab qiladi",
+        "buttons": {
+            "goPro": "👑 Pro rejimga o'tish",
+            "back": "← Orqaga",
+            "create": "🎓 Quiz yaratish",
+            "play": "📱 O'yinga kirish",
+            "startRules": "Tushunarli, boshladik! 🚀"
+        }
+    },
+    "GameSession": {
+        "loading": "Savol yuklanmoqda...",
+        "waiting": "⏳ Boshqalar javob berishini kutmoqda...",
+        "matchWaiting": "✅ Bajarildi! Boshqalar kutilmoqda...",
+        "correct": "To'g'ri!",
+        "incorrect": "Noto'g'ri!",
+        "streak": "🔥 {streak} ketma-ket! (+1.2x)",
+        "added": "QO'SHILDI",
+        "total": "Jami: {score}",
+        "answersGuide": "JAVOBLAR KO'RSATMASI",
+        "didYouKnow": "💡 BILASIZMI?",
+        "continueIn": "Davom etish: {time}s...",
+        "results": "🏆 Natijalar",
+        "yourScore": "Sizning ballingiz",
+        "nextQuestion": "Keyingi savol kutilmoqda...",
+        "gameOver": "O'yin Tugadi!",
+        "yourResult": "SIZNING NATIJANGIZ",
+        "home": "🏠 Bosh sahifa"
+    },
+    "WaitingRoom": {
+        "welcome": "XUSH KELIBSIZ",
+        "pinCode": "PIN KOD",
+        "waitingTeacher": "O'qituvchi o'yinni boshlashini kutmoqda"
+    },
     "Auth": {
         "errors": {
             "enterEmailPass": "Email va parolni kiriting",

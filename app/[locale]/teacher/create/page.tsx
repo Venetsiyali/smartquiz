@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
@@ -51,7 +52,8 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
     const { isPro } = useSubscription();
     const [file, setFile] = useState<File | null>(null);
     const [count, setCount] = useState(5);
-    const [lang, setLang] = useState('uz');
+    const locale = useLocale();
+    const [lang, setLang] = useState(locale);
     const [timeLimit, setTimeLimit] = useState(20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -203,7 +205,8 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
     const { isPro } = useSubscription();
     const [topic, setTopic] = useState('');
     const [count, setCount] = useState(5);
-    const [lang, setLang] = useState('uz');
+    const locale = useLocale();
+    const [lang, setLang] = useState(locale);
     const [timeLimit, setTimeLimit] = useState(20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
