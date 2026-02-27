@@ -74,6 +74,7 @@ function getGreetingKey() {
 }
 
 export default function LandingPage() {
+    console.log("==== LANDING PAGE RENDERED ====");
     const router = useRouter();
     const { isPro } = useSubscription();
     const [userName, setUserName] = useState('');

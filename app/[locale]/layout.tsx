@@ -3,7 +3,6 @@ import '../globals.css';
 import { SubscriptionProvider } from '@/lib/subscriptionContext';
 import { Providers } from '@/components/Providers';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
@@ -68,14 +67,22 @@ export async function generateMetadata({ params: { locale } }: { params: { local
 
 export default async function RootLayout({
     children,
-    params: { locale }
+    params
 }: {
     children: React.ReactNode;
-    params: { locale: string };
+    params: any;
 }) {
-    if (!['uz', 'ru'].includes(locale)) notFound();
+    const locale = params?.locale;
+    console.log("==== ROOT LAYOUT PARAMS ====", params, "LOCALE:", locale);
 
-    const messages = await getMessages();
+    const safeLocale = (typeof locale === 'string' && ['uz', 'ru'].includes(locale)) ? locale : 'uz';
+
+    if (!locale || !['uz', 'ru'].includes(locale)) {
+        console.log("NOT FOUND TRIGGERED FOR LOCALE IN LAYOUT:", locale);
+        // notFound();
+    }
+
+    const messages = (await import(`../../messages/${safeLocale}.json`)).default;
 
     const jsonLd = {
         '@context': 'https://schema.org',
