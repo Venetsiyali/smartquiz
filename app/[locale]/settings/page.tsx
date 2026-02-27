@@ -4,10 +4,12 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 export default function SettingsPage() {
     const { data: session, status, update } = useSession();
     const router = useRouter();
+    const t = useTranslations('Settings');
 
     const [name, setName] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
@@ -40,13 +42,13 @@ export default function SettingsPage() {
             });
             const data = await res.json();
             if (res.ok) {
-                setNameMsg({ type: "success", text: "Ismingiz muvaffaqiyatli saqlandi!" });
+                setNameMsg({ type: "success", text: t('errors.nameSuccess') });
                 await update({ name: data.user.name });
             } else {
-                setNameMsg({ type: "error", text: data.error || "Xatolik yuz berdi" });
+                setNameMsg({ type: "error", text: data.error || t('errors.default') });
             }
         } catch {
-            setNameMsg({ type: "error", text: "Tarmoq xatosi" });
+            setNameMsg({ type: "error", text: t('errors.network') });
         } finally {
             setIsLoadingName(false);
         }
@@ -56,7 +58,7 @@ export default function SettingsPage() {
         e.preventDefault();
         setPasswordMsg(null);
         if (newPassword !== confirmPassword) {
-            setPasswordMsg({ type: "error", text: "Yangi parollar bir-biriga mos emas" });
+            setPasswordMsg({ type: "error", text: t('errors.mismatch') });
             return;
         }
         setIsLoadingPassword(true);
@@ -68,16 +70,16 @@ export default function SettingsPage() {
             });
             const data = await res.json();
             if (res.ok) {
-                setPasswordMsg({ type: "success", text: "Parol muvaffaqiyatli yangilandi! Qayta kiring." });
+                setPasswordMsg({ type: "success", text: t('errors.passSuccess') });
                 setCurrentPassword("");
                 setNewPassword("");
                 setConfirmPassword("");
                 setTimeout(() => signOut({ callbackUrl: "/login" }), 2000);
             } else {
-                setPasswordMsg({ type: "error", text: data.error || "Xatolik yuz berdi" });
+                setPasswordMsg({ type: "error", text: data.error || t('errors.default') });
             }
         } catch {
-            setPasswordMsg({ type: "error", text: "Tarmoq xatosi" });
+            setPasswordMsg({ type: "error", text: t('errors.network') });
         } finally {
             setIsLoadingPassword(false);
         }
@@ -93,14 +95,12 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-[#0a0f1c] text-white">
-            {/* Background glows */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-blue-600/20 rounded-full blur-[150px]"></div>
                 <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-[150px]"></div>
             </div>
 
             <div className="relative z-10 max-w-2xl mx-auto px-4 py-12">
-                {/* Header */}
                 <div className="flex items-center gap-4 mb-10">
                     <button
                         onClick={() => router.back()}
@@ -109,12 +109,11 @@ export default function SettingsPage() {
                         ←
                     </button>
                     <div>
-                        <h1 className="text-2xl font-black text-white">Sozlamalar</h1>
-                        <p className="text-white/50 text-sm">Hisobingizni boshqaring</p>
+                        <h1 className="text-2xl font-black text-white">{t('title')}</h1>
+                        <p className="text-white/50 text-sm">{t('subtitle')}</p>
                     </div>
                 </div>
 
-                {/* Profile Info */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6 backdrop-blur-sm">
                     <div className="flex items-center gap-4">
                         {session?.user?.image ? (
@@ -135,16 +134,16 @@ export default function SettingsPage() {
                             <p className="text-white/50 text-sm">{session?.user?.email}</p>
                             <div className="flex gap-2 mt-2">
                                 <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${session?.user?.role === "ADMIN"
-                                        ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
-                                        : session?.user?.role === "TEACHER"
-                                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                                            : "bg-white/5 text-white/60 border-white/10"
+                                    ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                                    : session?.user?.role === "TEACHER"
+                                        ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                                        : "bg-white/5 text-white/60 border-white/10"
                                     }`}>
                                     {session?.user?.role || "STUDENT"}
                                 </span>
                                 <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${session?.user?.plan === "PRO"
-                                        ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
-                                        : "bg-white/5 text-white/50 border-white/10"
+                                    ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
+                                    : "bg-white/5 text-white/50 border-white/10"
                                     }`}>
                                     {session?.user?.plan === "PRO" ? "👑 PRO" : "FREE"}
                                 </span>
@@ -153,10 +152,9 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                {/* Change Name */}
                 <form onSubmit={handleNameUpdate} className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6 backdrop-blur-sm">
                     <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                        <span className="text-lg">✏️</span> Ismni o'zgartirish
+                        <span className="text-lg">✏️</span> {t('nameTitle')}
                     </h2>
                     <div className="space-y-4">
                         <input
@@ -164,7 +162,7 @@ export default function SettingsPage() {
                             required
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            placeholder="Ismingiz"
+                            placeholder={t('nameInput')}
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
                         {nameMsg && (
@@ -180,29 +178,28 @@ export default function SettingsPage() {
                             {isLoadingName ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    Saqlanmoqda...
+                                    {t('saving')}
                                 </span>
-                            ) : "Saqlash"}
+                            ) : t('save')}
                         </button>
                     </div>
                 </form>
 
-                {/* Change Password */}
                 <form onSubmit={handlePasswordUpdate} className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6 backdrop-blur-sm">
                     <h2 className="text-base font-bold text-white mb-1 flex items-center gap-2">
-                        <span className="text-lg">🔑</span> Parolni o'zgartirish
+                        <span className="text-lg">🔑</span> {t('passTitle')}
                     </h2>
                     <p className="text-white/40 text-xs mb-4">
                         {session?.user?.image && !session?.user?.email?.includes("@")
-                            ? "Google akkauntida parol yo'q. Yangi parol o'rnating."
-                            : "Eski parolni kiriting va yangi parol yarating."}
+                            ? t('passEmptyNote')
+                            : t('passUpdateNote')}
                     </p>
                     <div className="space-y-3">
                         <input
                             type="password"
                             value={currentPassword}
                             onChange={e => setCurrentPassword(e.target.value)}
-                            placeholder="Eski parol (agar mavjud bo'lsa)"
+                            placeholder={t('oldPass')}
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
                         <input
@@ -210,7 +207,7 @@ export default function SettingsPage() {
                             required
                             value={newPassword}
                             onChange={e => setNewPassword(e.target.value)}
-                            placeholder="Yangi parol (kamida 6 ta belgi)"
+                            placeholder={t('newPass')}
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
                         <input
@@ -218,7 +215,7 @@ export default function SettingsPage() {
                             required
                             value={confirmPassword}
                             onChange={e => setConfirmPassword(e.target.value)}
-                            placeholder="Yangi parolni tasdiqlang"
+                            placeholder={t('confirmPass')}
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
                         {passwordMsg && (
@@ -234,23 +231,22 @@ export default function SettingsPage() {
                             {isLoadingPassword ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    Saqlanmoqda...
+                                    {t('saving')}
                                 </span>
-                            ) : "Parolni yangilash"}
+                            ) : t('updatePassBtn')}
                         </button>
                     </div>
                 </form>
 
-                {/* Danger zone */}
                 <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6">
                     <h2 className="text-base font-bold text-red-400 mb-4 flex items-center gap-2">
-                        <span className="text-lg">🚪</span> Hisobdan chiqish
+                        <span className="text-lg">🚪</span> {t('logoutTitle')}
                     </h2>
                     <button
                         onClick={() => signOut({ callbackUrl: "/login" })}
                         className="w-full h-11 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl font-bold text-sm text-red-400 hover:text-red-300 transition-all"
                     >
-                        Tizimdan chiqish
+                        {t('logoutBtn')}
                     </button>
                 </div>
             </div>

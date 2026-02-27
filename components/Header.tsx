@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { CrownBadge } from "@/lib/subscriptionContext";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
+    const t = useTranslations('Header');
     const { data: session } = useSession();
     const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -48,11 +51,13 @@ export default function Header() {
 
             {/* Right side controls */}
             <div className="flex items-center gap-4">
+                <LanguageSwitcher />
+
                 <button
                     onClick={() => router.push('/muallif')}
                     className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10"
                 >
-                    👤 Muallif
+                    👤 {t('author')}
                 </button>
 
                 {session ? (
@@ -62,7 +67,7 @@ export default function Header() {
                             className="flex items-center gap-3 focus:outline-none p-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
                         >
                             <span className="hidden md:block text-sm font-bold text-white px-2">
-                                {session.user.name || "Foydalanuvchi"}
+                                {session.user.name || t('user')}
                             </span>
                             {session.user.image ? (
                                 <Image
@@ -90,21 +95,21 @@ export default function Header() {
                                     onClick={() => router.push('/settings')}
                                     className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
                                 >
-                                    ⚙️ Sozlamalar
+                                    ⚙️ {t('settings')}
                                 </button>
                                 {session.user.role === "ADMIN" && (
                                     <button
                                         onClick={() => router.push('/admin')}
                                         className="w-full text-left px-4 py-2 text-sm text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors flex items-center gap-2"
                                     >
-                                        🛠️ Admin Panel
+                                        🛠️ {t('adminPanel')}
                                     </button>
                                 )}
                                 <button
                                     onClick={handleLogout}
                                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex items-center gap-2 mt-1"
                                 >
-                                    🚪 Chiqish
+                                    🚪 {t('logout')}
                                 </button>
                             </div>
                         )}
@@ -114,7 +119,7 @@ export default function Header() {
                         onClick={() => router.push('/login')}
                         className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all bg-blue-600 hover:bg-blue-500 hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(37,99,235,0.4)]"
                     >
-                        Kirish
+                        {t('login')}
                     </button>
                 )}
             </div>

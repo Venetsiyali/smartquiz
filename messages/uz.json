@@ -1,0 +1,126 @@
+{
+    "Header": {
+        "dashboard": "Dashboard",
+        "settings": "Sozlamalar",
+        "logout": "Chiqish",
+        "login": "Kirish",
+        "author": "Muallif",
+        "adminPanel": "Admin Panel",
+        "user": "Foydalanuvchi"
+    },
+    "Home": {
+        "greeting": {
+            "night": "Kechasi xursand",
+            "morning": "Xayrli tong",
+            "afternoon": "Xayrli kun",
+            "evening": "Xayrli kech"
+        },
+        "hero": {
+            "hello": "Salom",
+            "whatToPlay": "Bugun qaysi o'yinni o'ynaymiz?",
+            "mode": "Rejim",
+            "pro": "👑 Pro",
+            "free": "🎮 Bepul",
+            "enterGame": "📱 O'yinga kirish",
+            "gameTypes": "O'YIN TURLARI",
+            "createQuiz": "✨ Quiz yaratish",
+            "goPro": "👑 Pro rejimga o'tish"
+        },
+        "footer": "© 2026 Zukkoo · TUIT ATT bo'limi · Barcha huquqlar himoyalangan"
+    },
+    "Games": {
+        "classic": {
+            "name": "Zukkoo",
+            "sub": "Klassik viktorina",
+            "badge": "BEPUL",
+            "desc": "Ko'p tanlov, To'g'ri/Noto'g'ri savollar. Real-vaqt reytingi."
+        },
+        "order": {
+            "name": "Mantiqiy zanjir",
+            "sub": "Sorting Game",
+            "badge": "BEPUL",
+            "desc": "Elementlarni to'g'ri tartibda joylashtiring. Mantiqiy fikrlash!"
+        },
+        "match": {
+            "name": "Terminlar jangi",
+            "sub": "Matching Game",
+            "badge": "PRO",
+            "desc": "Juftliklarni mos ulashtiring. Terminlar va ta'riflar."
+        },
+        "blitz": {
+            "name": "Bliz-Sohat",
+            "sub": "True/False Duel",
+            "badge": "BEPUL",
+            "desc": "To'g'ri yoki noto'g'ri — tez qaror qil! Vaqt bilan poyga."
+        },
+        "anagram": {
+            "name": "Yashirin kod",
+            "sub": "Anagram",
+            "badge": "PRO",
+            "desc": "Aralashgan harflardan to'g'ri so'zni toping. Tezlik va ziyraklik!"
+        },
+        "team": {
+            "name": "Jamoaviy qutqaruv",
+            "sub": "Team Mode",
+            "badge": "PRO",
+            "desc": "Jamoa bilan birgalikda g'alaba qozonish. Combo va qalqon!"
+        },
+        "card": {
+            "proNeeded": "Pro kerak",
+            "proMode": "👑 Pro rejim",
+            "start": "Boshlash"
+        }
+    },
+    "Auth": {
+        "errors": {
+            "enterEmailPass": "Email va parolni kiriting",
+            "default": "Xatolik yuz berdi",
+            "network": "Tarmoq xatosi",
+            "incompleteCode": "6 xonali kodni to'liq kiriting",
+            "system": "Tizim xatosi"
+        },
+        "hero": {
+            "title": "Kelajak ta'limi shu yerda",
+            "desc": "O'quvchilaringizni Zukkoo bilan yangi darajaga olib chiqing"
+        },
+        "form": {
+            "loginTitle": "Zukkoo-ga kirish",
+            "loginDesc": "Platformaga kirish uchun pochtangizni kiriting",
+            "otpTitle": "Tasdiqlash kodi",
+            "otpDesc": "Pochtaga 6-xonali kod yuborildi",
+            "emailLabel": "Email manzili",
+            "emailPlace": "ism@gmail.com",
+            "passLabel": "Parol",
+            "passPlace": "Parolni kiriting...",
+            "continue": "Davom etish",
+            "loginBtn": "Tizimga kirish",
+            "back": "Ortga qaytish",
+            "or": "yoki",
+            "google": "Google bilan birga"
+        }
+    },
+    "Settings": {
+        "title": "Sozlamalar",
+        "subtitle": "Hisobingizni boshqaring",
+        "nameTitle": "Ismni o'zgartirish",
+        "nameInput": "Ismingiz",
+        "save": "Saqlash",
+        "saving": "Saqlanmoqda...",
+        "passTitle": "Parolni o'zgartirish",
+        "passEmptyNote": "Google akkauntida parol yo'q. Yangi parol o'rnating.",
+        "passUpdateNote": "Eski parolni kiriting va yangi parol yarating.",
+        "oldPass": "Eski parol (agar mavjud bo'lsa)",
+        "newPass": "Yangi parol (kamida 6 ta belgi)",
+        "confirmPass": "Yangi parolni tasdiqlang",
+        "updatePassBtn": "Parolni yangilash",
+        "logoutTitle": "Hisobdan chiqish",
+        "logoutBtn": "Tizimdan chiqish",
+        "errors": {
+            "default": "Xatolik yuz berdi",
+            "network": "Tarmoq xatosi",
+            "mismatch": "Yangi parollar bir-biriga mos emas",
+            "nameSuccess": "Ismingiz muvaffaqiyatli saqlandi!",
+            "passSuccess": "Parol muvaffaqiyatli yangilandi! Qayta kiring."
+        }
+    }
+}

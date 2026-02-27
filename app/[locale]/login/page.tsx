@@ -4,12 +4,14 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState<"credentials" | "otp">("credentials");
+    const t = useTranslations('Auth');
 
     // Form States
     const [email, setEmail] = useState("");
@@ -33,7 +35,7 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
         if (!email || !password) {
-            setError("Email va parolni kiriting");
+            setError(t('errors.enterEmailPass'));
             return;
         }
 
@@ -47,7 +49,7 @@ export default function LoginPage() {
 
             const data = await res.json();
             if (!res.ok) {
-                setError(data.error || "Xatolik yuz berdi");
+                setError(data.error || t('errors.default'));
                 setIsLoading(false);
                 return;
             }
@@ -56,21 +58,19 @@ export default function LoginPage() {
             setStep("otp");
             setIsLoading(false);
         } catch (err) {
-            setError("Tarmoq xatosi");
+            setError(t('errors.network'));
             setIsLoading(false);
         }
     };
 
     const handleOtpChange = (index: number, value: string) => {
         if (value.length > 1) {
-            // Handle paste
             const pastedData = value.split("").slice(0, 6);
             const newOtp = [...otp];
             pastedData.forEach((char, i) => {
                 if (index + i < 6) newOtp[index + i] = char;
             });
             setOtp(newOtp);
-            // Focus last filled
             const nextIndex = Math.min(index + pastedData.length, 5);
             inputRefs.current[nextIndex]?.focus();
             return;
@@ -80,7 +80,6 @@ export default function LoginPage() {
         newOtp[index] = value;
         setOtp(newOtp);
 
-        // Auto focus next
         if (value && index < 5) {
             inputRefs.current[index + 1]?.focus();
         }
@@ -96,7 +95,7 @@ export default function LoginPage() {
         e.preventDefault();
         const otpString = otp.join("");
         if (otpString.length !== 6) {
-            setError("6 xonali kodni to'liq kiriting");
+            setError(t('errors.incompleteCode'));
             return;
         }
 
@@ -118,7 +117,7 @@ export default function LoginPage() {
                 router.push("/");
             }
         } catch (err) {
-            setError("Tizim xatosi");
+            setError(t('errors.system'));
             setIsLoading(false);
         }
     };
@@ -137,12 +136,10 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-[#0a0f1c] flex flex-col md:flex-row relative overflow-hidden">
-            {/* Background elements */}
             <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-            {/* Left Panel: Hero Image */}
             <div className="hidden md:flex w-1/2 p-8 items-center justify-center relative z-10">
                 <div className="relative w-full max-w-2xl aspect-[2/1] rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(37,99,235,0.2)] border border-white/10 group">
                     <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/50 to-transparent mix-blend-overlay z-10 pointer-events-none"></div>
@@ -155,13 +152,12 @@ export default function LoginPage() {
                         unoptimized
                     />
                     <div className="absolute bottom-0 left-0 right-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent z-20">
-                        <h2 className="text-3xl font-black text-white mb-2">Kelajak ta'limi shu yerda</h2>
-                        <p className="text-white/70">O'quvchilaringizni Zukkoo bilan yangi darajaga olib chiqing</p>
+                        <h2 className="text-3xl font-black text-white mb-2">{t('hero.title')}</h2>
+                        <p className="text-white/70">{t('hero.desc')}</p>
                     </div>
                 </div>
             </div>
 
-            {/* Right Panel: Login Form */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-8 relative z-10">
                 <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden transition-all duration-500">
                     <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
@@ -171,12 +167,12 @@ export default function LoginPage() {
                             <span className="text-2xl">🎓</span>
                         </div>
                         <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-                            {step === "credentials" ? "Zukkoo-ga kirish" : "Tasdiqlash kodi"}
+                            {step === "credentials" ? t('form.loginTitle') : t('form.otpTitle')}
                         </h1>
                         <p className="text-white/50 text-sm font-medium">
                             {step === "credentials"
-                                ? "Platformaga kirish uchun pochtangizni kiriting"
-                                : `Pochtaga 6-xonali kod yuborildi: ${email}`}
+                                ? t('form.loginDesc')
+                                : `${t('form.otpDesc')}: ${email}`}
                         </p>
                     </div>
 
@@ -189,25 +185,25 @@ export default function LoginPage() {
                     {step === "credentials" ? (
                         <form onSubmit={handleSendOTP} className="space-y-4 relative z-10">
                             <div>
-                                <label className="block text-white/70 text-sm font-medium mb-1.5 ml-1">Email manzili</label>
+                                <label className="block text-white/70 text-sm font-medium mb-1.5 ml-1">{t('form.emailLabel')}</label>
                                 <input
                                     type="email"
                                     required
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                                    placeholder="ism@gmail.com"
+                                    placeholder={t('form.emailPlace')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-white/70 text-sm font-medium mb-1.5 ml-1">Parol</label>
+                                <label className="block text-white/70 text-sm font-medium mb-1.5 ml-1">{t('form.passLabel')}</label>
                                 <input
                                     type="password"
                                     required
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                                    placeholder="Parolni kiriting..."
+                                    placeholder={t('form.passPlace')}
                                 />
                             </div>
 
@@ -218,7 +214,7 @@ export default function LoginPage() {
                             >
                                 {isLoading ? (
                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                ) : "Davom etish"}
+                                ) : t('form.continue')}
                             </button>
                         </form>
                     ) : (
@@ -246,7 +242,7 @@ export default function LoginPage() {
                                 >
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    ) : "Tizimga kirish"}
+                                    ) : t('form.loginBtn')}
                                 </button>
                                 <button
                                     type="button"
@@ -254,7 +250,7 @@ export default function LoginPage() {
                                     disabled={isLoading}
                                     className="w-full h-12 flex items-center justify-center text-white/50 hover:text-white rounded-xl font-medium text-sm transition-all hover:bg-white/5"
                                 >
-                                    Ortga qaytish
+                                    {t('form.back')}
                                 </button>
                             </div>
                         </form>
@@ -262,7 +258,7 @@ export default function LoginPage() {
 
                     <div className="relative flex items-center py-6 z-10">
                         <div className="flex-grow border-t border-white/10"></div>
-                        <span className="flex-shrink-0 mx-4 text-white/30 text-sm font-medium">yoki</span>
+                        <span className="flex-shrink-0 mx-4 text-white/30 text-sm font-medium">{t('form.or')}</span>
                         <div className="flex-grow border-t border-white/10"></div>
                     </div>
 
@@ -278,7 +274,7 @@ export default function LoginPage() {
                                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                             </svg>
-                            Google bilan birga
+                            {t('form.google')}
                         </button>
                     </div>
                 </div>

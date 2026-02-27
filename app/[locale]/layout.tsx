@@ -1,63 +1,82 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import '../globals.css';
 import { SubscriptionProvider } from '@/lib/subscriptionContext';
 import { Providers } from '@/components/Providers';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
-export const metadata: Metadata = {
-    title: {
-        template: '%s | Zukkoo.uz',
-        default: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
-    },
-    description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
-    keywords: [
-        'zukkoo', 'zukkoo.uz', 'interaktiv ta\'lim', 'gamifikatsiya', 'quiz',
-        'online quiz', 'viktorina', 'smart education', 'TATU', 'interaktiv o\'yinlar',
-        'kahoot analogi', 'o\'zbek ta\'lim platformasi', 'o\'zbekiston', 'att', 'tuit',
-        'PhD tadqiqot', 'Rustamjon Nasridinov', 'gidrologik monitoring'
-    ],
-    authors: [{ name: 'Rustamjon Nasridinov', url: 'https://zukkoo.uz' }],
-    creator: 'Rustamjon Nasridinov',
-    publisher: 'Zukkoo.uz',
-    metadataBase: new URL('https://zukkoo.uz'),
-    openGraph: {
-        title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+    return {
+        title: {
+            template: '%s | Zukkoo.uz',
+            default: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+        },
         description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
-        url: 'https://zukkoo.uz',
-        siteName: 'Zukkoo.uz',
-        images: [
-            {
-                url: '/images/zukkoo-hero.jpg',
-                width: 1200,
-                height: 600,
-                alt: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
-            },
+        keywords: [
+            'zukkoo', 'zukkoo.uz', 'interaktiv ta\'lim', 'gamifikatsiya', 'quiz',
+            'online quiz', 'viktorina', 'smart education', 'TATU', 'interaktiv o\'yinlar',
+            'kahoot analogi', 'o\'zbek ta\'lim platformasi', 'o\'zbekiston', 'att', 'tuit',
+            'PhD tadqiqot', 'Rustamjon Nasridinov', 'gidrologik monitoring'
         ],
-        locale: 'uz_UZ',
-        type: 'website',
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
-        description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
-        images: ['/images/zukkoo-hero.jpg'],
-        creator: '@zukkoo_uz',
-    },
-    alternates: {
-        canonical: 'https://zukkoo.uz',
-    },
-    robots: {
-        index: true,
-        follow: true,
-        googleBot: {
+        authors: [{ name: 'Rustamjon Nasridinov', url: 'https://zukkoo.uz' }],
+        creator: 'Rustamjon Nasridinov',
+        publisher: 'Zukkoo.uz',
+        metadataBase: new URL('https://zukkoo.uz'),
+        openGraph: {
+            title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+            description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+            url: `https://zukkoo.uz/${locale}`,
+            siteName: 'Zukkoo.uz',
+            images: [
+                {
+                    url: '/images/zukkoo-hero.jpg',
+                    width: 1200,
+                    height: 600,
+                    alt: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+                },
+            ],
+            locale: locale === 'uz' ? 'uz_UZ' : 'ru_RU',
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+            description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+            images: ['/images/zukkoo-hero.jpg'],
+            creator: '@zukkoo_uz',
+        },
+        alternates: {
+            canonical: `https://zukkoo.uz/${locale}`,
+            languages: {
+                'uz': 'https://zukkoo.uz/uz',
+                'ru': 'https://zukkoo.uz/ru',
+            },
+        },
+        robots: {
             index: true,
             follow: true,
-            'max-image-preview': 'large',
+            googleBot: {
+                index: true,
+                follow: true,
+                'max-image-preview': 'large',
+            },
         },
-    },
-    icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" },
-};
+        icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" },
+    };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+    children,
+    params: { locale }
+}: {
+    children: React.ReactNode;
+    params: { locale: string };
+}) {
+    if (!['uz', 'ru'].includes(locale)) notFound();
+
+    const messages = await getMessages();
+
     const jsonLd = {
         '@context': 'https://schema.org',
         '@graph': [
@@ -144,8 +163,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         url: 'https://zukkoo.uz',
         sameAs: ['https://tatu.uz'],
     };
+
     return (
-        <html lang="uz">
+        <html lang={locale}>
             <head>
                 <script
                     type="application/ld+json"
@@ -157,11 +177,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body>
-                <Providers>
-                    <SubscriptionProvider>
-                        {children}
-                    </SubscriptionProvider>
-                </Providers>
+                <NextIntlClientProvider locale={locale} messages={messages}>
+                    <Providers>
+                        <SubscriptionProvider>
+                            {children}
+                        </SubscriptionProvider>
+                    </Providers>
+                </NextIntlClientProvider>
             </body>
         </html>
     );
