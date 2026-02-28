@@ -277,7 +277,7 @@ export default function GameDetailPage({
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-black px-3 py-1 rounded-xl tracking-widest"
                             style={{ background: theme.badgeBg, color: theme.badgeColor, border: `1px solid ${theme.badgeColor}55` }}>
-                            {theme.badge}
+                            {cfg.pro ? 'PRO' : tGamesList('blitz.badge').toUpperCase()}
                         </span>
                         <span className="text-xs font-bold text-white/30 hidden sm:block">{tLobbyStats(`style${gameId}` as any)}</span>
                     </div>
@@ -460,7 +460,7 @@ export default function GameDetailPage({
                                     <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
                                         style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)' }}>
                                         <span className="text-base">👑</span>
-                                        <span className="text-xs font-black text-yellow-400">Bu o&apos;yin Pro rejim talab qiladi</span>
+                                        <span className="text-xs font-black text-yellow-400">{t('proRequired')}</span>
                                     </div>
                                 )}
                             </div>

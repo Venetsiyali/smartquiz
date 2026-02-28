@@ -328,6 +328,29 @@
             "questionNo": "SAVOL #{number}",
             "addQuestion": "+ Savol qo'shish",
             "proMax50": "👑 Pro → 50 ta savolga"
+        },
+        "Modals": {
+            "aiTitle": "🤖 AI Savol Yaratuvchi",
+            "aiSubtitle": "Groq · LLaMA 3.3-70B",
+            "aiTopicPlaceholder": "Mavzuni kiriting (masalan: Optika, Algebra...)",
+            "count": "SONI",
+            "lang": "TIL",
+            "time": "VAQT",
+            "generateBtn": "✨ Yaratish",
+            "generating": "Yaratilmoqda...",
+            "topicRequired": "Mavzu kiriting",
+            "error": "Xatolik",
+            "serverError": "Server xatoligi",
+            "qsReady": "{count} ta savol tayyor",
+            "addBtn": "✅ Qo'shish",
+            "fileTitle": "📄 Fayl orqali Savol Yaratish",
+            "fileSubtitle": "PDF yoki DOCX → AI → Savollar",
+            "selectFile": "Fayl tanlang",
+            "dropzoneText": "PDF yoki DOCX faylni shu yerga tashlang",
+            "orClick": "yoki bosing",
+            "analyzing": "Tahlil qilinmoqda...",
+            "analyzeBtn": "🤖 AI bilan Tahlil Qilish",
+            "charsRead": "belgi o'qildi"
         }
     }
 }

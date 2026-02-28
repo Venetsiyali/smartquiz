@@ -328,6 +328,29 @@
             "questionNo": "QUESTION #{number}",
             "addQuestion": "+ Add Question",
             "proMax50": "👑 Pro → 50 questions"
+        },
+        "Modals": {
+            "aiTitle": "🤖 AI Question Generator",
+            "aiSubtitle": "Groq · LLaMA 3.3-70B",
+            "aiTopicPlaceholder": "Enter topic (e.g. Optics, Algebra...)",
+            "count": "COUNT",
+            "lang": "LANG",
+            "time": "TIME",
+            "generateBtn": "✨ Generate",
+            "generating": "Generating...",
+            "topicRequired": "Enter a topic",
+            "error": "Error",
+            "serverError": "Server error",
+            "qsReady": "{count} questions ready",
+            "addBtn": "✅ Add to Quiz",
+            "fileTitle": "📄 Create Questions via File",
+            "fileSubtitle": "PDF or DOCX → AI → Questions",
+            "selectFile": "Select a file",
+            "dropzoneText": "Drop PDF/DOCX file here",
+            "orClick": "or click",
+            "analyzing": "Analyzing...",
+            "analyzeBtn": "🤖 Analyze with AI",
+            "charsRead": "characters read"
         }
     }
 }

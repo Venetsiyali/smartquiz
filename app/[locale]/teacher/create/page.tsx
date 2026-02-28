@@ -49,6 +49,7 @@ const OPTION_COLORS = [
 
 /* ── File Upload Modal ── */
 function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void }) {
+    const t = useTranslations('TeacherCreate.Modals');
     const { isPro } = useSubscription();
     const [file, setFile] = useState<File | null>(null);
     const [count, setCount] = useState(5);
@@ -62,7 +63,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleUpload = async () => {
-        if (!file) { setError('Fayl tanlang'); return; }
+        if (!file) { setError(t('selectFile')); return; }
         setError(''); setLoading(true); setPreview(null);
 
         const fd = new FormData();
@@ -74,7 +75,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
         try {
             const res = await fetch('/api/ai/upload', { method: 'POST', body: fd });
             const data = await res.json();
-            if (!res.ok) { setError(data.error || 'Xatolik'); setLoading(false); return; }
+            if (!res.ok) { setError(data.error || t('error')); setLoading(false); return; }
 
             const mapped: QuizQuestion[] = data.questions.map((q: any) => ({
                 id: uuidv4(), type: 'multiple' as QuestionType, text: q.text,
@@ -84,7 +85,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
             }));
             setPreview(mapped);
             setFileInfo(data.fileInfo);
-        } catch { setError('Server xatoligi'); }
+        } catch { setError(t('serverError')); }
         setLoading(false);
     };
 
@@ -93,8 +94,8 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
             <div className="glass w-full max-w-2xl rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto scrollbar-hide">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-black text-white">📄 Fayl orqali Savol Yaratish</h2>
-                        <p className="text-white/40 text-xs font-bold">PDF yoki DOCX → AI → Savollar</p>
+                        <h2 className="text-xl font-black text-white">{t('fileTitle')}</h2>
+                        <p className="text-white/40 text-xs font-bold">{t('fileSubtitle')}</p>
                     </div>
                     <button onClick={onClose} className="text-white/40 hover:text-white text-3xl">×</button>
                 </div>
@@ -113,15 +114,15 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                         </div>
                     ) : (
                         <div>
-                            <p className="text-white/60 font-bold">PDF yoki DOCX faylni shu yerga tashlang</p>
-                            <p className="text-white/30 text-sm">yoki bosing</p>
+                            <p className="text-white/60 font-bold">{t('dropzoneText')}</p>
+                            <p className="text-white/30 text-sm">{t('orClick')}</p>
                         </div>
                     )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                     <div>
-                        <label className="text-white/50 font-bold text-xs block mb-1.5">SONI</label>
+                        <label className="text-white/50 font-bold text-xs block mb-1.5">{t('count')}</label>
                         <div className="flex flex-wrap gap-1.5">
                             {[3, 5, 8, 10, 15, 20, 30].map(n => {
                                 const locked = (n > 10) && !isPro;
@@ -136,7 +137,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                         </div>
                     </div>
                     <div>
-                        <label className="text-white/50 font-bold text-xs block mb-1.5">TIL</label>
+                        <label className="text-white/50 font-bold text-xs block mb-1.5">{t('lang')}</label>
                         <div className="flex gap-1.5">
                             {[{ c: 'uz', l: '🇺🇿' }, { c: 'ru', l: '🇷🇺' }, { c: 'en', l: '🇬🇧' }].map(x => (
                                 <button key={x.c} onClick={() => setLang(x.c)}
@@ -148,7 +149,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                         </div>
                     </div>
                     <div>
-                        <label className="text-white/50 font-bold text-xs block mb-1.5">VAQT</label>
+                        <label className="text-white/50 font-bold text-xs block mb-1.5">{t('time')}</label>
                         <div className="flex flex-wrap gap-1">
                             {[20, 30, 60].map(t => (
                                 <button key={t} onClick={() => setTimeLimit(t)}
@@ -165,14 +166,14 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
 
                 <button onClick={handleUpload} disabled={loading || !file}
                     className="w-full btn-primary justify-center disabled:opacity-50 disabled:transform-none">
-                    {loading ? <><span className="animate-spin">⚙️</span> Tahlil qilinmoqda...</> : '🤖 AI bilan Tahlil Qilish'}
+                    {loading ? <><span className="animate-spin">⚙️</span> {t('analyzing')}</> : t('analyzeBtn')}
                 </button>
 
-                {fileInfo && <p className="text-center text-white/30 text-xs">{fileInfo.name} · {fileInfo.chars.toLocaleString()} belgi o&apos;qildi</p>}
+                {fileInfo && <p className="text-center text-white/30 text-xs">{fileInfo.name} · {fileInfo.chars.toLocaleString()} {t('charsRead')}</p>}
 
                 {preview && (
                     <div className="space-y-3">
-                        <p className="text-green-400 font-bold text-sm">✅ {preview.length} ta savol tayyor</p>
+                        <p className="text-green-400 font-bold text-sm">✅ {t('qsReady', { count: preview.length })}</p>
                         <div className="space-y-2 max-h-52 overflow-y-auto scrollbar-hide">
                             {preview.map((q, i) => (
                                 <div key={q.id} className="glass-blue p-3 rounded-xl">
@@ -191,7 +192,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                         <button onClick={() => { onImport(preview); onClose(); }}
                             className="w-full py-4 rounded-2xl font-extrabold text-white text-lg hover:scale-105 transition-all"
                             style={{ background: 'linear-gradient(135deg, #00E676, #009944)', boxShadow: '0 8px 28px rgba(0,230,118,0.35)' }}>
-                            ✅ Quizga qo&apos;shish
+                            {t('addBtn')}
                         </button>
                     </div>
                 )}
@@ -202,6 +203,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
 
 /* ── AI Text Modal ── */
 function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void }) {
+    const t = useTranslations('TeacherCreate.Modals');
     const { isPro } = useSubscription();
     const [topic, setTopic] = useState('');
     const [count, setCount] = useState(5);
@@ -213,7 +215,7 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
 
     const generate = async () => {
-        if (!topic.trim()) { setError('Mavzu kiriting'); return; }
+        if (!topic.trim()) { setError(t('topicRequired')); return; }
         setError(''); setLoading(true); setPreview(null);
         try {
             const res = await fetch('/api/ai/generate', {
@@ -228,7 +230,7 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                 timeLimit, explanation: q.explanation || '',
             }));
             setPreview(mapped);
-        } catch { setError('Server xatoligi'); }
+        } catch { setError(t('serverError')); }
         setLoading(false);
     };
 
@@ -237,13 +239,13 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
             <div className="glass w-full max-w-xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto scrollbar-hide">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-black text-white">🤖 AI Savol Yaratuvchi</h2>
-                        <p className="text-white/40 text-xs">Groq · LLaMA 3.3-70B</p>
+                        <h2 className="text-xl font-black text-white">{t('aiTitle')}</h2>
+                        <p className="text-white/40 text-xs">{t('aiSubtitle')}</p>
                     </div>
                     <button onClick={onClose} className="text-white/40 hover:text-white text-3xl">×</button>
                 </div>
                 <input value={topic} onChange={e => setTopic(e.target.value)}
-                    placeholder="Mavzuni kiriting (masalan: Optika, Algebra, Tarix...)"
+                    placeholder={t('aiTopicPlaceholder')}
                     className="input-game" onKeyDown={e => e.key === 'Enter' && generate()} />
                 <div className="flex gap-3 flex-wrap">
                     {[3, 5, 8, 10, 20, 30].map(n => {
@@ -251,7 +253,7 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                         return (
                             <button key={n} onClick={() => !locked && setCount(n)} className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${locked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 style={count === n ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                                {n} ta {locked && <ProLock />}
+                                {n} {locked && <ProLock />}
                             </button>
                         )
                     })}
@@ -267,11 +269,11 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                 {error && <p className="text-red-400 text-sm font-bold bg-red-500/10 rounded-xl py-2 text-center">⚠️ {error}</p>}
                 <button onClick={generate} disabled={loading}
                     className="w-full btn-primary justify-center disabled:opacity-50 disabled:transform-none">
-                    {loading ? <><span className="animate-spin">🤖</span> Yaratilmoqda...</> : '✨ Yaratish'}
+                    {loading ? <><span className="animate-spin">🤖</span> {t('generating')}</> : t('generateBtn')}
                 </button>
                 {preview && (
                     <div className="space-y-2">
-                        <p className="text-green-400 font-bold text-sm">✅ {preview.length} ta savol</p>
+                        <p className="text-green-400 font-bold text-sm">✅ {t('qsReady', { count: preview.length })}</p>
                         <div className="max-h-48 overflow-y-auto scrollbar-hide space-y-1.5">
                             {preview.map((q, i) => (
                                 <div key={q.id} className="glass-blue p-2.5 rounded-xl">
@@ -282,7 +284,7 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                         <button onClick={() => { onImport(preview); onClose(); }}
                             className="w-full py-3 rounded-2xl font-extrabold text-white hover:scale-105 transition-all"
                             style={{ background: 'linear-gradient(135deg, #00E676, #009944)' }}>
-                            ✅ Qo&apos;shish
+                            {t('addBtn')}
                         </button>
                     </div>
                 )}
@@ -294,8 +296,9 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
 type ModalType = 'none' | 'ai' | 'file';
 
 export default function TeacherCreatePage() {
+    const t = useTranslations('Common');
     return (
-        <Suspense fallback={<div className="min-h-screen bg-host flex items-center justify-center"><p className="text-white/50 text-xl font-bold">Yuklanmoqda...</p></div>}>
+        <Suspense fallback={<div className="min-h-screen bg-host flex items-center justify-center"><p className="text-white/50 text-xl font-bold">{t('loading')}...</p></div>}>
             <TeacherCreateInner />
         </Suspense>
     );
