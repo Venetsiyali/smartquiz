@@ -357,12 +357,12 @@ export default function StudentGamePage() {
                     </div>
                     {question.type === 'order' && (
                         <div className="glass px-2.5 py-1 rounded-xl">
-                            <span className="text-yellow-400 font-black text-xs">🔗 ZANJIR</span>
+                            <span className="text-yellow-400 font-black text-xs">🔗 {t('orderGameBadge')}</span>
                         </div>
                     )}
                     {question.type === 'match' && (
                         <div className="glass px-2.5 py-1 rounded-xl">
-                            <span className="font-black text-xs" style={{ color: '#a78bfa' }}>💎 MATCH</span>
+                            <span className="font-black text-xs" style={{ color: '#a78bfa' }}>💎 {t('matchGameBadge')}</span>
                         </div>
                     )}
                 </div>
@@ -401,7 +401,7 @@ export default function StudentGamePage() {
                             result={null}
                         />
                     ) : (
-                        <p className="text-white/40 text-center font-bold">Juftliklar yuklanmoqda...</p>
+                        <p className="text-white/40 text-center font-bold">{t('pairsLoading')}</p>
                     )}
                     {matchSubmitted && (
                         <p className="text-center text-white/40 font-bold text-xs mt-3 animate-pulse">
@@ -480,9 +480,9 @@ export default function StudentGamePage() {
 
             {result.correct && (
                 <div className="glass-blue px-8 py-4 rounded-2xl">
-                    <p className="text-white/50 font-bold text-xs">QO&apos;SHILDI</p>
+                    <p className="text-white/50 font-bold text-xs">{t('added')}</p>
                     <p className="text-4xl font-black" style={{ color: '#FFD600' }}>+{result.points}</p>
-                    <p className="text-white/40 text-xs mt-1">Jami: {result.totalScore.toLocaleString()}</p>
+                    <p className="text-white/40 text-xs mt-1">{t('total')}: {result.totalScore.toLocaleString()}</p>
                 </div>
             )}
 

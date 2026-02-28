@@ -498,8 +498,8 @@ export default function GameDetailPage({
                                     {/* Title */}
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
-                                            Zukkoo: Klassik Quiz<br />
-                                            <span style={{ color: '#60a5fa' }}>Qoidalari 🏆</span>
+                                            {tGamesList('quizArena.modalTitle')}<br />
+                                            <span style={{ color: '#60a5fa' }}>{tGamesList('quizArena.modalSubtitle')}</span>
                                         </h2>
                                     </div>
 
@@ -514,7 +514,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl">🎯</div>
                                             <p className="text-sm font-bold text-white/90 leading-snug">
-                                                4 ta variantdan bitta to&apos;g&apos;ri javobni toping.
+                                                {tGamesList('quizArena.instructions.0')}
                                             </p>
                                         </motion.div>
 
@@ -527,7 +527,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl">⏱️</div>
                                             <p className="text-sm font-bold text-white/90 leading-snug">
-                                                Vaqtga e&apos;tibor bering: qanchalik tez topsangiz, shunchalik ko&apos;p ball!
+                                                {tGamesList('quizArena.instructions.1')}
                                             </p>
                                         </motion.div>
 
@@ -540,7 +540,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl">📊</div>
                                             <p className="text-sm font-bold text-white/90 leading-snug">
-                                                Har bir savoldan keyin asosiy ekranda reytingni kuzatib boring.
+                                                {tGamesList('quizArena.instructions.2')}
                                             </p>
                                         </motion.div>
                                     </div>
@@ -556,7 +556,7 @@ export default function GameDetailPage({
                                                 border: '1px solid rgba(96,165,250,0.5)'
                                             }}
                                         >
-                                            Tushunarli, boshladik! 🚀
+                                            {tGamesList('quizArena.actionBtn')}
                                         </button>
                                     </div>
                                 </div>
@@ -583,8 +583,8 @@ export default function GameDetailPage({
                                     {/* Title */}
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
-                                            Mantiqiy zanjir:<br />
-                                            <span style={{ color: '#34d399' }}>Algoritmni tiklang! 🧱</span>
+                                            {tGamesList('logicChain.modalTitle')}<br />
+                                            <span style={{ color: '#34d399' }}>{tGamesList('logicChain.modalSubtitle')}</span>
                                         </h2>
                                     </div>
 
@@ -620,7 +620,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🧩</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Bloklarni ushlab, to&apos;g&apos;ri ketma-ketlikda yuqoridan pastga joylang.
+                                                {tGamesList('logicChain.instructions.0')}
                                             </p>
                                         </motion.div>
 
@@ -633,7 +633,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">⚡</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Zanjir qanchalik aniq va tez bo&apos;lsa, ball shunchalik baland!
+                                                {tGamesList('logicChain.instructions.1')}
                                             </p>
                                         </motion.div>
 
@@ -646,7 +646,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">✨</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Xato qilsangiz, tizim sizga to&apos;g&apos;ri yo&apos;lni ko&apos;rsatadi.
+                                                {tGamesList('logicChain.instructions.2')}
                                             </p>
                                         </motion.div>
                                     </div>
@@ -662,7 +662,7 @@ export default function GameDetailPage({
                                                 border: '1px solid rgba(52,211,153,0.5)'
                                             }}
                                         >
-                                            Zanjirni qurishni boshladik! ⚡
+                                            {tGamesList('logicChain.actionBtn')}
                                         </button>
                                     </div>
                                 </div>
@@ -689,8 +689,8 @@ export default function GameDetailPage({
                                     {/* Title */}
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
-                                            Terminlar jangi:<br />
-                                            <span style={{ color: '#22d3ee' }}>Bilim uchqunini hosil qiling! 🔥</span>
+                                            {tGamesList('battleOfTerms.modalTitle')}<br />
+                                            <span style={{ color: '#22d3ee' }}>{tGamesList('battleOfTerms.modalSubtitle')}</span>
                                         </h2>
                                     </div>
 
@@ -731,7 +731,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🔗</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Termin va uning izohini ketma-ket bosib, juftlang.
+                                                {tGamesList('battleOfTerms.instructions.0')}
                                             </p>
                                         </motion.div>
 
@@ -744,7 +744,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">⏳</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                To&apos;g&apos;ri juftliklar g&apos;oyib bo&apos;ladi, xatolar esa vaqtingizni oladi.
+                                                {tGamesList('battleOfTerms.instructions.1')}
                                             </p>
                                         </motion.div>
 
@@ -757,7 +757,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">✅</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Hamma juftlikni topsangiz, raund yakunlanadi.
+                                                {tGamesList('battleOfTerms.instructions.2')}
                                             </p>
                                         </motion.div>
                                     </div>
@@ -773,7 +773,7 @@ export default function GameDetailPage({
                                                 border: '1px solid rgba(34,211,238,0.5)'
                                             }}
                                         >
-                                            Jangga tayyorman! ⚔️
+                                            {tGamesList('battleOfTerms.actionBtn')}
                                         </button>
                                     </div>
                                 </div>
@@ -803,8 +803,8 @@ export default function GameDetailPage({
                                         transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", repeatDelay: 2 }}
                                     >
                                         <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
-                                            Bliz-Sohat:<br />
-                                            <span style={{ color: '#ef4444' }}>Bilimlar poygasiga tayyormisiz? ⚡</span>
+                                            {tGamesList('blitzWatch.modalTitle')}<br />
+                                            <span style={{ color: '#ef4444' }}>{tGamesList('blitzWatch.modalSubtitle')}</span>
                                         </h2>
                                     </motion.div>
 
@@ -831,7 +831,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">⏱️</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Har bir savolga bor-yo&apos;g&apos;i 3-5 soniya vaqtingiz bor.
+                                                {tGamesList('blitzWatch.instructions.0')}
                                             </p>
                                         </motion.div>
 
@@ -844,7 +844,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🚦</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Faqat ikkita tanlov: To&apos;g&apos;ri (<span className="text-green-400">Yashil</span>) yoki Noto&apos;g&apos;ri (<span className="text-red-400">Qizil</span>).
+                                                {tGamesList('blitzWatch.instructions.1')}
                                             </p>
                                         </motion.div>
 
@@ -857,7 +857,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">⚠️</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Xato qilmang, aks holda tezlikni yo&apos;qotasiz!
+                                                {tGamesList('blitzWatch.instructions.2')}
                                             </p>
                                         </motion.div>
                                     </div>
@@ -876,7 +876,7 @@ export default function GameDetailPage({
                                                 border: '2px solid rgba(248,113,113,0.8)'
                                             }}
                                         >
-                                            GAZINI BOSDIK! 🏎️
+                                            {tGamesList('blitzWatch.actionBtn')}
                                         </motion.button>
                                     </div>
                                 </div>
@@ -906,8 +906,8 @@ export default function GameDetailPage({
                                     {/* Title with Magnifying Glass */}
                                     <div className="relative">
                                         <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg z-10 relative">
-                                            Yashirin kod:<br />
-                                            <span style={{ color: '#c4b5fd' }}>Detektivlik qobiliyatingizni sinab ko&apos;ring! 🔍</span>
+                                            {tGamesList('hiddenCode.modalTitle')}<br />
+                                            <span style={{ color: '#c4b5fd' }}>{tGamesList('hiddenCode.modalSubtitle')}</span>
                                         </h2>
                                         {/* Orbiting Magnifying Glass */}
                                         <motion.div
@@ -944,7 +944,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🧩</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Chalkash harflardan ma&apos;noli IT terminini yig&apos;ing.
+                                                {tGamesList('hiddenCode.instructions.0')}
                                             </p>
                                         </motion.div>
 
@@ -957,7 +957,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🔓</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Har bir harfni o&apos;rniga qo&apos;yib, yashirin kodni oching.
+                                                {tGamesList('hiddenCode.instructions.1')}
                                             </p>
                                         </motion.div>
 
@@ -970,7 +970,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">💡</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Qiynalsangiz, &apos;Yordam&apos; tugmasidan foydalaning (lekin u ballni oladi!).
+                                                {tGamesList('hiddenCode.instructions.2')}
                                             </p>
                                         </motion.div>
                                     </div>
@@ -986,7 +986,7 @@ export default function GameDetailPage({
                                                 border: '1px solid rgba(196,181,253,0.5)'
                                             }}
                                         >
-                                            Kodni aniqlashni boshladik! 🕵️‍♂️
+                                            {tGamesList('hiddenCode.actionBtn')}
                                         </button>
                                     </div>
                                 </div>
@@ -1018,8 +1018,8 @@ export default function GameDetailPage({
                                     {/* Title */}
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
-                                            Jamoaviy qutqaruv:<br />
-                                            <span style={{ color: '#fef08a' }}>Birlikda - kuch! 🤝</span>
+                                            {tGamesList('teamRescue.modalTitle')}<br />
+                                            <span style={{ color: '#fef08a' }}>{tGamesList('teamRescue.modalSubtitle')}</span>
                                         </h2>
                                     </div>
 
@@ -1053,7 +1053,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🧑‍🤝‍🧑</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Siz jamoaning bir qismisiz, har bir javobingiz guruh uchun muhim.
+                                                {tGamesList('teamRescue.instructions.0')}
                                             </p>
                                         </motion.div>
 
@@ -1066,7 +1066,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">🚀</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                To&apos;g&apos;ri javoblar jamoani marraga yaqinlashtiradi.
+                                                {tGamesList('teamRescue.instructions.1')}
                                             </p>
                                         </motion.div>
 
@@ -1079,7 +1079,7 @@ export default function GameDetailPage({
                                         >
                                             <div className="text-2xl mt-0.5">💔</div>
                                             <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
-                                                Xato qilmang, aks holda jamoangizning umumiy &apos;joni&apos; kamayadi.
+                                                {tGamesList('teamRescue.instructions.2')}
                                             </p>
                                         </motion.div>
                                     </div>
@@ -1098,7 +1098,7 @@ export default function GameDetailPage({
                                                 border: '2px solid #fef08a'
                                             }}
                                         >
-                                            Jamoani qutqarishga tayyorman! 🚀
+                                            {tGamesList('teamRescue.actionBtn')}
                                         </motion.button>
                                     </div>
                                 </div>

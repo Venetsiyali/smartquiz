@@ -99,7 +99,7 @@
         "incorrect": "Noto'g'ri!",
         "streak": "🔥 {streak} ketma-ket! (+1.2x)",
         "added": "QO'SHILDI",
-        "total": "Jami: {score}",
+        "total": "Jami",
         "answersGuide": "JAVOBLAR KO'RSATMASI",
         "didYouKnow": "💡 BILASIZMI?",
         "continueIn": "Davom etish: {time}s...",
@@ -108,7 +108,10 @@
         "nextQuestion": "Keyingi savol kutilmoqda...",
         "gameOver": "O'yin Tugadi!",
         "yourResult": "SIZNING NATIJANGIZ",
-        "home": "🏠 Bosh sahifa"
+        "home": "🏠 Bosh sahifa",
+        "orderGameBadge": "ZANJIR",
+        "matchGameBadge": "MATCH",
+        "pairsLoading": "Juftliklar yuklanmoqda..."
     },
     "WaitingRoom": {
         "welcome": "XUSH KELIBSIZ",
@@ -130,27 +133,75 @@
     "GamesList": {
         "quizArena": {
             "title": "Zukkoo",
-            "description": "Klassik viktorina formatida bilimingizni sinab ko'ring."
+            "modalTitle": "Zukkoo: Klassik Quiz",
+            "modalSubtitle": "Qoidalari 🏆",
+            "description": "Klassik viktorina formatida bilimingizni sinab ko'ring.",
+            "instructions": [
+                "4 ta variantdan bitta to'g'ri javobni toping.",
+                "Vaqtga e'tibor bering: qanchalik tez topsangiz, shunchalik ko'p ball!",
+                "Har bir savoldan keyin asosiy ekranda reytingni kuzatib boring."
+            ],
+            "actionBtn": "Tushunarli, boshladik! 🚀"
         },
         "logicChain": {
             "title": "Mantiqiy zanjir",
-            "description": "Elementlarni to'g'ri mantiqiy ketma-ketlikda joylashtiring."
+            "modalTitle": "Mantiqiy zanjir:",
+            "modalSubtitle": "Algoritmni tiklang! 🧱",
+            "description": "Elementlarni to'g'ri mantiqiy ketma-ketlikda joylashtiring.",
+            "instructions": [
+                "Bloklarni ushlab, to'g'ri ketma-ketlikda yuqoridan pastga joylang.",
+                "Zanjir qanchalik aniq va tez bo'lsa, ball shunchalik baland!",
+                "Xato qilsangiz, tizim sizga to'g'ri yo'lni ko'rsatadi."
+            ],
+            "actionBtn": "Zanjirni qurishni boshladik! ⚡"
         },
         "battleOfTerms": {
             "title": "Terminlar jangi",
-            "description": "To'g'ri terminlarni ularning ta'riflari bilan moslashtiring."
+            "modalTitle": "Terminlar jangi:",
+            "modalSubtitle": "Bilim uchqunini hosil qiling! 🔥",
+            "description": "To'g'ri terminlarni ularning ta'riflari bilan moslashtiring.",
+            "instructions": [
+                "Termin va uning izohini ketma-ket bosib, juftlang.",
+                "To'g'ri juftliklar g'oyib bo'ladi, xatolar esa vaqtingizni oladi.",
+                "Hamma juftlikni topsangiz, raund yakunlanadi."
+            ],
+            "actionBtn": "Jangga tayyorman! ⚔️"
         },
         "blitzWatch": {
             "title": "Bliz-Sohat",
-            "description": "Bayonotning to'g'ri yoki noto'g'ri ekanligini tezda hal qiling."
+            "modalTitle": "Bliz-Sohat:",
+            "modalSubtitle": "Bilimlar poygasiga tayyormisiz? ⚡",
+            "description": "Bayonotning to'g'ri yoki noto'g'ri ekanligini tezda hal qiling.",
+            "instructions": [
+                "Har bir savolga bor-yo'g'i 3-5 soniya vaqtingiz bor.",
+                "Faqat ikkita tanlov: To'g'ri (Yashil) yoki Noto'g'ri (Qizil).",
+                "Xato qilmang, aks holda tezlikni yo'qotasiz!"
+            ],
+            "actionBtn": "GAZINI BOSDIK! 🏎️"
         },
         "hiddenCode": {
             "title": "Yashirin kod",
-            "description": "Yashirin ilmiy terminni topish uchun harflarni joyiga qoying."
+            "modalTitle": "Yashirin kod:",
+            "modalSubtitle": "Detektivlik qobiliyatingizni sinab ko'ring! 🔍",
+            "description": "Yashirin ilmiy terminni topish uchun harflarni joyiga qoying.",
+            "instructions": [
+                "Chalkash harflardan ma'noli IT terminini yig'ing.",
+                "Har bir harfni o'rniga qo'yib, yashirin kodni oching.",
+                "Qiynalsangiz, 'Yordam' tugmasidan foydalaning (lekin u ballni oladi!)."
+            ],
+            "actionBtn": "Kodni aniqlashni boshladik! 🕵️‍♂️"
         },
         "teamRescue": {
             "title": "Jamoaviy qutqaruv",
-            "description": "Murakkab vazifalarni hal qilish uchun jamoangiz bilan hamkorlik qiling."
+            "modalTitle": "Jamoaviy qutqaruv:",
+            "modalSubtitle": "Birlikda - kuch! 🤝",
+            "description": "Murakkab vazifalarni hal qilish uchun jamoangiz bilan hamkorlik qiling.",
+            "instructions": [
+                "Siz jamoaning bir qismisiz, har bir javobingiz guruh uchun muhim.",
+                "To'g'ri javoblar jamoani marraga yaqinlashtiradi.",
+                "Xato qilmang, aks holda jamoangizning umumiy 'joni' kamayadi."
+            ],
+            "actionBtn": "Jamoani qutqarishga tayyorman! 🚀"
         }
     },
     "Auth": {

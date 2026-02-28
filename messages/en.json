@@ -99,7 +99,7 @@
         "incorrect": "Incorrect!",
         "streak": "🔥 {streak} in a row! (+1.2x)",
         "added": "ADDED",
-        "total": "Total: {score}",
+        "total": "Total",
         "answersGuide": "ANSWERS GUIDE",
         "didYouKnow": "💡 DID YOU KNOW?",
         "continueIn": "Continue in: {time}s...",
@@ -108,7 +108,10 @@
         "nextQuestion": "Waiting for next question...",
         "gameOver": "Game Over!",
         "yourResult": "YOUR RESULT",
-        "home": "🏠 Home Page"
+        "home": "🏠 Home Page",
+        "orderGameBadge": "CHAIN",
+        "matchGameBadge": "MATCH",
+        "pairsLoading": "Loading pairs..."
     },
     "WaitingRoom": {
         "welcome": "WELCOME",
@@ -129,28 +132,76 @@
     },
     "GamesList": {
         "quizArena": {
-            "title": "Quiz Arena",
-            "description": "Test your knowledge in a classic quiz format."
+            "title": "Zukkoo",
+            "modalTitle": "Classic Quiz",
+            "modalSubtitle": "Rules 🏆",
+            "description": "Test your knowledge in a classic quiz format.",
+            "instructions": [
+                "Find the single correct answer out of 4 options.",
+                "Pay attention to time: the faster you answer, the more points you get!",
+                "Monitor the live leaderboard on the main screen after every question."
+            ],
+            "actionBtn": "Understood, let's go! 🚀"
         },
         "logicChain": {
             "title": "Logic Chain",
-            "description": "Arrange the items in the correct logical sequence."
+            "modalTitle": "Logic Chain:",
+            "modalSubtitle": "Restore the order! 🧱",
+            "description": "Arrange the items in the correct logical sequence.",
+            "instructions": [
+                "Drag the blocks and arrange them in the correct sequence from top to bottom.",
+                "The more accurate and faster your chain, the higher your score!",
+                "If you make a mistake, the system will show you the correct path."
+            ],
+            "actionBtn": "Start building the chain! ⚡"
         },
         "battleOfTerms": {
             "title": "Battle of Terms",
-            "description": "Match the correct terms with their definitions."
+            "modalTitle": "Battle of Terms:",
+            "modalSubtitle": "Ignite the spark of knowledge! 🔥",
+            "description": "Match the correct terms with their definitions.",
+            "instructions": [
+                "Tap a term and its definition consecutively to match them.",
+                "Correct pairs disappear, while mistakes cost you precious time.",
+                "Aim for maximum accuracy to earn the 'Combo' bonus."
+            ],
+            "actionBtn": "Enter the battlefield! ⚔️"
         },
         "blitzWatch": {
             "title": "Blitz-Watch",
-            "description": "Quickly decide if the statement is True or False."
+            "modalTitle": "Blitz-Watch:",
+            "modalSubtitle": "Are you ready for the knowledge race? ⚡",
+            "description": "Quickly decide if the statement is True or False.",
+            "instructions": [
+                "You have only 3-5 seconds for each question.",
+                "Only two choices: True (Green) or False (Red).",
+                "Don't make a mistake, or you'll lose your speed streak!"
+            ],
+            "actionBtn": "HIT THE GAS! 🏎️"
         },
         "hiddenCode": {
             "title": "Hidden Code",
-            "description": "Unscramble the letters to find the hidden scientific term."
+            "modalTitle": "Hidden Code:",
+            "modalSubtitle": "Test your detective skills! 🔍",
+            "description": "Unscramble the letters to find the hidden scientific term.",
+            "instructions": [
+                "Assemble a meaningful IT term from scrambled letters.",
+                "Uncover the hidden code by placing each letter in its correct place.",
+                "If you struggle, use the 'Help' button (but it costs points!)."
+            ],
+            "actionBtn": "Let's start decoding! 🕵️‍♂️"
         },
         "teamRescue": {
             "title": "Team Rescue",
-            "description": "Collaborate with your team to solve advanced challenges."
+            "modalTitle": "Team Rescue:",
+            "modalSubtitle": "Unity is strength! 🤝",
+            "description": "Collaborate with your team to solve advanced challenges.",
+            "instructions": [
+                "You are part of a team, every answer matters for the group.",
+                "Correct answers bring the team closer to the finish line.",
+                "Don't make mistakes, otherwise your team's overall 'life' decreases."
+            ],
+            "actionBtn": "Ready to rescue the team! 🚀"
         }
     },
     "Auth": {
