@@ -255,5 +255,79 @@
             "nameSuccess": "Name updated successfully!",
             "passSuccess": "Password updated! Please log in again."
         }
+    },
+    "LobbyStats": {
+        "style1": "Hologram Arena",
+        "style2": "Circuit — Microchip",
+        "style3": "Glassmorphism · Transparent UI",
+        "style4": "Speed Race · Timer",
+        "style5": "Detective Smoke · Mystic",
+        "style6": "Cosmic Gold · Dark Space",
+        "features1": [
+            "⚡ Real-time rating",
+            "⏱️ Time per question",
+            "🏆 Live leaderboard",
+            "🎯 MCQ questions"
+        ],
+        "features2": [
+            "🔗 Drag & Drop UX",
+            "🧩 Logic sequence",
+            "⚡ Fast rating system",
+            "💡 Multiple paths"
+        ],
+        "features3": [
+            "💎 Match pairs",
+            "🔍 Term database",
+            "✨ Glassmorphism design",
+            "📊 Accuracy stats"
+        ],
+        "features4": [
+            "⚡ 0.3s reaction",
+            "🏁 Two choices: ✅ / ❌",
+            "🔥 Combo streak system",
+            "🎯 Science-based Qs"
+        ],
+        "features5": [
+            "🔐 Letter anagram",
+            "🔍 Detective style",
+            "🧩 Variable difficulty",
+            "⌨️ Tap to type"
+        ],
+        "features6": [
+            "🏁 2–6 teams",
+            "❤️ Team lives system",
+            "🔥 Combo bonus +100 p",
+            "🛡️ Tactical shield (Pro)"
+        ]
+    },
+    "TeacherCreate": {
+        "TopBar": {
+            "author": "👤 Author",
+            "file": "📄 File",
+            "ai": "🤖 AI",
+            "lobby": "🚀 Lobby",
+            "newQuestions": "New questions",
+            "continue": "✅ Continue"
+        },
+        "Editor": {
+            "quizName": "Quiz name (optional)...",
+            "yourName": "Your name...",
+            "enterQuestion": "Enter your question...",
+            "format": "Question format:",
+            "mcq": "📋 Multiple choice",
+            "tf": "✅ True/False",
+            "order": "🔗 Logic Chain",
+            "match": "💎 Battle of Terms",
+            "blitz": "⚡ Blitz-Watch",
+            "anagram": "🔐 Hidden Code",
+            "timeLimit": "TIME LIMIT",
+            "imgUrl": "IMAGE URL",
+            "explanation": "💡 EXPLANATION (optional)",
+            "explanationPlaceholder": "E.g: Chlorophyll helps in the process of photosynthesis...",
+            "variant": "{index}-option...",
+            "questionNo": "QUESTION #{number}",
+            "addQuestion": "+ Add Question",
+            "proMax50": "👑 Pro → 50 questions"
+        }
     }
 }

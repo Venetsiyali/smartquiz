@@ -255,5 +255,79 @@
             "nameSuccess": "Ismingiz muvaffaqiyatli saqlandi!",
             "passSuccess": "Parol muvaffaqiyatli yangilandi! Qayta kiring."
         }
+    },
+    "LobbyStats": {
+        "style1": "Gologramma Arena",
+        "style2": "Circuit — Mikrosxema",
+        "style3": "Glassmorphism · Shaffof interfeys",
+        "style4": "Speed Race · Taymer bilan",
+        "style5": "Detective Smoke · Mistik",
+        "style6": "Cosmic Gold · Dark Space",
+        "features1": [
+            "⚡ Real-vaqt reyting",
+            "⏱️ Har savol uchun vaqt",
+            "🏆 Jonli liderlar jadvali",
+            "🎯 Ko'p tanlov savollar"
+        ],
+        "features2": [
+            "🔗 Drag & Drop interfeys",
+            "🧩 Mantiqiy ketma-ketlik",
+            "⚡ Tezkor reyting tizimi",
+            "💡 Bir nechta to'g'ri tartib"
+        ],
+        "features3": [
+            "💎 Juftliklar ushtirish",
+            "🔍 Terminlar ma'lumotlar bazasi",
+            "✨ Glassmorphism dizayn",
+            "📊 Aniqlik statistikasi"
+        ],
+        "features4": [
+            "⚡ 0.3 soniya reaksiya",
+            "🏁 Ikki tanlov: ✅ / ❌",
+            "🔥 Combo streak tizimi",
+            "🎯 Tadqiqot asosida savollar"
+        ],
+        "features5": [
+            "🔐 Harflar anagrami",
+            "🔍 Detective uslub",
+            "🧩 O'zgaruvchan qiyinlik",
+            "⌨️ Harflarni bosib yig'ish"
+        ],
+        "features6": [
+            "🏁 2–6 ta jamoa",
+            "❤️ Jamoaviy jonlar tizimi",
+            "🔥 Combo bonus +100 ball",
+            "🛡️ Taktik qalqon (Pro)"
+        ]
+    },
+    "TeacherCreate": {
+        "TopBar": {
+            "author": "👤 Muallif",
+            "file": "📄 Fayl",
+            "ai": "🤖 AI",
+            "lobby": "🚀 Lobby",
+            "newQuestions": "Yangi savollar",
+            "continue": "✅ Davom etish"
+        },
+        "Editor": {
+            "quizName": "Quiz nomi (ixtiyoriy)...",
+            "yourName": "Ismingiz...",
+            "enterQuestion": "Savolingizni kiriting...",
+            "format": "Savol formati:",
+            "mcq": "📋 Ko'p tanlov",
+            "tf": "✅ To'g'ri/Noto'g'ri",
+            "order": "🔗 Mantiqiy Zanjir",
+            "match": "💎 Terminlar Jangi",
+            "blitz": "⚡ Bliz-Sohat",
+            "anagram": "🔐 Yashirin Kod",
+            "timeLimit": "VAQT LIMITI",
+            "imgUrl": "RASM URL",
+            "explanation": "💡 IZOH (ixtiyoriy — to'g'ri javobdan keyin ko'rsatiladi)",
+            "explanationPlaceholder": "Masalan: Fotosintez jarayonida xlоrofill yordam beradi...",
+            "variant": "{index}-variant...",
+            "questionNo": "SAVOL #{number}",
+            "addQuestion": "+ Savol qo'shish",
+            "proMax50": "👑 Pro → 50 ta savolga"
+        }
     }
 }

@@ -202,6 +202,7 @@ export default function GameDetailPage({
     const { isPro } = useSubscription();
     const t = useTranslations('GamePlay');
     const tGamesList = useTranslations('GamesList');
+    const tLobbyStats = useTranslations('LobbyStats');
     const cfg = GAME_CONFIG[gameId];
 
     // Determine specific JSON Key mapped to this GameID
@@ -278,7 +279,7 @@ export default function GameDetailPage({
                             style={{ background: theme.badgeBg, color: theme.badgeColor, border: `1px solid ${theme.badgeColor}55` }}>
                             {theme.badge}
                         </span>
-                        <span className="text-xs font-bold text-white/30 hidden sm:block">{cfg.style}</span>
+                        <span className="text-xs font-bold text-white/30 hidden sm:block">{tLobbyStats(`style${gameId}` as any)}</span>
                     </div>
                 </div>
 
@@ -302,7 +303,7 @@ export default function GameDetailPage({
                                 {tGamesList(`${gKey}.title`)}
                             </h1>
                             <p className="text-sm font-black tracking-widest" style={{ color: theme.accent }}>
-                                {cfg.sub.toUpperCase()} · {cfg.style.toUpperCase()}
+                                {tGamesList(`${gKey}.sub`).toUpperCase()} · {tLobbyStats(`style${gameId}` as any).toUpperCase()}
                             </p>
                         </div>
 
@@ -313,7 +314,7 @@ export default function GameDetailPage({
 
                         {/* Features */}
                         <div className="grid grid-cols-2 gap-2">
-                            {cfg.features.map((f, i) => (
+                            {(tLobbyStats.raw(`features${gameId}` as any) as string[]).map((f, i) => (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, y: 8 }}
@@ -398,7 +399,7 @@ export default function GameDetailPage({
                                     style={{ background: `radial-gradient(ellipse at center, ${theme.glow.replace('0.6', '0.3')} 0%, transparent 70%)` }} />
                                 <div className="absolute bottom-3 left-4">
                                     <p className="text-white font-black text-xl">{tGamesList(`${gKey}.title`)}</p>
-                                    <p className="text-white/50 text-xs font-bold">{cfg.sub}</p>
+                                    <p className="text-white/50 text-xs font-bold">{tGamesList(`${gKey}.sub`)}</p>
                                 </div>
                             </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 
@@ -303,6 +303,7 @@ export default function TeacherCreatePage() {
 
 function TeacherCreateInner() {
     const router = useRouter();
+    const t = useTranslations('TeacherCreate');
     const searchParams = useSearchParams();
     const lockedModeQuery = searchParams.get('mode');
     const continuePin = searchParams?.get('continuePin');
@@ -575,7 +576,7 @@ function TeacherCreateInner() {
                 <button onClick={() => router.push('/')} className="text-white/50 hover:text-white text-2xl transition-colors">←</button>
                 <span className="text-xl font-black text-white">
                     {continuePin ?
-                        <span className="text-[#00E676]">Yangi savollar <span className="opacity-50 text-sm">({continuePin})</span></span>
+                        <span className="text-[#00E676]">{t('TopBar.newQuestions')} <span className="opacity-50 text-sm">({continuePin})</span></span>
                         : lockedMode === 'classic' ? 'Zukkoo'
                             : lockedMode === 'order' ? 'Mantiqiy Zanjir'
                                 : lockedMode === 'match' ? 'Terminlar Jangi'
@@ -589,32 +590,32 @@ function TeacherCreateInner() {
                 {/* Title input - only show when creating a new game */}
                 {!continuePin && (
                     <input value={title} onChange={e => setTitle(e.target.value)}
-                        placeholder="Quiz nomi (ixtiyoriy)..."
+                        placeholder={t('Editor.quizName')}
                         className="input-game flex-1 min-w-48 max-w-xs text-sm border-none focus:ring-2 focus:ring-blue-500/50"
                         style={{ textAlign: 'left', padding: '10px 16px', borderRadius: '12px' }} />
                 )}
                 <input value={teacherName} onChange={e => saveTeacherName(e.target.value)}
-                    placeholder="Ismingiz..."
+                    placeholder={t('Editor.yourName')}
                     className="input-game min-w-28 max-w-[140px] text-sm"
                     style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '12px', display: isPro ? 'block' : 'none' }} />
                 <div className="ml-auto flex items-center gap-2">
                     <button onClick={() => router.push('/muallif')}
                         className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-2">
-                        👤 Muallif
+                        {t('TopBar.author')}
                     </button>
                     {/* File upload — Pro only */}
                     {isPro ? (
                         <button onClick={() => setModal('file')}
                             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
                             style={{ background: 'rgba(0,230,118,0.15)', border: '1px solid rgba(0,230,118,0.3)', color: '#00E676' }}>
-                            📄 Fayl
+                            {t('TopBar.file')}
                         </button>
                     ) : (
                         <button onClick={() => router.push('/pricing')}
                             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 opacity-60"
                             title="Pro xususiyat"
                             style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
-                            📄 Fayl <ProLock />
+                            {t('TopBar.file')} <ProLock />
                         </button>
                     )}
                     {/* AI text — Pro only */}
@@ -622,18 +623,18 @@ function TeacherCreateInner() {
                         <button onClick={() => setModal('ai')}
                             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
                             style={{ background: 'rgba(0,86,179,0.2)', border: '1px solid rgba(0,86,179,0.4)', color: '#60a5fa' }}>
-                            🤖 AI
+                            {t('TopBar.ai')}
                         </button>
                     ) : (
                         <button onClick={() => router.push('/pricing')}
                             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 opacity-60"
                             title="Pro xususiyat"
                             style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
-                            🤖 AI <ProLock />
+                            {t('TopBar.ai')} <ProLock />
                         </button>
                     )}
                     <button onClick={startLobby} className="btn-primary text-sm px-5 py-2.5">
-                        {continuePin ? '✅ Davom etish' : '🚀 Lobby'}
+                        {continuePin ? t('TopBar.continue') : t('TopBar.lobby')}
                     </button>
                 </div>
             </header>
@@ -673,14 +674,14 @@ function TeacherCreateInner() {
                     {questions.length < maxQ && (
                         <button onClick={addQ}
                             className="w-full p-2.5 rounded-xl border border-dashed border-white/20 text-white/40 hover:text-white hover:border-white/30 text-xs font-bold transition-all">
-                            + Savol qo&apos;shish
+                            {t('Editor.addQuestion')}
                         </button>
                     )}
                     {!isPro && questions.length >= maxQ && (
                         <button onClick={() => router.push('/pricing')}
                             className="w-full p-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
                             style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700' }}>
-                            👑 Pro → 50 ta savolga
+                            {t('Editor.proMax50')}
                         </button>
                     )}
 
@@ -763,14 +764,14 @@ function TeacherCreateInner() {
                     {/* Type toggle */}
                     {(lockedMode === 'classic' || lockedMode === 'team' || lockedMode === null) && (
                         <div className="flex items-center gap-3 flex-wrap">
-                            <span className="text-white/40 font-bold text-sm">Savol formati:</span>
+                            <span className="text-white/40 font-bold text-sm">{t('Editor.format')}</span>
                             {([
-                                ['multiple', "📋 Ko'p tanlov"],
-                                ['truefalse', "✅ To'g'ri/Noto'g'ri"],
-                                ['order', "🔗 Mantiqiy Zanjir"],
-                                ['match', "💎 Terminlar Jangi"],
-                                ['blitz', "⚡ Bliz-Sohat"],
-                                ['anagram', "🔐 Yashirin Kod"],
+                                ['multiple', t('Editor.mcq')],
+                                ['truefalse', t('Editor.tf')],
+                                ['order', t('Editor.order')],
+                                ['match', t('Editor.match')],
+                                ['blitz', t('Editor.blitz')],
+                                ['anagram', t('Editor.anagram')],
                             ] as [QuestionType, string][])
                                 .filter(([t]) => {
                                     if (lockedMode === 'classic') return t === 'multiple' || t === 'truefalse';
@@ -790,27 +791,27 @@ function TeacherCreateInner() {
 
                     {/* Question text */}
                     <div className="glass p-5 space-y-4">
-                        <label className="text-white/40 font-bold text-xs">SAVOL #{active + 1}</label>
+                        <label className="text-white/40 font-bold text-xs">{t('Editor.questionNo', { number: active + 1 })}</label>
                         <textarea value={q.text} onChange={e => upQ({ text: e.target.value })}
-                            placeholder="Savolingizni kiriting..."
+                            placeholder={t('Editor.enterQuestion')}
                             className="w-full bg-transparent text-white text-xl font-bold outline-none resize-none placeholder-white/20" rows={3} />
 
                         {/* Explanation */}
                         <div>
-                            <label className="text-white/40 font-bold text-xs block mb-1.5">💡 IZOH (ixtiyoriy — to'g'ri javobdan keyin ko'rsatiladi)</label>
+                            <label className="text-white/40 font-bold text-xs block mb-1.5">{t('Editor.explanation')}</label>
                             <input value={q.explanation || ''} onChange={e => upQ({ explanation: e.target.value })}
-                                placeholder="Masalan: Fotosintez jarayonida xlоrofill yordam beradi..."
+                                placeholder={t('Editor.explanationPlaceholder')}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white/60 text-sm outline-none focus:border-blue-500 transition-colors" />
                         </div>
 
                         <div className="flex flex-wrap gap-4">
                             <div>
-                                <label className="text-white/40 text-xs font-bold block mb-1">RASM URL</label>
+                                <label className="text-white/40 text-xs font-bold block mb-1">{t('Editor.imgUrl')}</label>
                                 <input value={q.imageUrl || ''} onChange={e => upQ({ imageUrl: e.target.value })}
                                     placeholder="https://..." className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white/60 text-sm outline-none w-52" />
                             </div>
                             <div>
-                                <label className="text-white/40 text-xs font-bold block mb-1">VAQT LIMITI</label>
+                                <label className="text-white/40 text-xs font-bold block mb-1">{t('Editor.timeLimit')}</label>
                                 <div className="flex flex-wrap gap-1.5">
                                     {(q.type === 'blitz' ? BLITZ_TIME_OPTIONS : TIME_OPTIONS).map(t => (
                                         <button key={t} onClick={() => upQ({ timeLimit: t })}
@@ -836,7 +837,7 @@ function TeacherCreateInner() {
                                         <span className="flex-1 text-white font-extrabold text-lg">{opt.text}</span>
                                     ) : (
                                         <input value={opt.text} onChange={e => setOptText(i, e.target.value)}
-                                            placeholder={`${i + 1}-variant...`}
+                                            placeholder={t('Editor.variant', { index: i + 1 })}
                                             className="flex-1 bg-transparent text-white font-bold text-base outline-none placeholder-white/40" />
                                     )}
                                     <button onClick={() => toggleCorrect(i)} className="text-2xl shrink-0 hover:scale-110 transition-transform">
