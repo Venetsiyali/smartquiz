@@ -567,6 +567,83 @@ function TeacherCreateInner() {
             console.error(e);
             setErrors(["Server bilan bog'lanishda xatolik"]);
         }
+    const [saving, setSaving] = useState(false);
+    
+    const saveToLibrary = async () => {
+        if (!validate()) return;
+        setSaving(true);
+        // Build the quiz object similarly to startLobby to ensure all custom formats are mapped
+        const quiz = {
+            title: title || 'Mening O\'yinim',
+            teamMode,
+            teamCount: teamMode ? teamCount : undefined,
+            questions: questions.map(q => {
+               if (q.type === 'order') {
+                    const items = (q.orderItems || []).filter(it => it.text.trim());
+                    return {
+                        id: q.id, type: 'order', text: q.text,
+                        options: items.map(it => it.text),
+                        optionImages: items.some(it => it.imageUrl) ? items.map(it => it.imageUrl || '') : undefined,
+                        correctOptions: items.map((_, idx) => idx),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+                if (q.type === 'match') {
+                    const pairs = (q.matchPairs || []).filter(p => p.term.trim() && p.definition.trim());
+                    return {
+                        id: q.id, type: 'match', text: q.text,
+                        options: [], correctOptions: [],
+                        pairs: pairs.map(p => ({
+                            term: p.term,
+                            definition: p.definition,
+                            termImage: p.termImage || undefined,
+                            definitionImage: p.definitionImage || undefined,
+                        })),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+                if (q.type === 'blitz') {
+                    return {
+                        id: q.id, type: 'blitz', text: q.text,
+                        options: ["TO'G'RI", "NOTO'G'RI"],
+                        correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+                if (q.type === 'anagram') {
+                    return {
+                        id: q.id, type: 'anagram',
+                        text: q.text, options: [(q.anagramWord || '').toUpperCase().trim()],
+                        correctOptions: [],
+                        timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                    };
+                }
+
+                return {
+                    id: q.id, type: q.type, text: q.text,
+                    options: q.options.map(o => o.text),
+                    correctOptions: q.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1),
+                    timeLimit: q.timeLimit, imageUrl: q.imageUrl, explanation: q.explanation || '',
+                };
+            })
+        };
+
+        try {
+            const res = await fetch('/api/quiz/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(quiz)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Muvaffaqiyatli! O\'yin "Mening O\'yinlarim" sahifasiga saqlandi.');
+            } else {
+                setErrors([data.error || 'Saqlash xatosi. Avval platformada Registratsiyadan o\'ting!']);
+            }
+        } catch (e) {
+            setErrors(["Server bilan aloqa uzildi"]);
+        }
+        setSaving(false);
     };
 
     return (
@@ -636,6 +713,13 @@ function TeacherCreateInner() {
                             {t('TopBar.ai')} <ProLock />
                         </button>
                     )}
+                    
+                    {/* Yangi SAQLASH tugmasi */}
+                    <button onClick={saveToLibrary} disabled={saving} 
+                        className="bg-white/10 hover:bg-white/20 text-white font-bold text-sm px-4 py-2.5 rounded-xl border border-white/20 transition-all flex items-center gap-2">
+                        {saving ? <span className="animate-spin">⏳</span> : '💾'} {t('TopBar.save', { fallback: 'Saqlash' })}
+                    </button>
+
                     <button onClick={startLobby} className="btn-primary text-sm px-5 py-2.5">
                         {continuePin ? t('TopBar.continue') : t('TopBar.lobby')}
                     </button>

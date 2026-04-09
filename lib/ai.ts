@@ -120,10 +120,29 @@ Zukkoo AI Content Engine spesifikatsiyasi bo'yicha JSON formatida qat'iy javob b
       throw new Error("AI ta'minotidan javob olinmadi.");
     }
 
+    // AIni stabilizatsiya qilish (Markdown va ortiqcha matnlarni tozalash)
+    // Model ba'zida faqat JSON emas, uning atrofiga "Mana sizning savollaringiz:" kabi matn qo'shib yuborishi mumkin.
+    // Shuning uchun biz to'g'ridan to'g'ri { yoki [ bilan boshlanib } yoki ] bilan tugaydigan qismni qirqib olamiz.
+    let jsonString = responseContent.trim();
+    
+    // Markdown code blocklarini tozalash (```json ... ```)
+    if (jsonString.startsWith('```')) {
+      const match = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (match && match[1]) {
+        jsonString = match[1].trim();
+      }
+    } else {
+       // Qavslarni qidirish { ... }
+       const bracketMatch = jsonString.match(/\{[\s\S]*\}/);
+       if (bracketMatch && bracketMatch[0]) {
+           jsonString = bracketMatch[0];
+       }
+    }
+
     // Return parsed JSON
-    return JSON.parse(responseContent);
+    return JSON.parse(jsonString);
   } catch (error) {
     console.error("Error generating questions with Groq:", error);
-    throw error;
+    throw new Error("Sun'iy intellekt xizmati matnni noto'g'ri formatladi. Iltimos qayta urinib ko'ring.");
   }
 }

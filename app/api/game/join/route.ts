@@ -9,14 +9,37 @@ export async function POST(req: Request) {
     } = await req.json();
 
     const room = await getRoom(pin);
-    if (!room || room.status !== 'lobby') {
-        return NextResponse.json({ error: "O'yin topilmadi yoki allaqachon boshlangan" }, { status: 400 });
+    if (!room) {
+        return NextResponse.json({ error: "O'yin xonasi topilmadi (Pin noto'g'ri)" }, { status: 400 });
     }
 
-    if (room.players.some((p) => p.nickname === nickname)) {
-        return NextResponse.json({ error: 'Bu nikneym allaqachon ishlatilgan' }, { status: 400 });
+    // 1. REJOIN ENGINE: Agar foydalanuvchi allaqachon xonada bo'lsa (ID yoki Nickname orqali), uni qayta kiritish
+    const existingPlayerIndex = room.players.findIndex(p => p.id === playerId || p.nickname === nickname);
+    
+    if (existingPlayerIndex !== -1) {
+        const p = room.players[existingPlayerIndex];
+        // Faqat uning eng oxirgi Avatarini o'zgartirib qayta ulaymiz, avvalgi ballari va ketma-ketliklari saqlanab qoladi.
+        p.avatar = avatar || p.avatar || '🤖';
+        
+        await saveRoomData(room);
+        
+        // Ulanganlik haqida yana hammaga xabar berish
+        await pusherServer.trigger(`game-${pin}`, 'player-joined', {
+            players: room.players.map((plyr) => ({ id: plyr.id, nickname: plyr.nickname, avatar: plyr.avatar, streak: plyr.streak, teamId: plyr.teamId })),
+        });
+
+        return NextResponse.json({
+            ok: true, pin,
+            teamId: p.teamId,
+            teamName: room.teams?.find(t => t.id === p.teamId)?.name,
+            teamColor: room.teams?.find(t => t.id === p.teamId)?.color,
+            teamEmoji: room.teams?.find(t => t.id === p.teamId)?.emoji,
+            rejoined: true // Qayta qo'shilganligi belgisi
+        });
     }
 
+    // 2. YANGI O'YINCHI o'yin davomida ham qo'shilishi mumkin (LATE JOIN / Kahoot uslubi)
+    // Bunday o'yinchilar shunchaki o'tkazib yuborgan savollari bo'yicha nol ball bilan boshlashadi.
     room.players.push({
         id: playerId,
         nickname,
