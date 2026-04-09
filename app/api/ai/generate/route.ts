@@ -23,20 +23,34 @@ function extractJson(raw: string): any {
     return JSON.parse(objMatch[0].replace(/[„""]/g, '"'));
 }
 
-// ─── System prompt - Zukkoo Master AI ───────────────────────────────────────
-const SYSTEM_PROMPT = `# ROLE
-Siz Zukkoo.uz platformasi uchun professional ta'limiy kontent yaratuvchi AI assistentsiz.
+// ─── System prompt - Zukkoo Elite Educational Architect ─────────────────────
+const SYSTEM_PROMPT = `# ROLE: ELITE EDUCATIONAL ARCHITECT
+Siz Zukkoo.uz platformasining bosh pedagogik muhandisisiz. Vazifangiz — o'quvchilarning tanqidiy fikrlashini o'stiradigan, akademik jihatdan aniq va metodik jihatdan to'g'ri bo'lgan kontent yaratish.
 Faqat JSON formatida javob bering. Hech qanday kirish so'zi, markdown yoki qo'shimcha matn yozmang.
 
-# QOIDALAR
-1. Zukkoo (classic/team): Savol + 4 variant, 1 ta to'g'ri javob. CorrectIndex 0-3 orasida.
-2. Mantiqiy zanjir (order): Elementlarni to'g'ri tartibda bering (items massivida to'g'ri ketma-ketlik saqlansin).
-3. Terminlar jangi (match): Kamida 6 ta term-definition juftligi. Izohlar qisqa (maksimal 10 so'z).
-4. Bliz-Sohat (truefalse): Ha/Yo'q tasdiq gaplar. Biroz o'ylantiradigan bo'lsin.
-5. Yashirin kod (anagram): Kalit so'z katta harfda, qisqa ishora (hint). Texnik/ilmiy atamalar.
-6. Jamoaviy Qutqaruv (team): Yuqori qiyinlikdagi klassik savol, 4 variant.
+# PEDAGOGICAL GUIDELINES
+1. Accuracy First: Savollar ilmiy manbalarga va darsliklarga asoslangan bo'lishi shart. Noaniq yoki munozarali faktlardan qoching.
+2. Growth Mindset: Savollar o'quvchini qidirishga, tahlil qilishga undashi kerak.
+3. Language: O'zbek tili grammatikasi va imlo qoidalariga 100% amal qiling. Til sodda, lekin ilmiy saviyada bo'lsin. Agar boshqa til so'ralsa, o'sha tilning standartlariga to'liq rioya qiling.
+4. Depth over Breadth: Shunchaki yillarni yoki nomlarni so'ramang — jarayonlarning sabab va oqibatlarini so'raydigan savollarga urg'u bering.
 
-Til qoidasi: Foydalanuvchi ko'rsatgan tilda QATIY yoz.`;
+# BANNED CONTENT
+- Siyosiy, diniy, etikaga zid yoki ta'limga aloqasiz (shou-biznes va h.k.) mavzularni aralashtirmang.
+- Savollarda "Hech biri", "Hamma javob to'g'ri" kabi oson qochish yo'llarini ishlatmang.
+- Variantlarni boshida "A)", "B)" kabi harflar bilan boshlamang.
+
+# GAME TYPE RULES (qat'iy bajarish shart)
+1. classic/multiple/team → Savol + 4 variant, 1 to'g'ri javob. correctOptions: [indeks]. hint va explanation majburiy.
+2. truefalse → "isTrue": true/false. Biroz o'ylantiradigan tasdiqlar. hint va explanation majburiy.
+3. order → "items": [...] massivida elementlar TO'G'RI tartibda joylashtirilsin. hint majburiy.
+4. match → "pairs": [{term, definition}] kamida 6 juft. Izohlar qisqa (max 10 so'z). hint majburiy.
+5. anagram → "word": "KATTA_HARF", "hint": "Qisqa ishora". Faqat ilmiy/texnik terminlar.
+
+# OUTPUT STRUCTURE
+Har bir savol uchun quyidagi qo'shimcha maydonlarni ham kiriting:
+- "learning_objective": Bu savol o'quvchiga nimani o'rgatadi? (1 jumla)
+- "hint": To'g'ri javobni emas, to'g'ri yo'lni ko'rsatuvchi ishora (1 jumla)
+- "explanation": Savol yechilgandan keyin chiqadigan chuqurroq tushuntirish (2-3 jumla)`;
 
 // ─── Per-game-type user prompt builder ──────────────────────────────────────
 function buildPrompt(topic: string, gameType: string, count: number, language: string): string {
@@ -87,7 +101,9 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
                 text: q.text || q.statement || '',
                 options: ["To'g'ri ✅", "Noto'g'ri ❌"],
                 correctOptions: [q.isTrue === true ? 0 : 1],
-                explanation: q.explanation || '',
+                explanation: q.explanation || q.detailed_explanation || '',
+                hint: q.hint || '',
+                learning_objective: q.learning_objective || '',
                 timeLimit,
             }));
 
@@ -96,8 +112,10 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
                 const items: string[] = q.items || [];
                 return {
                     text: q.text || q.question || 'Tartibga soling:',
-                    options: items,  // correct order as-is
+                    options: items,
                     correctOptions: items.map((_: any, i: number) => i),
+                    hint: q.hint || '',
+                    learning_objective: q.learning_objective || '',
                     timeLimit,
                 };
             });
@@ -113,6 +131,8 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
                         term: p.term || '',
                         definition: p.definition || '',
                     })),
+                    hint: q.hint || '',
+                    learning_objective: q.learning_objective || '',
                     timeLimit,
                 };
             });
@@ -122,6 +142,7 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
                 text: q.hint || q.clue || '',
                 options: [(q.word || '').toUpperCase().trim()],
                 correctOptions: [],
+                learning_objective: q.learning_objective || '',
                 timeLimit,
             }));
 
@@ -136,7 +157,9 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
                     text: q.text || q.question || '',
                     options: shuffled,
                     correctOptions: newCorrect.length > 0 ? newCorrect : [0],
-                    explanation: q.explanation || '',
+                    explanation: q.explanation || q.detailed_explanation || '',
+                    hint: q.hint || '',
+                    learning_objective: q.learning_objective || '',
                     timeLimit,
                 };
             });
