@@ -53,6 +53,14 @@ export default function Header() {
             <div className="flex items-center gap-4">
                 <LanguageSwitcher />
 
+                <a
+                    href="/ZukkoMobile.apk"
+                    download
+                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-[#10b981] border border-[#10b981]/30 hover:bg-[#10b981]/10 transition-all shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                >
+                    📱 Mobil Ilova
+                </a>
+
                 <button
                     onClick={() => router.push('/muallif')}
                     className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10"

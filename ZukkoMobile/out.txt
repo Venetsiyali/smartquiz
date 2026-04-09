@@ -1,0 +1,98 @@
+node:internal/modules/cjs/loader:1401
+  const err = new Error(message);
+              ^
+
+Error: [BABEL] C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo\react-native.config.js: Cannot find module 'react-native-worklets/plugin'
+Require stack:
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\react-native-reanimated\plugin\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\babel-preset-expo\build\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@babel\core\lib\config\files\module-types.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@babel\core\lib\config\files\configuration.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@babel\core\lib\config\files\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@babel\core\lib\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@expo\require-utils\build\transform.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@expo\require-utils\build\load.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\@expo\require-utils\build\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\reactNativeConfig\config.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\reactNativeConfig\reactNativeConfig.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\reactNativeConfig\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\dependencies\CachedDependenciesLinker.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\dependencies\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\autolinking\findModules.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\commands\generateModulesProviderCommand.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\build\index.js
+- C:\Users\Asus\SmartQuiz\ZukkoMobile\node_modules\expo-modules-autolinking\bin\expo-modules-autolinking.js (While processing: "C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\babel-preset-expo\\build\\index.js")
+[90m    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)[39m
+[90m    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)[39m
+[90m    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1211:37)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:322:14)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1487:12)[39m
+[90m    at require (node:internal/modules/helpers:135:16)[39m
+    at Object.<anonymous> [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mreact-native-reanimated[24m\plugin\index.js:2:16[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1730:14)[39m
+[90m    at Object..js (node:internal/modules/cjs/loader:1895:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1465:32)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1282:12)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:322:14)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1487:12)[39m
+[90m    at require (node:internal/modules/helpers:135:16)[39m
+    at babelPresetExpo [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mbabel-preset-expo[24m\build\index.js:320:62[90m)[39m
+    at sync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\gensync-utils\async.js:30:25[90m)[39m
+    at sync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:182:19[90m)[39m
+    at [90mC:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:210:24
+    at Generator.next (<anonymous>)
+    at [90mC:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\config\full.js:180:21
+    at Generator.next (<anonymous>)
+    at Function.<anonymous> [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\gensync-utils\async.js:21:3[90m)[39m
+    at Generator.next (<anonymous>)
+    at evaluateSync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:251:28[90m)[39m
+    at Function.sync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:89:14[90m)[39m
+    at sync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\gensync-utils\async.js:61:25[90m)[39m
+    at sync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:182:19[90m)[39m
+    at onFirstPause [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:210:24[90m)[39m
+    at Generator.next (<anonymous>)
+    at cachedFunction [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\config\caching.js:52:46[90m)[39m
+    at cachedFunction.next (<anonymous>)
+    at loadPresetDescriptor [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\config\full.js:292:43[90m)[39m
+    at loadPresetDescriptor.next (<anonymous>)
+    at recursePresetDescriptors [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\config\full.js:77:31[90m)[39m
+    at recursePresetDescriptors.next (<anonymous>)
+    at [90mC:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\config\full.js:156:21
+    at Generator.next (<anonymous>)
+    at loadFullConfig [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\config\full.js:113:5[90m)[39m
+    at loadFullConfig.next (<anonymous>)
+    at transform [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\transform.js:20:44[90m)[39m
+    at transform.next (<anonymous>)
+    at evaluateSync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:251:28[90m)[39m
+    at sync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4mgensync[24m\index.js:89:14[90m)[39m
+    at stopHiding - secret - don't use this - v1 [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\errors\rewrite-stack-trace.js:47:12[90m)[39m
+    at transformSync [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@babel[24m\core\lib\transform.js:40:76[90m)[39m
+    at toCommonJS [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@expo[24m\require-utils\build\transform.js:15:44[90m)[39m
+    at evalModule [90m(C:\Users\Asus\SmartQuiz\ZukkoMobile\[39mnode_modules\[4m@expo[24m\require-utils\build\load.js:176:45[90m)[39m {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\react-native-reanimated\\plugin\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\babel-preset-expo\\build\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@babel\\core\\lib\\config\\files\\module-types.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@babel\\core\\lib\\config\\files\\configuration.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@babel\\core\\lib\\config\\files\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@babel\\core\\lib\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@expo\\require-utils\\build\\transform.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@expo\\require-utils\\build\\load.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\@expo\\require-utils\\build\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\reactNativeConfig\\config.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\reactNativeConfig\\reactNativeConfig.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\reactNativeConfig\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\dependencies\\CachedDependenciesLinker.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\dependencies\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\autolinking\\findModules.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\commands\\generateModulesProviderCommand.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\build\\index.js'[39m,
+    [32m'C:\\Users\\Asus\\SmartQuiz\\ZukkoMobile\\node_modules\\expo-modules-autolinking\\bin\\expo-modules-autolinking.js'[39m
+  ]
+}
+
+Node.js v22.15.0
