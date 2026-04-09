@@ -15,6 +15,7 @@ export default function TeacherLobbyPage() {
     const [loading, setLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(true);
     const channelRef = useRef<any>(null);
+    const [copied, setCopied] = useState(false);
     const joinUrl = typeof window !== 'undefined' && pin ? `${window.location.origin}/play?pin=${pin}` : '';
 
     useEffect(() => {
@@ -93,6 +94,19 @@ export default function TeacherLobbyPage() {
                         <div className="text-6xl font-black tracking-widest" style={{ color: '#FFD600', textShadow: '0 0 40px rgba(255,214,0,0.5)' }}>
                             {pin || <span className="text-white/15">——————</span>}
                         </div>
+                        {/* Link nusxalash tugmasi */}
+                        {pin && joinUrl && (
+                            <button
+                                onClick={() => { navigator.clipboard.writeText(joinUrl); setCopied(true); setTimeout(() => setCopied(false), 2500); }}
+                                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300"
+                                style={{
+                                    background: copied ? 'rgba(0,230,118,0.2)' : 'rgba(255,255,255,0.08)',
+                                    border: `1px solid ${copied ? 'rgba(0,230,118,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                                    color: copied ? '#00E676' : 'rgba(255,255,255,0.7)'
+                                }}>
+                                {copied ? '✅ Nusxalandi!' : "🔗 O'yin linkini nusxalash"}
+                            </button>
+                        )}
                     </div>
 
                     <button onClick={handleStart} disabled={!pin || players.length === 0 || loading}

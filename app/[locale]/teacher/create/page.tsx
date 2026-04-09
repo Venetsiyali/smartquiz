@@ -681,6 +681,10 @@ function TeacherCreateInner() {
                     className="input-game min-w-28 max-w-[140px] text-sm"
                     style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '12px', display: isPro ? 'block' : 'none' }} />
                 <div className="ml-auto flex items-center gap-2">
+                    <button onClick={() => router.push('/teacher/quizzes')}
+                        className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-1">
+                        📚 Savollarim
+                    </button>
                     <button onClick={() => router.push('/muallif')}
                         className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-2">
                         {t('TopBar.author')}
@@ -719,7 +723,7 @@ function TeacherCreateInner() {
                     {/* Yangi SAQLASH tugmasi */}
                     <button onClick={saveToLibrary} disabled={saving} 
                         className="bg-white/10 hover:bg-white/20 text-white font-bold text-sm px-4 py-2.5 rounded-xl border border-white/20 transition-all flex items-center gap-2">
-                        {saving ? <span className="animate-spin">⏳</span> : '💾'} {t('TopBar.save', { fallback: 'Saqlash' })}
+                        {saving ? <span className="animate-spin">⏳</span> : '💾'} Savollarni Saqlash
                     </button>
 
                     <button onClick={startLobby} className="btn-primary text-sm px-5 py-2.5">
