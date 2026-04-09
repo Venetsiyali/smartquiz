@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Siz ro'yxatdan o'tmagansiz!" }, { status: 401 });
         }
 
-        const quizzes = await db.quiz.findMany({
+        const quizzes = await prisma.quiz.findMany({
             where: {
                 userId: session.user.id
             },

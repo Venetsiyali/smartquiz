@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Savollar va o'yin nomi kiritilishi shart." }, { status: 400 });
         }
 
-        const newQuiz = await db.quiz.create({
+        const newQuiz = await prisma.quiz.create({
             data: {
                 userId: session.user.id,
                 title,

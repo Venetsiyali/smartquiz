@@ -567,6 +567,8 @@ function TeacherCreateInner() {
             console.error(e);
             setErrors(["Server bilan bog'lanishda xatolik"]);
         }
+    };
+
     const [saving, setSaving] = useState(false);
     
     const saveToLibrary = async () => {
