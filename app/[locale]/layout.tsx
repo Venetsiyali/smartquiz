@@ -21,11 +21,11 @@ export async function generateMetadata({ params: { locale } }: { params: { local
         authors: [{ name: 'Rustamjon Nasridinov', url: 'https://zukkoo.uz' }],
         creator: 'Rustamjon Nasridinov',
         publisher: 'Zukkoo.uz',
-        metadataBase: new URL('https://zukkoo.uz'),
+        metadataBase: new URL('https://www.zukkoo.uz'),
         openGraph: {
             title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
             description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
-            url: `https://zukkoo.uz/${locale}`,
+            url: `https://www.zukkoo.uz/${locale}`,
             siteName: 'Zukkoo.uz',
             images: [
                 {
@@ -46,11 +46,11 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             creator: '@zukkoo_uz',
         },
         alternates: {
-            canonical: `https://zukkoo.uz/${locale}`,
+            canonical: `https://www.zukkoo.uz/${locale}`,
             languages: {
-                'uz': 'https://zukkoo.uz/uz',
-                'ru': 'https://zukkoo.uz/ru',
-                'en': 'https://zukkoo.uz/en',
+                'uz': 'https://www.zukkoo.uz/uz',
+                'ru': 'https://www.zukkoo.uz/ru',
+                'en': 'https://www.zukkoo.uz/en',
             },
         },
         robots: {

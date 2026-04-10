@@ -6,7 +6,9 @@ import Image from 'next/image';
 import { useSubscription, CrownBadge } from '@/lib/subscriptionContext';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import Link from 'next/link';
+import { articles } from '@/lib/articles';
 
 const GAME_STYLES = [
     {
@@ -81,6 +83,7 @@ export default function LandingPage() {
     const [greetingKey, setGreetingKey] = useState('morning');
     const t = useTranslations('Home');
     const tGames = useTranslations('Games');
+    const locale = useLocale();
 
     useEffect(() => {
         const name = localStorage.getItem('zk_teacher_name') || '';
@@ -239,6 +242,62 @@ export default function LandingPage() {
                         {t('hero.goPro')}
                     </button>
                 </motion.div>
+
+                {/* --- SEO: Maqolalar va Ilmiy Yangiliklar (Articles & Insights) --- */}
+                <section className="w-full max-w-6xl mt-16 mb-8 relative z-10">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-black text-white">Maqolalar va Ilmiy Yangiliklar</h2>
+                            <p className="text-white/40 font-bold text-sm mt-1">Ta'lim va texnologiya tendensiyalari</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {articles.map((article, i) => (
+                            <motion.article 
+                                key={article.slug}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
+                                className="glass rounded-3xl overflow-hidden flex flex-col group border border-white/10 hover:border-blue-500/30 transition-all"
+                            >
+                                <div className="relative w-full h-48 overflow-hidden">
+                                    <Image 
+                                        src={article.imageUrl} 
+                                        alt={article.title} 
+                                        fill 
+                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        sizes="(max-width: 768px) 100vw, 33vw"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e1e] to-transparent opacity-80" />
+                                </div>
+                                <div className="p-6 flex flex-col flex-1">
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        {article.keywords.slice(0, 2).map((kw) => (
+                                            <span key={kw} className="text-[10px] font-black uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">
+                                                {kw}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <h3 className="text-white font-bold text-lg leading-snug mb-3 group-hover:text-blue-300 transition-colors line-clamp-2">
+                                        <Link href={`/${locale}/blog/${article.slug}`}>
+                                            {article.title}
+                                        </Link>
+                                    </h3>
+                                    <p className="text-white/50 text-sm leading-relaxed mb-6 line-clamp-3">
+                                        {article.excerpt}
+                                    </p>
+                                    <div className="mt-auto flex items-center justify-between">
+                                        <time className="text-white/30 text-xs font-bold">{new Date(article.date).toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+                                        <Link href={`/${locale}/blog/${article.slug}`} className="text-white font-bold text-sm bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition-all flex items-center gap-2">
+                                            Batafsil <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </motion.article>
+                        ))}
+                    </div>
+                </section>
             </main>
 
             <footer className="relative z-10 text-center py-6 text-white/30 font-semibold text-sm">

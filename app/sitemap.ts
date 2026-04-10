@@ -1,38 +1,38 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://zukkoo.uz';
+    // KANONIKALURL: har doim www bilan (Google Search Console canonical)
+    const baseUrl = 'https://www.zukkoo.uz';
+    const locales = ['uz', 'ru', 'en'];
+    const now = new Date();
 
-    // Core static routes
-    const routes: MetadataRoute.Sitemap = [
-        {
-            url: baseUrl,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 1,
-        },
-        {
-            url: `${baseUrl}/pricing`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.8,
-        },
-        {
-            url: `${baseUrl}/play`,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 0.9,
-        }
-    ];
+    // Asosiy sahifalar — barcha tillarda
+    const mainRoutes = ['', '/pricing', '/play'].flatMap(route =>
+        locales.map(locale => ({
+            url: `${baseUrl}/${locale}${route}`,
+            lastModified: now,
+            changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
+            priority: route === '' ? 1.0 : route === '/play' ? 0.9 : 0.8,
+        }))
+    );
 
-    // Dynamic game mode instruction pages (/play/1 through /play/6)
-    const gameIds = [1, 2, 3, 4, 5, 6];
-    const gameRoutes = gameIds.map((id) => ({
+    // Login / register sahifalari
+    const authRoutes = ['/login', '/register', '/forgot-password'].flatMap(route =>
+        locales.map(locale => ({
+            url: `${baseUrl}/${locale}${route}`,
+            lastModified: now,
+            changeFrequency: 'monthly' as const,
+            priority: 0.5,
+        }))
+    );
+
+    // O'yin turi sahifalari
+    const gameRoutes = [1, 2, 3, 4, 5, 6].map(id => ({
         url: `${baseUrl}/play/${id}`,
-        lastModified: new Date(),
+        lastModified: now,
         changeFrequency: 'weekly' as const,
         priority: 0.7,
     }));
 
-    return [...routes, ...gameRoutes];
+    return [...mainRoutes, ...authRoutes, ...gameRoutes];
 }
