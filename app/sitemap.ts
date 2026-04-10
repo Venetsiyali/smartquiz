@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { articles } from '@/lib/articles';
 
 export default function sitemap(): MetadataRoute.Sitemap {
     // KANONIKALURL: har doim www bilan (Google Search Console canonical)
@@ -34,5 +35,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.7,
     }));
 
-    return [...mainRoutes, ...authRoutes, ...gameRoutes];
+    // Blog index sahifalari — barcha tillarda
+    const blogIndexRoutes = locales.map(locale => ({
+        url: `${baseUrl}/${locale}/blog`,
+        lastModified: now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+    }));
+
+    // Maqolalar sahifalari — barcha tillarda
+    const articleRoutes = articles.flatMap(article =>
+        locales.map(locale => ({
+            url: `${baseUrl}/${locale}/blog/${article.slug}`,
+            lastModified: new Date(article.date),
+            changeFrequency: 'monthly' as const,
+            priority: 0.9,
+        }))
+    );
+
+    return [...mainRoutes, ...authRoutes, ...gameRoutes, ...blogIndexRoutes, ...articleRoutes];
 }

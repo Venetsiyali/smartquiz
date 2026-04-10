@@ -194,6 +194,14 @@ export default async function RootLayout({
     return (
         <html lang={locale} suppressHydrationWarning>
             <head>
+                {/* Explicit favicon tags for Google Search Console rich results */}
+                <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+                <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+                <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+                <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+                <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+                <link rel="canonical" href={`https://www.zukkoo.uz/${locale}`} />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

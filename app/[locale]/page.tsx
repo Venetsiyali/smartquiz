@@ -10,6 +10,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import { articles } from '@/lib/articles';
 
+const recentArticles = [...articles]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
 const GAME_STYLES = [
     {
         id: 'classic',
@@ -250,10 +254,13 @@ export default function LandingPage() {
                             <h2 className="text-2xl md:text-3xl font-black text-white">Maqolalar va Ilmiy Yangiliklar</h2>
                             <p className="text-white/40 font-bold text-sm mt-1">Ta'lim va texnologiya tendensiyalari</p>
                         </div>
+                        <Link href={`/${locale}/blog`} className="text-blue-400 hover:text-blue-300 font-bold text-sm transition-colors flex items-center gap-1">
+                            Barcha maqolalar <span>→</span>
+                        </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {articles.map((article, i) => (
+                        {recentArticles.map((article, i) => (
                             <motion.article 
                                 key={article.slug}
                                 initial={{ opacity: 0, y: 20 }}
