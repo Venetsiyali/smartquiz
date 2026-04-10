@@ -17,4 +17,4 @@ Disallow: /api/
 Disallow: /_next/
 
 # Sitemap
-Sitemap: https://zukkoo.uz/sitemap.xml
+Sitemap: https://www.zukkoo.uz/sitemap.xml
