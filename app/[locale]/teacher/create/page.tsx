@@ -276,9 +276,9 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
                     ],
                 };
             }
-            // default: classic multiple / team
+            // default: classic, multiple, team → all map to 'multiple' QuestionType
             return {
-                ...base, type: (gameType === 'team' ? 'multiple' : gameType) as QuestionType,
+                ...base, type: (gameType === 'team' || gameType === 'classic' ? 'multiple' : gameType) as QuestionType,
                 text: q.text || '',
                 options: (q.options || []).map((o: string, i: number) => ({
                     text: o, isCorrect: (q.correctOptions || []).includes(i),
