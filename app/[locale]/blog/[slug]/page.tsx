@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, articles } from '@/lib/articles';
 import Header from '@/components/Header';
-import Head from 'next/head';
 import Image from 'next/image';
 
 export async function generateMetadata({ params }: { params: { slug: string, locale: string } }) {
@@ -130,31 +129,6 @@ export default function ArticlePage({ params }: { params: { slug: string, locale
                 </article>
             </main>
 
-            {/* Minor inline style for markdown links generated in content */}
-            <style jsx global>{\`
-                .article-content h3 {
-                    font-size: 1.5rem;
-                    font-weight: 900;
-                    color: white;
-                    margin-top: 2rem;
-                    margin-bottom: 1rem;
-                }
-                .article-content p {
-                    margin-bottom: 1rem;
-                }
-                .article-content ol {
-                    list-style-type: decimal;
-                    padding-left: 1.5rem;
-                    margin-bottom: 1.5rem;
-                }
-                .article-content li {
-                    margin-bottom: 0.5rem;
-                }
-                .article-content strong {
-                    color: white;
-                    font-weight: 800;
-                }
-            \`}</style>
         </div>
     );
 }

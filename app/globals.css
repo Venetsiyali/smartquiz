@@ -343,3 +343,40 @@ body {
 .fire-glow {
   animation: fireGlow 0.8s ease-in-out infinite;
 }
+/* ── Blog Article Content Styles ── */
+.article-content h2 {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: white;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+.article-content h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #93c5fd;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+.article-content p {
+  margin-bottom: 1rem;
+}
+.article-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.article-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.article-content li {
+  margin-bottom: 0.5rem;
+}
+.article-content strong {
+  color: white;
+  font-weight: 800;
+}
