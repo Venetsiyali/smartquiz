@@ -12,15 +12,47 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function extractJson(raw: string): any {
-    // Remove markdown code blocks if present
-    let cleaned = raw.trim();
-    const mdMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    if (mdMatch) cleaned = mdMatch[1].trim();
-    // Extract first JSON object
-    const objMatch = cleaned.match(/\{[\s\S]*\}/);
-    if (!objMatch) throw new Error("JSON topilmadi");
-    // Fix common smart-quote issues
-    return JSON.parse(objMatch[0].replace(/[„""]/g, '"'));
+    // Step 1: strip markdown code fences if present
+    let text = raw.trim();
+    const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) text = fenceMatch[1].trim();
+
+    // Step 2: find the first '{' — start of JSON
+    const start = text.indexOf('{');
+    if (start === -1) throw new Error('JSON topilmadi');
+
+    // Step 3: bracket-count to find the matching closing '}'
+    // This is the only reliable way to extract a valid JSON object
+    // when the AI appends extra text after it.
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    let end = -1;
+
+    for (let i = start; i < text.length; i++) {
+        const ch = text[i];
+        if (escape) { escape = false; continue; }
+        if (ch === '\\' && inString) { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        else if (ch === '}') {
+            depth--;
+            if (depth === 0) { end = i; break; }
+        }
+    }
+
+    if (end === -1) throw new Error('JSON yopilmagan (bracket mismatch)');
+
+    let jsonStr = text.slice(start, end + 1);
+
+    // Step 4: fix common AI quote issues
+    jsonStr = jsonStr
+        .replace(/[\u201c\u201d\u201e\u00ab\u00bb]/g, '"')  // curly double quotes
+        .replace(/[\u2018\u2019]/g, "'")                      // curly single quotes
+        .replace(/,\s*([}\]])/g, '$1');                       // trailing commas
+
+    return JSON.parse(jsonStr);
 }
 
 // ─── System prompt - Zukkoo Elite Educational Architect ─────────────────────
