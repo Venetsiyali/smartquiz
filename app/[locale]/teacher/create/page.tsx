@@ -202,17 +202,90 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
 }
 
 /* ── AI Text Modal ── */
-function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void }) {
+function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void; gameType?: string }) {
     const t = useTranslations('TeacherCreate.Modals');
     const { isPro } = useSubscription();
     const [topic, setTopic] = useState('');
     const [count, setCount] = useState(5);
     const locale = useLocale();
     const [lang, setLang] = useState(locale);
-    const [timeLimit, setTimeLimit] = useState(20);
+    const [timeLimit, setTimeLimit] = useState(gameType === 'blitz' ? 5 : gameType === 'anagram' ? 30 : 20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
+
+    // O'yin turi bo'yicha label
+    const gameLabel: Record<string, string> = {
+        multiple: 'Zukkoo (Classic)', truefalse: 'Bliz-Sohat', order: 'Mantiqiy Zanjir',
+        match: 'Terminlar Jangi', anagram: 'Yashirin Kod', blitz: 'Blitz', team: 'Jamoaviy',
+    };
+
+    // AI javobini o'yin turiga qarab platformaning ichki formatiga moslashtiruvchi funksiya
+    const mapAIResponse = (questions: any[]): QuizQuestion[] => {
+        return questions.map((q: any) => {
+            const base = { id: uuidv4(), timeLimit, explanation: q.explanation || '' };
+
+            if (gameType === 'truefalse') {
+                return {
+                    ...base, type: 'truefalse' as QuestionType,
+                    text: q.text || '',
+                    options: [
+                        { text: "To'g'ri ✅", isCorrect: q.correctOptions?.[0] === 0 },
+                        { text: "Noto'g'ri ❌", isCorrect: q.correctOptions?.[0] === 1 },
+                    ],
+                };
+            }
+            if (gameType === 'order') {
+                // q.options massivida to'g'ri tartib berilgan
+                const items: OrderItem[] = (q.options || []).map((text: string) => ({ text }));
+                return {
+                    ...base, type: 'order' as QuestionType,
+                    text: q.text || 'Tartibga soling:',
+                    options: [],
+                    orderItems: items,
+                };
+            }
+            if (gameType === 'match') {
+                const pairs: MatchPair[] = (q.pairs || []).map((p: any) => ({
+                    term: p.term || '', definition: p.definition || '',
+                }));
+                return {
+                    ...base, type: 'match' as QuestionType,
+                    text: q.text || 'Moslang:',
+                    options: [],
+                    matchPairs: pairs,
+                };
+            }
+            if (gameType === 'anagram') {
+                // q.options[0] → yashirin so'z, q.text → ishora (hint)
+                const word = (q.options?.[0] || '').toUpperCase().trim();
+                return {
+                    ...base, type: 'anagram' as QuestionType,
+                    text: q.text || '',  // ishora (hint) matn
+                    anagramWord: word,
+                    options: [],
+                };
+            }
+            if (gameType === 'blitz') {
+                return {
+                    ...base, type: 'blitz' as QuestionType,
+                    text: q.text || '',
+                    options: [
+                        { text: "TO'G'RI", isCorrect: q.correctOptions?.[0] === 0 },
+                        { text: "NOTO'G'RI", isCorrect: q.correctOptions?.[0] === 1 },
+                    ],
+                };
+            }
+            // default: classic multiple / team
+            return {
+                ...base, type: (gameType === 'team' ? 'multiple' : gameType) as QuestionType,
+                text: q.text || '',
+                options: (q.options || []).map((o: string, i: number) => ({
+                    text: o, isCorrect: (q.correctOptions || []).includes(i),
+                })),
+            };
+        });
+    };
 
     const generate = async () => {
         if (!topic.trim()) { setError(t('topicRequired')); return; }
@@ -220,15 +293,13 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
         try {
             const res = await fetch('/api/ai/generate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, count, language: lang }),
+                // gameType va timeLimit ham yuboriladi
+                body: JSON.stringify({ topic, count, language: lang, gameType, timeLimit }),
             });
             const data = await res.json();
             if (!res.ok) { setError(data.error || 'Xatolik'); setLoading(false); return; }
-            const mapped: QuizQuestion[] = data.questions.map((q: any) => ({
-                id: uuidv4(), type: 'multiple' as QuestionType, text: q.text,
-                options: q.options.map((o: string, i: number) => ({ text: o, isCorrect: q.correctOptions.includes(i) })),
-                timeLimit, explanation: q.explanation || '',
-            }));
+            const mapped = mapAIResponse(data.questions || []);
+            if (mapped.length === 0) { setError("AI savollarni to'g'ri formatlamadi"); setLoading(false); return; }
             setPreview(mapped);
         } catch { setError(t('serverError')); }
         setLoading(false);
@@ -240,7 +311,13 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-white">{t('aiTitle')}</h2>
-                        <p className="text-white/40 text-xs">{t('aiSubtitle')}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className="text-white/40 text-xs">{t('aiSubtitle')}</p>
+                            {/* Joriy o'yin turi ko'rsatiladi */}
+                            <span className="px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(0,86,179,0.3)', color: '#60a5fa' }}>
+                                🎮 {gameLabel[gameType] || gameType}
+                            </span>
+                        </div>
                     </div>
                     <button onClick={onClose} className="text-white/40 hover:text-white text-3xl">×</button>
                 </div>
@@ -261,9 +338,10 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                         <button key={x.c} onClick={() => setLang(x.c)} className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
                             style={lang === x.c ? { background: '#0056b3', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{x.l}</button>
                     ))}
-                    {[20, 30, 60].map(t => (
-                        <button key={t} onClick={() => setTimeLimit(t)} className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
-                            style={timeLimit === t ? { background: '#FF1744', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{t}s</button>
+                    {/* Blitz uchun 3-5s, anagram uchun 30-90s, qolganlar uchun 20-60s */}
+                    {(gameType === 'blitz' ? [3, 4, 5] : gameType === 'anagram' ? [30, 60, 90] : [20, 30, 60]).map(s => (
+                        <button key={s} onClick={() => setTimeLimit(s)} className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
+                            style={timeLimit === s ? { background: '#FF1744', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{s}s</button>
                     ))}
                 </div>
                 {error && <p className="text-red-400 text-sm font-bold bg-red-500/10 rounded-xl py-2 text-center">⚠️ {error}</p>}
@@ -277,7 +355,13 @@ function AIModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: Qu
                         <div className="max-h-48 overflow-y-auto scrollbar-hide space-y-1.5">
                             {preview.map((q, i) => (
                                 <div key={q.id} className="glass-blue p-2.5 rounded-xl">
-                                    <p className="text-white text-sm font-bold">{i + 1}. {q.text}</p>
+                                    <p className="text-white text-sm font-bold">{i + 1}. {q.text || q.anagramWord || '...'}</p>
+                                    {q.type === 'order' && q.orderItems && (
+                                        <p className="text-white/40 text-xs mt-0.5">{q.orderItems.slice(0, 3).map(it => it.text).join(' → ')}{q.orderItems.length > 3 ? ' →...' : ''}</p>
+                                    )}
+                                    {q.type === 'match' && q.matchPairs && (
+                                        <p className="text-white/40 text-xs mt-0.5">{q.matchPairs.length} ta juft</p>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -650,7 +734,7 @@ function TeacherCreateInner() {
 
     return (
         <div className="bg-host min-h-screen">
-            {modal === 'ai' && <AIModal onClose={() => setModal('none')} onImport={importQuestions} />}
+            {modal === 'ai' && <AIModal onClose={() => setModal('none')} onImport={importQuestions} gameType={lockedMode === 'team' ? 'team' : lockedMode || q.type || 'multiple'} />}
             {modal === 'file' && <FileModal onClose={() => setModal('none')} onImport={importQuestions} />}
 
             {/* Header */}
