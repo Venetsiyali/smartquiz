@@ -28,7 +28,7 @@ Zamonaviy darsliklar qatoriga interaktiv ta'lim muhiti kirib kelayotganining sab
         `,
         keywords: ["interaktiv ta'lim", "gamifikatsiya", "Zukkoo platformasi", "o'yinli ta'lim"],
         date: "2026-04-10",
-        imageUrl: "/og-image.jpg" // Using an existing image for now
+        imageUrl: "/images/articles/gamifikatsiya-ta-limda.webp"
     },
     {
         slug: 'suniy-intellekt-va-talim-texnologiyalari',
@@ -47,7 +47,7 @@ Xulosa: Raqamli kelajak an'anaviy o'qituvchilarni almashtirmaydi, balki ularni o
         `,
         keywords: ["AI ta'limda", "intellektual axborot tizimlari", "TATU (TUIT) tadqiqotlari", "raqamli kelajak"],
         date: "2026-04-08",
-        imageUrl: "/og-image.jpg"
+        imageUrl: "/images/articles/sun-iy-intellekt-ta-limda.webp"
     },
     {
         slug: 'malumotlar-tahlili-va-monitoring',
@@ -66,7 +66,7 @@ Tizimli yondashuv orqaligina ma'lumotlardan foydali "insights" olish mumkin, bu 
         `,
         keywords: ["axborot tizimlari monitoringi", "gibrid modellar", "ma'lumotlarni tahlil qilish", "Nasridinov Rustamjon"],
         date: "2026-04-05",
-        imageUrl: "/og-image.jpg"
+        imageUrl: "/images/articles/ma-lumotlar-tahlili-monitoring.webp"
     },
 
     // ==================== NEW SEO ARTICLES ====================
@@ -116,7 +116,7 @@ Tizimli yondashuv orqaligina ma'lumotlardan foydali "insights" olish mumkin, bu 
         `,
         keywords: ["gibrid modellar", "intellektual axborot tizimlari", "vaqt qatorlari monitoringi", "Nasridinov Rustamjon", "axborot texnologiyalari", "innovatsiya"],
         date: "2026-04-10",
-        imageUrl: "/og-image.jpg"
+        imageUrl: "/images/articles/ta-lim-kelajagi-trendlari-2030.webp"
     },
     {
         slug: 'ozbekistonda-interaktiv-talim-2026',
@@ -168,7 +168,7 @@ Tizimli yondashuv orqaligina ma'lumotlardan foydali "insights" olish mumkin, bu 
         `,
         keywords: ["interaktiv ta'lim", "raqamli maktab", "onlayn darslar O'zbekiston", "Zukkoo platformasi", "dars samaradorligi", "innovatsiya"],
         date: "2026-04-09",
-        imageUrl: "/og-image.jpg"
+        imageUrl: "/images/articles/interaktiv-dars-metodlari.webp"
     },
     {
         slug: 'neyropedagogika-va-gamifikatsiya',
@@ -228,7 +228,7 @@ Tizimli yondashuv orqaligina ma'lumotlardan foydali "insights" olish mumkin, bu 
         `,
         keywords: ["neyropedagogika", "gamifikatsiya nima", "ta'lim o'yinlari", "intellektual tizimlar", "dopamin va o'rganish", "axborot texnologiyalari"],
         date: "2026-04-08",
-        imageUrl: "/og-image.jpg"
+        imageUrl: "/images/articles/neyropedagogika-ta-limda.webp"
     },
 ];
 
