@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
     title: 'Muallif haqida | Rustamjon Nasridinov',
-    description: 'TATU tayanch doktoranti va PhD tadqiqotchisi Rustamjon Nasridinovning ilmiy faoliyati, ORCID, Web of Science, Scopus va Google Scholar profillari, Zukkoo.uz loyihasi haqida.',
+    description: 'TATU tayanch doktoranti va PhD tadqiqotchisi Rustamjon Nasridinovning ilmiy faoliyati, ORCID, Web of Science (POS-8883-2026), ResearchGate va LinkedIn profillari, Zukkoo.uz loyihasi haqida.',
     alternates: {
         canonical: 'https://www.zukkoo.uz/uz/muallif',
     },
@@ -26,16 +26,8 @@ const SCIENTIFIC_LINKS = [
         border: 'rgba(166,206,57,0.4)',
     },
     {
-        name: 'Google Scholar',
-        url: 'https://scholar.google.com/scholar?q=Nasridinov+Rustamjon',
-        handle: 'Nasridinov Rustamjon',
-        color: '#4285F4',
-        bg: 'rgba(66,133,244,0.1)',
-        border: 'rgba(66,133,244,0.4)',
-    },
-    {
         name: 'Web of Science',
-        url: 'https://www.webofscience.com/wos/author/record/POV-2913-2026',
+        url: 'https://www.webofscience.com/wos/author/record/POS-8883-2026',
         handle: 'ResearcherID: POS-8883-2026',
         color: '#5E33BF',
         bg: 'rgba(94,51,191,0.1)',
@@ -56,38 +48,6 @@ const SCIENTIFIC_LINKS = [
         color: '#0A66C2',
         bg: 'rgba(10,102,194,0.1)',
         border: 'rgba(10,102,194,0.4)',
-    },
-    {
-        name: 'Scopus',
-        url: 'https://www.scopus.com/authid/detail.uri?authorId=Nasridinov+Rustamjon',
-        handle: 'Elsevier Scopus',
-        color: '#E9711C',
-        bg: 'rgba(233,113,28,0.1)',
-        border: 'rgba(233,113,28,0.4)',
-    },
-    {
-        name: 'Springer Nature',
-        url: 'https://link.springer.com/search?query=Nasridinov+Rustamjon',
-        handle: 'Nature / Springer',
-        color: '#6BB9A4',
-        bg: 'rgba(107,185,164,0.1)',
-        border: 'rgba(107,185,164,0.4)',
-    },
-    {
-        name: 'SLIB.UZ',
-        url: 'https://slib.uz/',
-        handle: "O'zbekiston ilmiy bazasi",
-        color: '#1E88E5',
-        bg: 'rgba(30,136,229,0.1)',
-        border: 'rgba(30,136,229,0.4)',
-    },
-    {
-        name: 'Antiplag.uz',
-        url: 'https://antiplag.uz/',
-        handle: "Milliy plagiat bazasi",
-        color: '#D32F2F',
-        bg: 'rgba(211,47,47,0.1)',
-        border: 'rgba(211,47,47,0.4)',
     },
 ];
 
@@ -265,9 +225,6 @@ export default function AuthorPage() {
                                     {link.name === 'ORCID' && (
                                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.525 0 .947.431.947.947s-.422.947-.947.947a.95.95 0 0 1-.947-.947c0-.525.422-.947.947-.947zm-.722 3.038h1.444v10.041H6.647V7.416zm3.562 0h3.9c3.712 0 5.344 2.653 5.344 5.025 0 2.578-2.016 5.025-5.325 5.025h-3.919V7.416zm1.444 1.303v7.444h2.297c3.272 0 4.022-2.484 4.022-3.722 0-2.016-1.284-3.722-4.097-3.722h-2.222z" /></svg>
                                     )}
-                                    {link.name === 'Google Scholar' && (
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M12 24a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-24L0 9.5l4.838 3.94A8 8 0 0 1 12 9a8 8 0 0 1 7.162 4.44L24 9.5z" /></svg>
-                                    )}
                                     {link.name === 'Web of Science' && (
                                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                                     )}
@@ -277,18 +234,7 @@ export default function AuthorPage() {
                                     {link.name === 'LinkedIn' && (
                                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.063 2.063 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                                     )}
-                                    {link.name === 'Scopus' && (
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><circle cx="12" cy="12" r="10" fillOpacity="0.2"/><text x="12" y="16" textAnchor="middle" fontSize="9" fontWeight="900" fill="currentColor">Sc</text></svg>
-                                    )}
-                                    {link.name === 'Springer Nature' && (
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M12 2L2 22h20L12 2zm0 5l6.5 13H5.5L12 7z"/></svg>
-                                    )}
-                                    {link.name === 'SLIB.UZ' && (
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M4 4h16v2H4zm0 4h16v12H4V8zm2 2v8h12v-8H6zm2 2h8v1H8v-1zm0 3h8v1H8v-1z"/></svg>
-                                    )}
-                                    {link.name === 'Antiplag.uz' && (
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h-2V7zm0 6h2v2h-2v-2z"/></svg>
-                                    )}
+
                                 </div>
                                 <div className="text-center">
                                     <div className="font-black text-sm text-white leading-tight">{link.name}</div>
