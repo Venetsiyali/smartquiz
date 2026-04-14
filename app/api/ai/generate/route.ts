@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { prisma } from '@/lib/prisma';
 
-// Fisher-Yates shuffle
+// ─── Fisher-Yates shuffle ────────────────────────────────────────────────────
 function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -11,24 +12,73 @@ function shuffle<T>(arr: T[]): T[] {
     return a;
 }
 
+// ─── Levenshtein distance ────────────────────────────────────────────────────
+function levenshtein(a: string, b: string): number {
+    const m = a.length, n = b.length;
+    const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+        Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+    );
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i - 1] === b[j - 1]
+                ? dp[i - 1][j - 1]
+                : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+    }
+    return dp[m][n];
+}
+
+function similarityScore(a: string, b: string): number {
+    const s1 = a.toLowerCase().trim();
+    const s2 = b.toLowerCase().trim();
+    const maxLen = Math.max(s1.length, s2.length);
+    if (maxLen === 0) return 1;
+    return 1 - levenshtein(s1, s2) / maxLen;
+}
+
+// ─── Topic Shuffler — keng kategoriyalarni quyi mavzularga yo'naltiradi ──────
+const TOPIC_NICHES: Record<string, string[]> = {
+    tarix: ["O'rta asrlar davri", "Qadimgi sivilizatsiyalar", "Buyuk kashfiyotlar va sayohatchilar",
+        "Inqiloblar va urushlar", "Buyuk imperiyalar", "O'zbekiston tarixi", "Ikkinchi Jahon urushi",
+        "Renessans davri", "Mustaqillik harakatlari", "Buyuk ipak yo'li"],
+    matematika: ["Algebra va tenglamalar", "Geometriya va shakllar", "Arifmetika amallar",
+        "Trigonometriya", "Ehtimollar nazariyasi", "Statistika va grafiklar", "Sonlar nazariyasi"],
+    biologiya: ["Hujayra biologiyasi", "Genetika va irsiyat", "Evolyutsiya nazariyasi",
+        "Ekotizimlar va ekologiya", "Inson anatomiyasi", "O'simliklar fiziologiyasi",
+        "Mikrobiologiya", "Genetik muhandislik"],
+    fizika: ["Mexanika va harakat", "Elektr va magnit", "Optika va yorug'lik",
+        "Termodinamika", "Kvant fizikasi", "Nisbiylik nazariyasi", "Yadro fizikasi"],
+    kimyo: ["Organik kimyo", "Anorganik birikmalar", "Kimyoviy reaksiyalar",
+        "Davriy jadval", "Elektrolitlar va kislotalar", "Polimer kimyo"],
+    geografiya: ["Materiklar va okeanlar", "Iqlim va ob-havo", "Tabiat zonalari",
+        "Aholishunoslik", "Iqtisodiy geografiya", "O'zbekiston geografiyasi"],
+    informatika: ["Algoritmlar va dasturlash", "Ma'lumotlar tuzilmasi", "Tarmoqlar va internet",
+        "Sun'iy intellekt", "Kiberhavfsizlik", "Ma'lumotlar bazasi", "Veb-texnologiyalar"],
+    adabiyot: ["O'zbek klassik adabiyoti", "Jahon adabiyoti", "She'riyat va janrlar",
+        "Yozuvchilar tarjimai holi", "Adabiy tahlil", "Folklor va dostonlar"],
+    ingliz: ["Grammar and tenses", "Vocabulary and idioms", "British literature",
+        "American English vs British English", "Phrasal verbs", "Academic writing"],
+    rus: ["Русская классическая литература", "Грамматика русского языка", "Великие писатели",
+        "История России", "Фразеологизмы", "Лексика и словообразование"],
+};
+
+function pickTopicNiche(topic: string): string {
+    const key = Object.keys(TOPIC_NICHES).find(k =>
+        topic.toLowerCase().includes(k) || k.includes(topic.toLowerCase())
+    );
+    if (!key) return topic;
+    const niches = TOPIC_NICHES[key];
+    return niches[Math.floor(Math.random() * niches.length)];
+}
+
+// ─── JSON extractor ──────────────────────────────────────────────────────────
 function extractJson(raw: string): any {
-    // Step 1: strip markdown code fences if present
     let text = raw.trim();
     const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (fenceMatch) text = fenceMatch[1].trim();
-
-    // Step 2: find the first '{' — start of JSON
     const start = text.indexOf('{');
     if (start === -1) throw new Error('JSON topilmadi');
-
-    // Step 3: bracket-count to find the matching closing '}'
-    // This is the only reliable way to extract a valid JSON object
-    // when the AI appends extra text after it.
-    let depth = 0;
-    let inString = false;
-    let escape = false;
-    let end = -1;
-
+    let depth = 0, inString = false, escape = false, end = -1;
     for (let i = start; i < text.length; i++) {
         const ch = text[i];
         if (escape) { escape = false; continue; }
@@ -36,27 +86,48 @@ function extractJson(raw: string): any {
         if (ch === '"') { inString = !inString; continue; }
         if (inString) continue;
         if (ch === '{') depth++;
-        else if (ch === '}') {
-            depth--;
-            if (depth === 0) { end = i; break; }
-        }
+        else if (ch === '}') { depth--; if (depth === 0) { end = i; break; } }
     }
-
-    if (end === -1) throw new Error('JSON yopilmagan (bracket mismatch)');
-
-    let jsonStr = text.slice(start, end + 1);
-
-    // Step 4: fix common AI quote issues
-    jsonStr = jsonStr
-        .replace(/[\u201c\u201d\u201e\u00ab\u00bb]/g, '"')  // curly double quotes
-        .replace(/[\u2018\u2019]/g, "'")                      // curly single quotes
-        .replace(/,\s*([}\]])/g, '$1');                       // trailing commas
-
+    if (end === -1) throw new Error('JSON yopilmagan');
+    let jsonStr = text.slice(start, end + 1)
+        .replace(/[\u201c\u201d\u201e\u00ab\u00bb]/g, '"')
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/,\s*([}\]])/g, '$1');
     return JSON.parse(jsonStr);
 }
 
-// ─── System prompt - Zukkoo Elite Educational Architect ─────────────────────
-const SYSTEM_PROMPT = `# ROLE: ELITE EDUCATIONAL ARCHITECT
+// ─── DB dan mavjud savollarni olish ─────────────────────────────────────────
+async function fetchExistingQuestions(topic: string, gameType: string): Promise<string[]> {
+    try {
+        const quizzes = await prisma.quiz.findMany({
+            where: {
+                title: { contains: topic, mode: 'insensitive' },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+            select: { questions: true },
+        });
+
+        const texts: string[] = [];
+        for (const quiz of quizzes) {
+            const qs = quiz.questions as any[];
+            if (!Array.isArray(qs)) continue;
+            for (const q of qs) {
+                const text = q.text || q.statement || q.word || '';
+                if (text && text.length > 5) texts.push(text);
+                if (texts.length >= 50) break;
+            }
+            if (texts.length >= 50) break;
+        }
+        return texts;
+    } catch {
+        // DB xatoligi bo'lsa, himoya mexanizmi ishlamasligini ta'minlaymiz
+        return [];
+    }
+}
+
+// ─── Base system prompt ──────────────────────────────────────────────────────
+const BASE_SYSTEM_PROMPT = `# ROLE: ELITE EDUCATIONAL ARCHITECT
 Siz Zukkoo.uz platformasining bosh pedagogik muhandisisiz. Vazifangiz — o'quvchilarning tanqidiy fikrlashini o'stiradigan, akademik jihatdan aniq va metodik jihatdan to'g'ri bo'lgan kontent yaratish.
 Faqat JSON formatida javob bering. Hech qanday kirish so'zi, markdown yoki qo'shimcha matn yozmang.
 
@@ -83,6 +154,20 @@ Har bir savol uchun quyidagi qo'shimcha maydonlarni ham kiriting:
 - "learning_objective": Bu savol o'quvchiga nimani o'rgatadi? (1 jumla)
 - "hint": To'g'ri javobni emas, to'g'ri yo'lni ko'rsatuvchi ishora (1 jumla)
 - "explanation": Savol yechilgandan keyin chiqadigan chuqurroq tushuntirish (2-3 jumla)`;
+
+// ─── Dynamic system prompt builder ──────────────────────────────────────────
+function buildSystemPrompt(excludedTexts: string[]): string {
+    if (excludedTexts.length === 0) return BASE_SYSTEM_PROMPT;
+
+    // Oxirgi 30 ta eng qisqa, ixcham qilib olamiz (token tejash uchun)
+    const sample = excludedTexts.slice(0, 30).map((t, i) => `${i + 1}. ${t.slice(0, 80)}`).join('\n');
+    return `${BASE_SYSTEM_PROMPT}
+
+# TAKRORLANISHDAN HIMOYA (MUHIM!)
+Quyidagi savollar allaqachon berilgan. Bu mavzular, faktlar yoki o'xshash tuzilmadagi savollarni ASLO takrorlamang.
+Mavzuning boshqa jihatlariga (boshqa shaxslar, sanalar, sabab-oqibat munosabatlari, kamroq ma'lum faktlar) e'tibor qarating:
+${sample}`;
+}
 
 // ─── Per-game-type user prompt builder ──────────────────────────────────────
 function buildPrompt(topic: string, gameType: string, count: number, language: string): string {
@@ -122,7 +207,7 @@ JSON sxemasi:
     }
 }
 
-// ─── Response normalizer: AI raw → platform Question format ─────────────────
+// ─── Response normalizer ─────────────────────────────────────────────────────
 function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): any[] {
     const raw = parsed.questions || parsed.pairs || parsed.items || [];
     if (!Array.isArray(raw)) return [];
@@ -153,21 +238,18 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
             });
 
         case 'match':
-            return raw.map((q: any) => {
-                const pairs = q.pairs || [];
-                return {
-                    text: q.text || q.question || 'Moslang:',
-                    options: [],
-                    correctOptions: [],
-                    pairs: pairs.map((p: any) => ({
-                        term: p.term || '',
-                        definition: p.definition || '',
-                    })),
-                    hint: q.hint || '',
-                    learning_objective: q.learning_objective || '',
-                    timeLimit,
-                };
-            });
+            return raw.map((q: any) => ({
+                text: q.text || q.question || 'Moslang:',
+                options: [],
+                correctOptions: [],
+                pairs: (q.pairs || []).map((p: any) => ({
+                    term: p.term || '',
+                    definition: p.definition || '',
+                })),
+                hint: q.hint || '',
+                learning_objective: q.learning_objective || '',
+                timeLimit,
+            }));
 
         case 'anagram':
             return raw.map((q: any) => ({
@@ -178,7 +260,7 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
                 timeLimit,
             }));
 
-        default: // classic, multiple, team
+        default:
             return raw.map((q: any) => {
                 const opts: string[] = q.options || [];
                 const correctIdxs: number[] = q.correctOptions ?? (q.correctIndex !== undefined ? [q.correctIndex] : [0]);
@@ -198,6 +280,20 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
     }
 }
 
+// ─── Levenshtein filtr: 80%+ o'xshash savollarni chiqaradi ──────────────────
+function filterDuplicates(newQuestions: any[], existingTexts: string[]): any[] {
+    if (existingTexts.length === 0) return newQuestions;
+    return newQuestions.filter(q => {
+        const qText = (q.text || '').trim();
+        if (!qText) return true;
+        const maxSim = existingTexts.reduce((max, existing) => {
+            const score = similarityScore(qText, existing);
+            return score > max ? score : max;
+        }, 0);
+        return maxSim < 0.80; // 80% dan kam o'xshashlik — qabul qilinadi
+    });
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -208,32 +304,49 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Mavzu kiriting (kamida 2 ta belgi)' }, { status: 400 });
     }
 
-    const userPrompt = buildPrompt(topic, gameType, count, language);
+    // 1. Topic Shuffler: keng kategoriya bo'lsa, quyi bo'limga yo'naltirish
+    const enrichedTopic = pickTopicNiche(topic.trim());
+
+    // 2. DB dan mavjud savollarni olish (parallel, bloklamaydi)
+    const existingTexts = await fetchExistingQuestions(topic.trim(), gameType);
+
+    // 3. Dynamic system prompt — excluded context bilan
+    const systemPrompt = buildSystemPrompt(existingTexts);
+    const userPrompt = buildPrompt(enrichedTopic, gameType, count, language);
 
     let lastError = '';
-    // Retry up to 2 times for robustness
+    // Retry up to 2 times — 2-urinishda yangi niche tanlanadi
     for (let attempt = 0; attempt < 2; attempt++) {
         try {
             const completion = await groq.chat.completions.create({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    { role: 'user', content: userPrompt },
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: attempt === 0 ? userPrompt : buildPrompt(pickTopicNiche(topic.trim()), gameType, count, language) },
                 ],
-                temperature: 0.65,
+                temperature: 0.85,   // Ijodiylikni oshirish (0.65 → 0.85)
+                top_p: 1,            // Barcha tokenlardan foydalanish
                 max_tokens: 4096,
             });
 
             const raw = completion.choices[0]?.message?.content || '';
             const parsed = extractJson(raw);
-            const questions = normalizeQuestions(parsed, gameType, timeLimit);
+            let questions = normalizeQuestions(parsed, gameType, timeLimit);
 
             if (!questions || questions.length === 0) {
                 lastError = "AI savollarni to'g'ri formatlamadi";
                 continue;
             }
 
-            return NextResponse.json({ questions, gameType });
+            // 4. Levenshtein filtr: 80%+ o'xshash savollarni olib tashlash
+            const filtered = filterDuplicates(questions, existingTexts);
+
+            // Agar ko'p savol filtrlandi (yarmidan ko'pi), original qaytarish
+            const finalQuestions = filtered.length >= Math.ceil(questions.length / 2)
+                ? filtered
+                : questions;
+
+            return NextResponse.json({ questions: finalQuestions, gameType });
         } catch (err: any) {
             lastError = err?.message || 'AI xatoligi';
             console.error(`AI attempt ${attempt + 1} failed:`, err);
