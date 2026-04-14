@@ -1,19 +1,22 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = {
-    title: 'Muallif haqida | Rustamjon Nasridinov',
-    description: 'TATU tayanch doktoranti va PhD tadqiqotchisi Rustamjon Nasridinovning ilmiy faoliyati, ORCID, Web of Science (POS-8883-2026), ResearchGate va LinkedIn profillari, Zukkoo.uz loyihasi haqida.',
-    alternates: {
-        canonical: 'https://www.zukkoo.uz/uz/muallif',
-    },
-    openGraph: {
-        title: 'Loyiha muallifi: Rustamjon Nasridinov — PhD Researcher at TUIT',
-        description: 'TATU tayanch doktoranti, Alpen-Adria University Klagenfurt Double Degree bitiruvchisi. Ilmiy yo\'nalish: gidrologik monitoring, gibrid modellar, AI va raqamli ta\'lim.',
-        images: ['/images/author.jpg'],
-        type: 'profile',
-    },
-};
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+    const locale = params.locale ?? 'uz';
+    return {
+        title: 'Muallif haqida | Rustamjon Nasridinov',
+        description: 'TATU tayanch doktoranti va PhD tadqiqotchisi Rustamjon Nasridinovning ilmiy faoliyati, ORCID, Web of Science (POS-8883-2026), ResearchGate va LinkedIn profillari, Zukkoo.uz loyihasi haqida.',
+        alternates: {
+            canonical: `https://www.zukkoo.uz/${locale}/muallif`,
+        },
+        openGraph: {
+            title: 'Loyiha muallifi: Rustamjon Nasridinov — PhD Researcher at TUIT',
+            description: 'TATU tayanch doktoranti, Alpen-Adria University Klagenfurt Double Degree bitiruvchisi. Ilmiy yo\'nalish: gidrologik monitoring, gibrid modellar, AI va raqamli ta\'lim.',
+            images: ['/images/author.jpg'],
+            type: 'profile',
+        },
+    };
+}
 
 // Ilmiy identifikatorlar — Google sameAs uchun ham ishlatiladi
 const SCIENTIFIC_LINKS = [

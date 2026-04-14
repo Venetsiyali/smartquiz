@@ -3,7 +3,6 @@ import '../globals.css';
 import { SubscriptionProvider } from '@/lib/subscriptionContext';
 import { Providers } from '@/components/Providers';
 import { NextIntlClientProvider } from 'next-intl';
-import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
     return {
@@ -201,7 +200,6 @@ export default async function RootLayout({
                 <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
                 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
                 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-                <link rel="canonical" href={`https://www.zukkoo.uz/${locale}`} />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

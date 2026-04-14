@@ -12,6 +12,9 @@ export async function generateMetadata({ params }: { params: { slug: string, loc
         description: article.excerpt,
         keywords: article.keywords,
         authors: [{ name: 'Nasridinov Rustamjon', url: 'https://www.zukkoo.uz' }],
+        alternates: {
+            canonical: `https://www.zukkoo.uz/${params.locale}/blog/${article.slug}`,
+        },
         openGraph: {
             title: article.title,
             description: article.excerpt,
