@@ -12,6 +12,7 @@ import { articles } from '@/lib/articles';
 import SocialProof from '@/components/home/SocialProof';
 import HowItWorks from '@/components/home/HowItWorks';
 import Leaderboard from '@/components/gamification/Leaderboard';
+import InstallBanner from '@/components/pwa/InstallBanner';
 
 const recentArticles = [...articles]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -365,6 +366,8 @@ export default function LandingPage() {
                     <p className="text-white/25 font-semibold text-xs">{t('footer')}</p>
                 </div>
             </footer>
+
+            <InstallBanner />
         </div>
     );
 }

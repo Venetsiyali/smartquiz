@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Internet aloqasi yo'q — Zukkoo</title>
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at top left, #0f172a 0%, #020617 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      padding: 1.5rem;
+    }
+
+    .card {
+      max-width: 400px;
+      width: 100%;
+      background: rgba(10, 14, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 1.25rem;
+      display: block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.96); }
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .logo span {
+      color: #00E676;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      background: linear-gradient(135deg, #00E676, #00C853);
+      color: #000;
+      font-weight: 900;
+      font-size: 0.875rem;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.04);
+      opacity: 0.92;
+    }
+
+    .hint {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="icon">📡</span>
+    <div class="logo">⚡ Zukk<span>oo</span></div>
+    <h1>Internet aloqasi yo'q</h1>
+    <p>
+      Tarmoqqa ulanishda muammo yuz berdi.<br />
+      Iltimos, internet aloqangizni tekshiring va qayta urinib ko'ring.
+    </p>
+    <button class="btn" onclick="location.reload()">
+      🔄 Qayta urinib ko'ring
+    </button>
+    <p class="hint">Yoki sahifani yoping va internet aloqasi tiklanganidan so'ng qaytib keling.</p>
+  </div>
+</body>
+</html>

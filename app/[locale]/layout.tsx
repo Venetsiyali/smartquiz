@@ -205,6 +205,12 @@ export default async function RootLayout({
                 <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
                 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
                 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+                {/* PWA meta tags */}
+                <link rel="manifest" href="/manifest.json" />
+                <meta name="theme-color" content="#0a0e1e" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+                <link rel="apple-touch-icon" href="/icons/icon-192.png" />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
