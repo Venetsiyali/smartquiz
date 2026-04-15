@@ -34,12 +34,45 @@ model User {
   lastLogin     DateTime?
   totalGamesPlayed Int    @default(0)
 
+  // ── Gamification (yangi qo'shildi, mavjud ustunlar saqlanadi) ──
+  streak         Int       @default(0)
+  lastStreakDate DateTime?
+  xp             Int       @default(0)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   accounts      Account[]
   sessions      Session[]
   quizzes       Quiz[]
+  badges        UserBadge[]
+}
+
+// ==========================================
+// GAMIFICATION — yangi modellar
+// ==========================================
+
+model Badge {
+  id          String      @id @default(cuid())
+  key         String      @unique
+  name        String
+  description String
+  icon        String
+  color       String
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeKey  String
+  earnedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeKey], references: [key])
+
+  @@unique([userId, badgeKey])
 }
 
 model Account {

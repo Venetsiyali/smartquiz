@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { articles } from '@/lib/articles';
 import SocialProof from '@/components/home/SocialProof';
 import HowItWorks from '@/components/home/HowItWorks';
+import Leaderboard from '@/components/gamification/Leaderboard';
 
 const recentArticles = [...articles]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -325,6 +326,8 @@ export default function LandingPage() {
                         ))}
                     </div>
                 </section>
+
+                <Leaderboard />
             </main>
 
             <footer className="relative z-10 text-center py-8 px-4 border-t border-white/5">
