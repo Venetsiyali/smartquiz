@@ -8,22 +8,22 @@ export async function generateMetadata({ params: { locale } }: { params: { local
     return {
         title: {
             template: '%s | Zukkoo.uz',
-            default: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
+            default: "Zukkoo — O'zbekiston uchun Bepul Interaktiv Quiz Platformasi",
         },
-        description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+        description: "O'zbek tilida gamifikatsiya platformasi. O'qituvchilar uchun bepul quiz yaratish, real-vaqt reyting, 6 xil o'yin turi. Kahoot muqobili.",
         keywords: [
-            'zukkoo', 'zukkoo.uz', 'interaktiv ta\'lim', 'gamifikatsiya', 'quiz',
-            'online quiz', 'viktorina', 'smart education', 'TATU', 'interaktiv o\'yinlar',
-            'kahoot analogi', 'o\'zbek ta\'lim platformasi', 'o\'zbekiston', 'att', 'tuit',
-            'PhD tadqiqot', 'Rustamjon Nasridinov', 'gidrologik monitoring'
+            'interaktiv quiz', 'gamifikatsiya', "o'qituvchilar uchun", 'viktorina', 'online test',
+            'zukkoo', 'zukkoo.uz', 'kahoot muqobili', 'kahoot analogi', 'bepul quiz platformasi',
+            "o'zbek ta'lim platformasi", "o'zbekiston", 'real-vaqt reyting', 'quiz yaratish',
+            'interaktiv ta\'lim', 'TATU', 'TUIT', 'Rustamjon Nasridinov'
         ],
         authors: [{ name: 'Rustamjon Nasridinov', url: 'https://zukkoo.uz' }],
         creator: 'Rustamjon Nasridinov',
         publisher: 'Zukkoo.uz',
         metadataBase: new URL('https://www.zukkoo.uz'),
         openGraph: {
-            title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
-            description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+            title: "Zukkoo — O'zbekiston uchun Bepul Interaktiv Quiz Platformasi",
+            description: "O'zbek tilida gamifikatsiya platformasi. O'qituvchilar uchun bepul quiz yaratish, real-vaqt reyting, 6 xil o'yin turi. Kahoot muqobili.",
             url: `https://www.zukkoo.uz/${locale}`,
             siteName: 'Zukkoo.uz',
             images: [
@@ -39,8 +39,8 @@ export async function generateMetadata({ params: { locale } }: { params: { local
         },
         twitter: {
             card: 'summary_large_image',
-            title: "Zukkoo.uz — Interaktiv Ta'lim va Gamifikatsiya Platformasi",
-            description: "TATU o'qituvchilari va PhD tadqiqotchilari tomonidan yaratilgan, darslarni o'yin orqali o'rgatuvchi innovatsion tizim.",
+            title: "Zukkoo — O'zbekiston uchun Bepul Interaktiv Quiz Platformasi",
+            description: "O'zbek tilida gamifikatsiya platformasi. O'qituvchilar uchun bepul quiz yaratish, real-vaqt reyting, 6 xil o'yin turi. Kahoot muqobili.",
             images: ['/images/zukkoo-hero.jpg'],
             creator: '@zukkoo_uz',
         },
@@ -108,9 +108,9 @@ export default async function RootLayout({
         '@graph': [
             {
                 '@type': 'EducationalOrganization',
-                '@id': 'https://zukkoo.uz/#organization',
+                '@id': 'https://www.zukkoo.uz/#organization',
                 name: 'Zukkoo.uz',
-                url: 'https://zukkoo.uz',
+                url: 'https://www.zukkoo.uz',
                 description: "Interaktiv ta'lim va gamifikatsiya platformasi.",
                 parentOrganization: {
                     '@type': 'CollegeOrUniversity',
@@ -125,7 +125,7 @@ export default async function RootLayout({
             },
             {
                 '@type': 'SoftwareApplication',
-                '@id': 'https://zukkoo.uz/#software',
+                '@id': 'https://www.zukkoo.uz/#software',
                 name: 'Zukkoo Platformasi',
                 applicationCategory: 'EducationalApplication',
                 operatingSystem: 'Web',
@@ -186,8 +186,13 @@ export default async function RootLayout({
             'Gidrologik monitoring', 'Ta\'lim texnologiyalari',
             'Gamifikatsiya', 'Interaktiv ta\'lim', 'Zukkoo platformasi',
         ],
-        url: 'https://zukkoo.uz',
-        sameAs: ['https://tatu.uz'],
+        url: 'https://www.zukkoo.uz',
+        sameAs: [
+            'https://tatu.uz',
+            'https://orcid.org/0009-0003-2422-9029',
+            'https://www.webofscience.com/wos/author/record/POS-8883-2026',
+            'https://www.researchgate.net/profile/Rustamjon-Nasridinov',
+        ],
     };
 
     return (

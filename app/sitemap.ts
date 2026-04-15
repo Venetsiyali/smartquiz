@@ -8,12 +8,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const now = new Date();
 
     // Asosiy sahifalar — barcha tillarda
-    const mainRoutes = ['', '/pricing', '/play'].flatMap(route =>
+    const mainRoutes = ['', '/pricing', '/play', '/muallif'].flatMap(route =>
         locales.map(locale => ({
             url: `${baseUrl}/${locale}${route}`,
             lastModified: now,
             changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
-            priority: route === '' ? 1.0 : route === '/play' ? 0.9 : 0.8,
+            priority: route === '' ? 1.0 : route === '/play' ? 0.9 : route === '/muallif' ? 0.6 : 0.8,
         }))
     );
 

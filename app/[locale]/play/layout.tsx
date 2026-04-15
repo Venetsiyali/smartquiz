@@ -9,7 +9,20 @@ export async function generateMetadata({ params }: { params: { locale: string } 
             canonical: `https://www.zukkoo.uz/${locale}/play`,
         },
         openGraph: {
+            title: "O'yin Boshlash | Zukkoo.uz",
+            description: "Zukkoo.uz da o'yin kodini kiriting va interaktiv viktorinaga qo'shiling. Real-vaqt rejimida sinfdoshlaringiz bilan raqobatlashing.",
             url: `https://www.zukkoo.uz/${locale}/play`,
+            siteName: 'Zukkoo.uz',
+            locale: locale === 'uz' ? 'uz_UZ' : locale === 'ru' ? 'ru_RU' : 'en_US',
+            images: [{ url: 'https://www.zukkoo.uz/images/zukkoo-hero.jpg', width: 1200, height: 600, alt: "Zukkoo — Interaktiv Quiz O'yini" }],
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: "O'yin Boshlash | Zukkoo.uz",
+            description: "Zukkoo.uz da o'yin kodini kiriting va interaktiv viktorinaga qo'shiling.",
+            images: ['https://www.zukkoo.uz/images/zukkoo-hero.jpg'],
+            creator: '@zukkoo_uz',
         },
     };
 }

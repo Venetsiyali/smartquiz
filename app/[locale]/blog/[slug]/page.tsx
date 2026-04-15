@@ -21,15 +21,24 @@ export async function generateMetadata({ params }: { params: { slug: string, loc
             type: 'article',
             publishedTime: article.date,
             url: `https://www.zukkoo.uz/${params.locale}/blog/${article.slug}`,
+            siteName: 'Zukkoo.uz',
+            locale: params.locale === 'uz' ? 'uz_UZ' : params.locale === 'ru' ? 'ru_RU' : 'en_US',
             images: [
                 {
-                    url: article.imageUrl,
+                    url: `https://www.zukkoo.uz${article.imageUrl}`,
                     width: 1200,
                     height: 630,
                     alt: article.title,
                 }
             ],
-        }
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: article.title,
+            description: article.excerpt,
+            images: [`https://www.zukkoo.uz${article.imageUrl}`],
+            creator: '@zukkoo_uz',
+        },
     };
 }
 
