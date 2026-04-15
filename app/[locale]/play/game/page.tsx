@@ -139,10 +139,31 @@ export default function StudentGamePage() {
         pinRef.current = pin; playerIdRef.current = pid;
         setTotalScore(0);
 
-        fetch(`/api/game/state?pin=${pin}`)
-            .then(r => r.json())
-            .then(data => { if (data.status === 'question' && data.currentQuestion) showQuestion(data.currentQuestion); })
-            .catch(() => { });
+        // Fast path: waiting room stored Q1 payload in sessionStorage before navigating.
+        // This gives zero-latency Q1 rendering without a network round-trip.
+        const pendingRaw = sessionStorage.getItem('pendingQuestion');
+        if (pendingRaw) {
+            sessionStorage.removeItem('pendingQuestion');
+            try {
+                showQuestion(JSON.parse(pendingRaw) as QuestionPayload);
+            } catch { /* malformed — fall through to state fetch */ }
+        } else {
+            // Fallback: poll state with up to 3 retries (covers late-joining students
+            // or cases where sessionStorage wasn't set).
+            const fetchState = (attempts: number) => {
+                fetch(`/api/game/state?pin=${pin}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'question' && data.currentQuestion) {
+                            showQuestion(data.currentQuestion);
+                        } else if (attempts > 0) {
+                            setTimeout(() => fetchState(attempts - 1), 400);
+                        }
+                    })
+                    .catch(() => { if (attempts > 0) setTimeout(() => fetchState(attempts - 1), 400); });
+            };
+            fetchState(3);
+        }
 
         const pusher = getPusherClient();
         const gameCh = pusher.subscribe(`game-${pin}`);

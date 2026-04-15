@@ -22,8 +22,21 @@ export default function WaitingPage() {
 
         const pusher = getPusherClient();
         const ch = pusher.subscribe(`game-${storedPin}`);
-        ch.bind('question-start', () => router.push('/play/game'));
-        return () => pusher.unsubscribe(`game-${storedPin}`);
+
+        ch.bind('question-start', (payload: unknown) => {
+            // Store Q1 payload so game page loads it instantly (no network roundtrip)
+            if (payload) {
+                sessionStorage.setItem('pendingQuestion', JSON.stringify(payload));
+            }
+            router.push('/play/game');
+        });
+
+        // Only unbind the handler — don't unsubscribe the channel.
+        // If we unsubscribe here, the game page may miss events that fire
+        // during the React navigation transition.
+        return () => {
+            ch.unbind('question-start');
+        };
     }, [router]);
 
     useEffect(() => {
