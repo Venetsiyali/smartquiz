@@ -338,6 +338,9 @@ export default function LandingPage() {
                         <Link href={`/${locale}/pricing`} className="hover:text-white/70 transition-colors">Tariflar</Link>
                         <Link href={`/${locale}/muallif`} className="hover:text-white/70 transition-colors">Muallif</Link>
                         <a href="https://t.me/zukkoo_uz" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">Yordam</a>
+                        <Link href={`/${locale}/about`} className="hover:text-white/70 transition-colors">Haqimizda</Link>
+                        <Link href={`/${locale}/privacy`} className="hover:text-white/70 transition-colors">Maxfiylik</Link>
+                        <Link href={`/${locale}/terms`} className="hover:text-white/70 transition-colors">Shartlar</Link>
                     </div>
                     {/* Social icons */}
                     <div className="flex items-center gap-4">
