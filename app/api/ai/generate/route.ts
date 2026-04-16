@@ -178,28 +178,39 @@ function buildPrompt(topic: string, gameType: string, count: number, language: s
         case 'classic':
         case 'team':
             return `${lang}. Mavzu: "${topic}". ${count} ta klassik test savoli tuz.
+Qoidalar: to'g'ri javob 1 ta, qolgan 3 variant ishonchli ammo noto'g'ri bo'lsin. Trivial ("kimdir nechta yil yashagan") savollardan qoching. Sabab-oqibat, qo'llash, tahlil qilish ko'nikmalarini sinang.
 JSON sxemasi:
-{"questions":[{"text":"Savol?","options":["A","B","C","D"],"correctOptions":[2],"explanation":"Izoh..."}]}`;
+{"questions":[{"text":"Savol?","options":["Variant A","Variant B","Variant C","Variant D"],"correctOptions":[2],"hint":"Bir jumla ishora","explanation":"2-3 jumlali chuqur izoh"}]}`;
 
         case 'truefalse':
-            return `${lang}. Mavzu: "${topic}". ${count} ta Ha/Yo'q (True/False) savol tuz. Savollar biroz o'ylantiradigan bo'lsin.
+            return `${lang}. Mavzu: "${topic}". ${count} ta Ha/Yo'q (True/False) savol tuz.
+Qoidalar: (1) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin, to'liq bema'ni emas. (3) Savollar biroz o'ylantirsin.
 JSON sxemasi:
-{"questions":[{"text":"Tasdiq gap.","isTrue":true,"explanation":"Izoh..."}]}`;
+{"questions":[{"text":"Aniq tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora","explanation":"Nima uchun to'g'ri/noto'g'ri ekanligi"}]}`;
+
+        case 'blitz':
+            return `${lang}. Mavzu: "${topic}". ${count} ta BLITZ uslubida To'g'ri/Noto'g'ri savol tuz.
+Qoidalar: (1) Har bir tasdiq 0.3–2 soniya ichida javob berish uchun qisqa va aniq bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin. (3) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin. (4) Tezkor o'ylashni talab qilsin.
+JSON sxemasi:
+{"questions":[{"text":"Qisqa tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora","explanation":"Qisqa izoh"}]}`;
 
         case 'order':
-            return `${lang}. Mavzu: "${topic}". ${count} ta mantiqiy tartib (Sorting) topshirig'i tuz. Har biri uchun 4-6 element bering. Elementlar items massivida TO'G'RI tartibda bo'lishi shart.
+            return `${lang}. Mavzu: "${topic}". ${count} ta mantiqiy tartib (Sorting) topshirig'i tuz.
+Qoidalar: (1) Har biri uchun 4-5 element bering. (2) Elementlar items massivida TO'G'RI tartibda bo'lishi shart. (3) Xronologik, algoritmik yoki sabab-oqibat zanjirlarini ishlating. (4) Har bir element 2-6 so'zdan iborat bo'lsin.
 JSON sxemasi:
-{"questions":[{"text":"Quyidagilarni to'g'ri tartibga soling:","items":["1-qadam","2-qadam","3-qadam","4-qadam"]}]}`;
+{"questions":[{"text":"Quyidagi jarayonni to'g'ri tartibga soling:","items":["1-bosqich","2-bosqich","3-bosqich","4-bosqich"],"hint":"Bir jumla yo'naltiruvchi ishora"}]}`;
 
         case 'match':
-            return `${lang}. Mavzu: "${topic}". ${count} ta moslik (Matching) to'plami tuz. Har to'plamda kamida 6 ta term-definition juftligi bo'lsin. Izohlar qisqa va aniq bo'lsin (max 10 so'z).
+            return `${lang}. Mavzu: "${topic}". ${count} ta moslik (Matching) to'plami tuz.
+Qoidalar: (1) Har to'plamda 6 ta juft bo'lsin. (2) term — qisqa atama yoki nom (max 3 so'z). (3) definition — 5-10 so'zli aniq ta'rif yoki izoh. (4) Juftlar o'zaro o'xshash bo'lmasin (aralashib ketmasin).
 JSON sxemasi:
-{"questions":[{"text":"Ushbu atamalarni ta'riflari bilan moslang:","pairs":[{"term":"Atama","definition":"Ta'rifi"}]}]}`;
+{"questions":[{"text":"Ushbu atamalarni ta'riflari bilan moslang:","pairs":[{"term":"Atama 1","definition":"Aniq ta'rif 1"},{"term":"Atama 2","definition":"Aniq ta'rif 2"},{"term":"Atama 3","definition":"Aniq ta'rif 3"},{"term":"Atama 4","definition":"Aniq ta'rif 4"},{"term":"Atama 5","definition":"Aniq ta'rif 5"},{"term":"Atama 6","definition":"Aniq ta'rif 6"}],"hint":"Bir jumla ishora"}]}`;
 
         case 'anagram':
-            return `${lang}. Mavzu: "${topic}". ${count} ta yashirin so'z (Anagram) topshirig'i tuz. Faqat texnik/ilmiy terminlar ishlat. So'z katta harfda.
+            return `${lang}. Mavzu: "${topic}". ${count} ta yashirin so'z (Anagram) topshirig'i tuz.
+Qoidalar: (1) FAQAT texnik/ilmiy terminlar. (2) So'z uzunligi 5–10 harf oralig'ida bo'lsin. (3) hint — so'zning ma'nosini EMAS, faqat sohasi yoki funksiyasini bildiruvchi ishora. (4) So'z katta harfda, faqat lotin harflari.
 JSON sxemasi:
-{"questions":[{"word":"ALGORITM","hint":"Dasturning mantiqiy ketma-ketligi"}]}`;
+{"questions":[{"word":"ALGORITM","hint":"Muammoni hal qilish uchun qadamba-qadam yo'riqnoma"},{"word":"KOMPILER","hint":"Dastur kodini mashina tiliga o'giruvchi dastur"}]}`;
 
         default:
             return `${lang}. Mavzu: "${topic}". ${count} ta klassik test savoli tuz.
@@ -214,6 +225,7 @@ function normalizeQuestions(parsed: any, gameType: string, timeLimit: number): a
 
     switch (gameType) {
         case 'truefalse':
+        case 'blitz':
             return raw.map((q: any) => ({
                 text: q.text || q.statement || '',
                 options: ["To'g'ri ✅", "Noto'g'ri ❌"],
