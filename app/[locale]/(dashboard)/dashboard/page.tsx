@@ -51,7 +51,6 @@ export default function DashboardPage() {
     const locale = (params?.locale as string) ?? 'uz';
 
     const [stats, setStats] = useState<Stats | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -64,19 +63,16 @@ export default function DashboardPage() {
         fetch('/api/dashboard/stats')
             .then(r => r.json())
             .then(setStats)
-            .catch(() => {})
-            .finally(() => setLoading(false));
+            .catch(() => {});
     }, [status]);
 
-    if (status === 'loading' || loading) {
+    if (status === 'loading' || stats === null) {
         return (
             <div className="flex items-center justify-center min-h-64 text-white/30 font-bold text-lg">
                 Yuklanmoqda...
             </div>
         );
     }
-
-    if (!stats) return null;
 
     const level = getLevelFromXP(stats.xp);
 

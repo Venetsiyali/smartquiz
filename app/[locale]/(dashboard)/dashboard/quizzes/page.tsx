@@ -32,6 +32,7 @@ export default function QuizzesPage() {
     const [data, setData] = useState<ApiResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [filter, setFilter] = useState<'all' | 'public' | 'private'>('all');
     const [page, setPage] = useState(1);
     const [deleting, setDeleting] = useState<string | null>(null);
@@ -41,26 +42,30 @@ export default function QuizzesPage() {
         if (status === 'unauthenticated') router.replace(`/${locale}/login`);
     }, [status, locale, router]);
 
+    // Debounce search input — reset to page 1 and delay API call
+    useEffect(() => {
+        setPage(1);
+        const id = setTimeout(() => setDebouncedSearch(search), 300);
+        return () => clearTimeout(id);
+    }, [search]);
+
+    useEffect(() => { setPage(1); }, [filter]);
+
     const loadQuizzes = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams({ search, filter, page: String(page) });
+            const params = new URLSearchParams({ search: debouncedSearch, filter, page: String(page) });
             const res = await fetch(`/api/dashboard/quizzes?${params}`);
             const json = await res.json();
             setData(json);
         } catch { /* noop */ } finally {
             setLoading(false);
         }
-    }, [search, filter, page]);
+    }, [debouncedSearch, filter, page]);
 
     useEffect(() => {
         if (status === 'authenticated') loadQuizzes();
     }, [status, loadQuizzes]);
-
-    // Debounce search
-    useEffect(() => {
-        setPage(1);
-    }, [search, filter]);
 
     async function handleDelete(id: string) {
         setDeleting(id);

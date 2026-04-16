@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { getQuestionCount } from '@/lib/quizUtils';
 
 export async function GET() {
     try {
@@ -32,7 +33,7 @@ export async function GET() {
             title: q.title,
             isPublic: q.isPublic,
             createdAt: q.createdAt,
-            questionCount: Array.isArray(q.questions) ? (q.questions as unknown[]).length : 0,
+            questionCount: getQuestionCount(q.questions),
         }));
 
         return NextResponse.json({
@@ -44,6 +45,8 @@ export async function GET() {
             streak: user?.streak ?? 0,
             memberSince: user?.createdAt ?? null,
             recentQuizzes: recentQuizzesWithCount,
+        }, {
+            headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' },
         });
     } catch (error) {
         console.error('Dashboard stats error:', error);

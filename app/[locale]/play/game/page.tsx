@@ -88,6 +88,7 @@ export default function StudentGamePage() {
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const retryTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
     const pinRef = useRef('');
     const playerIdRef = useRef('');
     const nextPhaseRef = useRef<PagePhase>('between');
@@ -157,10 +158,12 @@ export default function StudentGamePage() {
                         if (data.status === 'question' && data.currentQuestion) {
                             showQuestion(data.currentQuestion);
                         } else if (attempts > 0) {
-                            setTimeout(() => fetchState(attempts - 1), 400);
+                            retryTimeoutsRef.current.push(setTimeout(() => fetchState(attempts - 1), 400));
                         }
                     })
-                    .catch(() => { if (attempts > 0) setTimeout(() => fetchState(attempts - 1), 400); });
+                    .catch(() => {
+                        if (attempts > 0) retryTimeoutsRef.current.push(setTimeout(() => fetchState(attempts - 1), 400));
+                    });
             };
             fetchState(3);
         }
@@ -242,6 +245,7 @@ export default function StudentGamePage() {
         return () => {
             pusher.unsubscribe(`game-${pin}`); pusher.unsubscribe(`player-${pid}`);
             clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
+            retryTimeoutsRef.current.forEach(clearTimeout);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router]);
@@ -407,7 +411,8 @@ export default function StudentGamePage() {
 
             {/* Question card */}
             <div className="glass p-4 rounded-2xl mb-4">
-                {question.imageUrl && <img src={question.imageUrl} alt="" className="w-full max-h-36 object-cover rounded-xl mb-3" />}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {question.imageUrl && <img src={question.imageUrl} alt="" loading="lazy" decoding="async" className="w-full max-h-36 object-cover rounded-xl mb-3" />}
                 <p className="text-white font-extrabold text-lg leading-snug text-center">{question.text}</p>
             </div>
 

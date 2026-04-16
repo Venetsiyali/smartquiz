@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { getQuestionCount } from '@/lib/quizUtils';
 
 export async function GET(req: Request) {
     try {
@@ -17,7 +19,7 @@ export async function GET(req: Request) {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const where: Record<string, unknown> = { userId: session.user.id };
+        const where: Prisma.QuizWhereInput = { userId: session.user.id };
         if (search) where.title = { contains: search, mode: 'insensitive' };
         if (filter === 'public') where.isPublic = true;
         if (filter === 'private') where.isPublic = false;
@@ -48,7 +50,7 @@ export async function GET(req: Request) {
             isPublic: q.isPublic,
             createdAt: q.createdAt,
             updatedAt: q.updatedAt,
-            questionCount: Array.isArray(q.questions) ? (q.questions as unknown[]).length : 0,
+            questionCount: getQuestionCount(q.questions),
         }));
 
         return NextResponse.json({
@@ -74,10 +76,8 @@ export async function DELETE(req: Request) {
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
-        const quiz = await prisma.quiz.findFirst({ where: { id, userId: session.user.id } });
-        if (!quiz) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-        await prisma.quiz.delete({ where: { id } });
+        const { count } = await prisma.quiz.deleteMany({ where: { id, userId: session.user.id } });
+        if (count === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Dashboard delete quiz error:', error);

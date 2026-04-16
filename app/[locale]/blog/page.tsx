@@ -1,3 +1,5 @@
+export const revalidate = 3600; // Re-generate at most once per hour
+
 import { articles } from '@/lib/articles';
 import Header from '@/components/Header';
 import Image from 'next/image';

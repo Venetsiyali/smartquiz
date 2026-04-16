@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
@@ -114,11 +115,13 @@ export default function AuthorPage() {
                 {/* Header Section */}
                 <header className="text-center space-y-4 animate-fade-in-up">
                     <div className="inline-block p-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                             src="/images/author.jpg"
                             alt="Rustamjon Nasridinov — PhD Researcher at TUIT"
+                            width={160}
+                            height={160}
                             className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-[#0a0f25] bg-white/5"
+                            priority
                         />
                     </div>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 pb-2">

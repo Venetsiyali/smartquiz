@@ -1,8 +1,16 @@
 import type { Metadata } from 'next';
+import { Nunito } from 'next/font/google';
 import '../globals.css';
 import { SubscriptionProvider } from '@/lib/subscriptionContext';
 import { Providers } from '@/components/Providers';
 import { NextIntlClientProvider } from 'next-intl';
+
+const nunito = Nunito({
+    subsets: ['latin', 'cyrillic'],
+    weight: ['400', '600', '700', '800', '900'],
+    display: 'swap',
+    variable: '--font-nunito',
+});
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
     return {
@@ -196,7 +204,7 @@ export default async function RootLayout({
     };
 
     return (
-        <html lang={locale} suppressHydrationWarning>
+        <html lang={locale} className={nunito.variable} suppressHydrationWarning>
             <head>
                 {/* Explicit favicon tags for Google Search Console rich results */}
                 <link rel="icon" href="/favicon.ico" type="image/x-icon" />

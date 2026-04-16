@@ -70,7 +70,12 @@ const nextConfig = {
                     { key: "X-Content-Type-Options", value: "nosniff" },
                     { key: "X-Frame-Options", value: "SAMEORIGIN" },
                     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-                    // Favicon va rasmlarni kesh saqlash (Google indexer uchun)
+                ]
+            },
+            // Static assets (images, fonts, icons) — long-lived cache
+            {
+                source: "/images/:path*",
+                headers: [
                     { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
                 ]
             },

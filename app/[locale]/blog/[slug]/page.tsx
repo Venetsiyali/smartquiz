@@ -1,3 +1,5 @@
+export const revalidate = 3600; // Re-generate at most once per hour
+
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, articles } from '@/lib/articles';
 import Header from '@/components/Header';

@@ -321,7 +321,8 @@ export default function TeacherGamePage() {
                     )}
                 </div>
 
-                {question.imageUrl && <img src={question.imageUrl} alt="" className="max-h-52 rounded-3xl object-cover shadow-2xl" />}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {question.imageUrl && <img src={question.imageUrl} alt="" loading="lazy" decoding="async" className="max-h-52 rounded-3xl object-cover shadow-2xl" />}
                 <h2 className="text-3xl md:text-5xl font-black text-white text-center leading-tight max-w-5xl"
                     style={{ textShadow: '0 2px 24px rgba(0,0,0,0.6)' }}>{question.text}</h2>
 

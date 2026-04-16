@@ -1000,7 +1000,8 @@ function TeacherCreateInner() {
                                 </div>
                             </div>
                         </div>
-                        {q.imageUrl && <img src={q.imageUrl} alt="" className="h-28 rounded-xl object-cover" />}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {q.imageUrl && <img src={q.imageUrl} alt="" loading="lazy" decoding="async" className="h-28 rounded-xl object-cover" />}
                     </div>
 
                     {/* Options — MCQ / TrueFalse only */}
