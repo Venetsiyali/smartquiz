@@ -91,22 +91,6 @@ export function generatePin(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-/** Assign players to teams round-robin after shuffling */
-export function assignTeams(players: Player[], teams: Team[]): void {
-    // Fisher-Yates shuffle player order for fairness
-    const shuffled = [...players];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    shuffled.forEach((p, i) => {
-        const team = teams[i % teams.length];
-        p.teamId = team.id;
-    });
-    // Populate team member lists
-    teams.forEach(t => { t.answeredCorrectly = []; t.answeredTotal = []; });
-}
-
 /** Recalculate team.score from sum of members' individual scores */
 export function recalcTeamScores(room: GameRoom): void {
     if (!room.teams) return;

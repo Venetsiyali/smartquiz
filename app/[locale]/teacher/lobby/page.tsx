@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { getPusherClient } from '@/lib/pusherClient';
 
-interface Player { id: string; nickname: string; avatar: string; streak: number; }
+interface Player { id: string; nickname: string; avatar: string; streak: number; teamId?: string; }
+interface Team { id: string; name: string; emoji: string; color: string; }
+interface PlayerTeam { id: string; teamId?: string; }
 
 export default function TeacherLobbyPage() {
     const router = useRouter();
     const [pin, setPin] = useState<string | null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
+    const [teamMode, setTeamMode] = useState(false);
+    const [teams, setTeams] = useState<Team[]>([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(true);
@@ -33,8 +37,10 @@ export default function TeacherLobbyPage() {
         fetch(`/api/game/state?pin=${existingPin}`)
             .then(res => res.json())
             .then(data => {
-                if (data && data.players) {
-                    setPlayers(data.players);
+                if (data && data.players) setPlayers(data.players);
+                if (data?.teamMode && data?.teams) {
+                    setTeamMode(true);
+                    setTeams(data.teams);
                 }
             })
             .catch(err => console.error("Holatni olishda xatolik:", err));
@@ -43,6 +49,12 @@ export default function TeacherLobbyPage() {
         channelRef.current = pusher.subscribe(`game-${existingPin}`);
         channelRef.current.bind('player-joined', ({ players: updated }: { players: Player[] }) => {
             setPlayers(updated);
+        });
+        channelRef.current.bind('team-updated', ({ playerTeams }: { playerTeams: PlayerTeam[] }) => {
+            setPlayers(prev => prev.map(p => {
+                const upd = playerTeams.find(pt => pt.id === p.id);
+                return upd ? { ...p, teamId: upd.teamId } : p;
+            }));
         });
     }, [router]);
 
@@ -121,6 +133,12 @@ export default function TeacherLobbyPage() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-white font-extrabold text-lg">
                             Qo&apos;shilganlar <span className="text-white/40 ml-1 text-base">({players.length})</span>
+                            {teamMode && (
+                                <span className="ml-2 px-2 py-0.5 rounded-lg text-xs font-black tracking-widest"
+                                    style={{ background: 'rgba(14,165,233,0.15)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.3)' }}>
+                                    JAMOAVIY
+                                </span>
+                            )}
                         </h2>
                         <div className="flex items-center gap-1.5 text-green-400 text-xs font-bold">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> Live
@@ -132,6 +150,58 @@ export default function TeacherLobbyPage() {
                             <div className="text-6xl mb-4 animate-pulse-slow">🕐</div>
                             <p className="text-white/40 font-bold text-xl">O&apos;yinchilar kutilmoqda...</p>
                             <p className="text-white/25 text-sm mt-1">PIN yoki QR orqali kirishsin</p>
+                        </div>
+                    ) : teamMode && teams.length > 0 ? (
+                        <div className="space-y-5">
+                            {teams.map(team => {
+                                const members = players.filter(p => p.teamId === team.id);
+                                return (
+                                    <div key={team.id} className="rounded-2xl p-4"
+                                        style={{ background: `${team.color}14`, border: `1px solid ${team.color}40` }}>
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <span className="text-2xl">{team.emoji}</span>
+                                            <h3 className="text-white font-black text-base">{team.name}</h3>
+                                            <span className="text-white/50 text-sm font-bold">{members.length} a&apos;zo</span>
+                                        </div>
+                                        {members.length === 0 ? (
+                                            <p className="text-white/30 text-sm font-semibold italic">— Hali hech kim tanlamagan —</p>
+                                        ) : (
+                                            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                                                {members.map(p => (
+                                                    <div key={p.id} className="glass p-2 rounded-xl text-center">
+                                                        <div className="text-2xl">{p.avatar || '🤖'}</div>
+                                                        <p className="text-white font-bold text-xs truncate">{p.nickname}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {/* Unassigned */}
+                            {(() => {
+                                const unassigned = players.filter(p => !p.teamId);
+                                if (unassigned.length === 0) return null;
+                                return (
+                                    <div className="rounded-2xl p-4"
+                                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)' }}>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="text-xl">⏳</span>
+                                            <h3 className="text-white/60 font-black text-sm">Tanlamaganlar</h3>
+                                            <span className="text-white/40 text-xs font-bold">({unassigned.length})</span>
+                                        </div>
+                                        <p className="text-white/40 text-xs font-semibold mb-2">O&apos;yin boshlanganda avtomatik ravishda eng kam a&apos;zoli jamoaga qo&apos;shiladi.</p>
+                                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                                            {unassigned.map(p => (
+                                                <div key={p.id} className="glass p-2 rounded-xl text-center opacity-70">
+                                                    <div className="text-2xl">{p.avatar || '🤖'}</div>
+                                                    <p className="text-white font-bold text-xs truncate">{p.nickname}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">

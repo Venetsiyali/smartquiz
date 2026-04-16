@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
-import { getRoom, saveRoomData, assignTeams, resetTeamQuestion } from '@/lib/gameState';
+import { getRoom, saveRoomData, resetTeamQuestion, type Player, type Team } from '@/lib/gameState';
 
 
 // Fisher-Yates shuffle (returns new array, original untouched)
@@ -11,6 +11,16 @@ function shuffle<T>(arr: T[]): T[] {
         [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+}
+
+/** Fill in any player without a teamId, picking the smallest team to keep balance. */
+function assignStragglers(players: Player[], teams: Team[]): void {
+    const stragglers = shuffle(players.filter(p => !p.teamId));
+    for (const p of stragglers) {
+        const counts = teams.map(t => players.filter(pl => pl.teamId === t.id).length);
+        const minIdx = counts.indexOf(Math.min(...counts));
+        p.teamId = teams[minIdx].id;
+    }
 }
 
 export async function POST(req: Request) {
@@ -26,9 +36,9 @@ export async function POST(req: Request) {
     room.questionStartTime = Date.now();
     room.answeredPlayerIds = [];
 
-    // Team mode: assign players to teams and broadcast
+    // Team mode: keep player-chosen teams; only auto-assign stragglers
     if (room.teamMode && room.teams && room.teams.length > 0) {
-        assignTeams(room.players, room.teams);
+        assignStragglers(room.players, room.teams);
         resetTeamQuestion(room.teams);
     }
 

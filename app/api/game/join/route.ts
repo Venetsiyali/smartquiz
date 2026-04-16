@@ -40,6 +40,10 @@ export async function POST(req: Request) {
 
     // 2. YANGI O'YINCHI o'yin davomida ham qo'shilishi mumkin (LATE JOIN / Kahoot uslubi)
     // Bunday o'yinchilar shunchaki o'tkazib yuborgan savollari bo'yicha nol ball bilan boshlashadi.
+    // Team mode: talaba xonada o'z jamoasini tanlaydi — auto-assign yo'q (lobby'da).
+    // Late-join (o'yin boshlangandan keyin): eng kam a'zoli jamoaga qo'shamiz.
+    const isLateJoin = room.status !== 'lobby';
+
     room.players.push({
         id: playerId,
         nickname,
@@ -53,12 +57,11 @@ export async function POST(req: Request) {
         fastestAnswerMs: Infinity,
     });
 
-    // Team mode: assign to team with fewest members
     let assignedTeamId: string | undefined;
     let assignedTeamName: string | undefined;
     let assignedTeamColor: string | undefined;
     let assignedTeamEmoji: string | undefined;
-    if (room.teamMode && room.teams && room.teams.length > 0) {
+    if (room.teamMode && room.teams && room.teams.length > 0 && isLateJoin) {
         const memberCounts = room.teams.map(t => room.players.filter(p => p.teamId === t.id).length);
         const minIdx = memberCounts.indexOf(Math.min(...memberCounts));
         const team = room.teams[minIdx];
@@ -77,6 +80,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
         ok: true, pin,
+        teamMode: !!room.teamMode,
+        teams: room.teams?.map(t => ({ id: t.id, name: t.name, emoji: t.emoji, color: t.color })) ?? null,
         teamId: assignedTeamId,
         teamName: assignedTeamName,
         teamColor: assignedTeamColor,

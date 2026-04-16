@@ -18,8 +18,16 @@ export async function GET(req: Request) {
             id: p.id,
             nickname: p.nickname,
             avatar: p.avatar,
-            streak: p.streak
+            streak: p.streak,
+            teamId: p.teamId,
         })),
+        teamMode: !!room.teamMode,
+        teams: room.teams?.map(t => ({
+            id: t.id,
+            name: t.name,
+            emoji: t.emoji,
+            color: t.color,
+        })) ?? null,
         currentQuestion: currentQ
             ? {
                 questionIndex: room.currentQuestionIndex,
