@@ -67,11 +67,11 @@ export const MascotSprite: React.FC<MascotSpriteProps> = ({ state, size = 150, c
     const scaledHeight = crop.h * scale;
 
     return {
-      width: \`\${size}px\`,
-      height: \`\${scaledHeight}px\`,
-      backgroundImage: \`url('/mascot.png')\`,
-      backgroundSize: \`\${TOTAL_WIDTH * scale}px \${TOTAL_HEIGHT * scale}px\`,
-      backgroundPosition: \`-\${crop.x * scale}px -\${crop.y * scale}px\`,
+      width: `${size}px`,
+      height: `${scaledHeight}px`,
+      backgroundImage: `url('/mascot.png')`,
+      backgroundSize: `${TOTAL_WIDTH * scale}px ${TOTAL_HEIGHT * scale}px`,
+      backgroundPosition: `-${crop.x * scale}px -${crop.y * scale}px`,
       backgroundRepeat: 'no-repeat',
       borderRadius: '20px', // Chetlari chiroyli bo'lishi uchun
     };
@@ -79,10 +79,10 @@ export const MascotSprite: React.FC<MascotSpriteProps> = ({ state, size = 150, c
 
   return (
     <div 
-      className={\`inline-block transition-transform duration-300 ease-in-out hover:scale-105 \${className}\`} 
+      className={`inline-block transition-transform duration-300 ease-in-out hover:scale-105 ${className}`} 
       style={cssStyle}
       role="img"
-      aria-label={\`Mascot \${state}\`}
+      aria-label={`Mascot ${state}`}
     />
   );
 };
