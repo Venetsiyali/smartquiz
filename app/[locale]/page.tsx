@@ -176,9 +176,11 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        {/* O'ng Qahramon (Qiz bola) */}
-                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 w-48 relative translate-y-6">
-                            <MascotSprite state="idle_girl" size={200} />
+                        {/* O'ng Qahramon (Qiz bola - transparent) */}
+                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 w-56 relative translate-y-6">
+                            <div className="relative w-[220px] h-[360px]">
+                                <Image src="/qiz.png" alt="Zukko Qiz" fill className="object-contain drop-shadow-2xl" priority />
+                            </div>
                         </div>
                         
                         {/* Orqa fon nur effektlari */}
