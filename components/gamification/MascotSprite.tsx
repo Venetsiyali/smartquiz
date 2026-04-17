@@ -38,7 +38,7 @@ const TOTAL_HEIGHT = 1504;
 // agar qahramon chetlari uzilib qolsa, shu yerda raqamlarni bir oz o'zgartirishingiz mumkin.
 const spriteMap: Record<MascotState, { x: number; y: number; w: number; h: number }> = {
   // --- O'G'IL BOLA (Chap taraf) ---
-  idle_boy:       { x: 30, y: 350, w: 550, h: 900 },
+  idle_boy:       { x: 60, y: 370, w: 480, h: 680 },
   excellent_boy:  { x: 580, y: 320, w: 320, h: 280 },
   thinking_boy:   { x: 920, y: 320, w: 320, h: 280 },
   wow_boy:        { x: 580, y: 640, w: 320, h: 280 },
@@ -48,7 +48,7 @@ const spriteMap: Record<MascotState, { x: number; y: number; w: number; h: numbe
   talent_boy:     { x: 750, y: 1250, w: 320, h: 250 }, 
 
   // --- QIZ BOLA (O'ng taraf) ---
-  idle_girl:      { x: 1400, y: 350, w: 550, h: 900 },
+  idle_girl:      { x: 1440, y: 370, w: 480, h: 680 },
   excellent_girl: { x: 2000, y: 300, w: 350, h: 290 },
   thinking_girl:  { x: 2360, y: 300, w: 350, h: 290 },
   wow_girl:       { x: 2000, y: 610, w: 350, h: 290 },
