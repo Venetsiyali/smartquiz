@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { getLevelFromXP } from '@/lib/gamification/xp';
 import { MascotSprite } from '@/components/gamification/MascotSprite';
 
@@ -50,6 +51,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const params = useParams();
     const locale = (params?.locale as string) ?? 'uz';
+    const t = useTranslations('Dashboard');
 
     const [stats, setStats] = useState<Stats | null>(null);
 
@@ -70,7 +72,7 @@ export default function DashboardPage() {
     if (status === 'loading' || stats === null) {
         return (
             <div className="flex items-center justify-center min-h-64 text-white/30 font-bold text-lg">
-                Yuklanmoqda...
+                {t('loading')}
             </div>
         );
     }
@@ -98,7 +100,7 @@ export default function DashboardPage() {
                 {/* Center Content */}
                 <div className="text-center flex-1 z-20 flex flex-col items-center justify-center">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
-                        <span className="text-amber-400 text-xs font-black tracking-widest uppercase">Zukkoo Platformasi</span>
+                        <span className="text-amber-400 text-xs font-black tracking-widest uppercase">{t('platform')}</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-3 drop-shadow-sm">
                         {`Salom, ${session?.user?.name?.split(' ')[0] || session?.user?.email?.split('@')[0] || 'do\'st'}!`} 👋
@@ -121,21 +123,21 @@ export default function DashboardPage() {
 
             {/* Stats grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <StatCard icon="🧩" label="Jami quizlar" value={stats.totalQuizzes} />
-                <StatCard icon="🌐" label="Ochiq quizlar" value={stats.publicQuizzes} color="#3b82f6" />
-                <StatCard icon="🎮" label="O'yinlar" value={stats.totalGamesPlayed} color="#00E676" />
-                <StatCard icon="🔥" label="Streak" value={stats.streak} sub="kun ketma-ket" color="#f97316" />
+                <StatCard icon="🧩" label={t('totalQuizzes')} value={stats.totalQuizzes} />
+                <StatCard icon="🌐" label={t('publicQuizzes')} value={stats.publicQuizzes} color="#3b82f6" />
+                <StatCard icon="🎮" label={t('gamesPlayed')} value={stats.totalGamesPlayed} color="#00E676" />
+                <StatCard icon="🔥" label="Streak" value={stats.streak} sub={t('streakDays')} color="#f97316" />
             </div>
 
             {/* Recent quizzes */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-white font-black text-xl">So'nggi quizlar</h2>
+                    <h2 className="text-white font-black text-xl">{t('recentQuizzes')}</h2>
                     <Link
                         href={`/${locale}/dashboard/quizzes`}
                         className="text-blue-400 text-sm font-bold hover:text-blue-300 transition-colors"
                     >
-                        Barchasini ko'rish →
+                        {t('viewAll')}
                     </Link>
                 </div>
 
@@ -145,13 +147,13 @@ export default function DashboardPage() {
                         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
                     >
                         <span className="text-4xl">🧩</span>
-                        <p className="text-white/50 font-bold">Hali quiz yaratmadingiz</p>
+                        <p className="text-white/50 font-bold">{t('noQuizzes')}</p>
                         <Link
                             href={`/${locale}/quiz/create`}
                             className="px-5 py-2 rounded-xl font-black text-sm transition-all hover:scale-105"
                             style={{ background: 'rgba(0,230,118,0.15)', color: '#00E676', border: '1px solid rgba(0,230,118,0.25)' }}
                         >
-                            ➕ Birinchi quizni yarating
+                            {t('createFirst')}
                         </Link>
                     </div>
                 ) : (
@@ -176,7 +178,7 @@ export default function DashboardPage() {
                                 <div className="flex-1 min-w-0">
                                     <p className="text-white font-bold text-sm truncate">{quiz.title}</p>
                                     <p className="text-white/30 text-xs font-semibold">
-                                        {quiz.questionCount} savol · {new Date(quiz.createdAt).toLocaleDateString('uz-UZ')}
+                                        {quiz.questionCount} {t('questions')} · {new Date(quiz.createdAt).toLocaleDateString(locale === 'uz' ? 'uz-UZ' : locale === 'ru' ? 'ru-RU' : 'en-US')}
                                     </p>
                                 </div>
                                 <span
@@ -186,7 +188,7 @@ export default function DashboardPage() {
                                         : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }
                                     }
                                 >
-                                    {quiz.isPublic ? 'Ochiq' : 'Yopiq'}
+                                    {quiz.isPublic ? t('public') : t('private')}
                                 </span>
                             </motion.div>
                         ))}
@@ -197,9 +199,9 @@ export default function DashboardPage() {
             {/* Quick actions */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                    { href: `/${locale}/quiz/create`, icon: '➕', label: 'Yangi quiz yaratish', color: '#00E676' },
-                    { href: `/${locale}/play`, icon: '🎮', label: "O'yin boshlash", color: '#3b82f6' },
-                    { href: `/${locale}/dashboard/analytics`, icon: '📈', label: 'Tahlillarni ko\'rish', color: '#8b5cf6' },
+                    { href: `/${locale}/quiz/create`, icon: '➕', label: t('createQuizAction'), color: '#00E676' },
+                    { href: `/${locale}/play`, icon: '🎮', label: t('startGameAction'), color: '#3b82f6' },
+                    { href: `/${locale}/dashboard/analytics`, icon: '📈', label: t('analyticsAction'), color: '#8b5cf6' },
                 ].map(action => (
                     <Link
                         key={action.href}

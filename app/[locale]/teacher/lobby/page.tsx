@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { getPusherClient } from '@/lib/pusherClient';
+import { useTranslations } from 'next-intl';
 
 interface Player { id: string; nickname: string; avatar: string; streak: number; teamId?: string; }
 interface Team { id: string; name: string; emoji: string; color: string; }
@@ -11,6 +12,7 @@ interface PlayerTeam { id: string; teamId?: string; }
 
 export default function TeacherLobbyPage() {
     const router = useRouter();
+    const t = useTranslations('Lobby');
     const [pin, setPin] = useState<string | null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
     const [teamMode, setTeamMode] = useState(false);
@@ -64,7 +66,7 @@ export default function TeacherLobbyPage() {
 
     const handleStart = () => {
         if (!pin) return;
-        if (players.length === 0) { setError("Kamida 1 ta o'yinchi kerak!"); setTimeout(() => setError(''), 3000); return; }
+        if (players.length === 0) { setError(t('minOnePlayers')); setTimeout(() => setError(''), 3000); return; }
         setLoading(true);
         router.push('/teacher/game');
     };
@@ -80,7 +82,7 @@ export default function TeacherLobbyPage() {
                 </div>
                 <div className={`flex items-center gap-2 text-sm font-bold ${!isCreating ? 'text-green-400' : 'text-yellow-400'}`}>
                     <div className={`w-2 h-2 rounded-full animate-pulse ${!isCreating ? 'bg-green-400' : 'bg-yellow-400'}`} />
-                    {isCreating ? 'Yaratilmoqda...' : 'Tayyor'}
+                    {isCreating ? t('creating') : t('ready')}
                 </div>
             </header>
 
@@ -88,7 +90,7 @@ export default function TeacherLobbyPage() {
                 {/* Left */}
                 <div className="md:w-80 flex flex-col gap-5">
                     <div className="glass p-6 flex flex-col items-center gap-4">
-                        <p className="text-white/50 font-bold text-xs tracking-widest">QR KOD</p>
+                        <p className="text-white/50 font-bold text-xs tracking-widest">{t('qrCode')}</p>
                         {pin && joinUrl ? (
                             <div className="bg-white p-4 rounded-2xl shadow-2xl">
                                 <QRCodeSVG value={joinUrl} size={176} bgColor="#ffffff" fgColor="#0a0f1e" level="H" />
@@ -102,7 +104,7 @@ export default function TeacherLobbyPage() {
                     </div>
 
                     <div className="glass-blue p-6 flex flex-col items-center gap-1">
-                        <p className="text-white/50 font-bold text-xs tracking-widest mb-2">PIN KOD</p>
+                        <p className="text-white/50 font-bold text-xs tracking-widest mb-2">{t('pinCode')}</p>
                         <div className="text-6xl font-black tracking-widest" style={{ color: '#FFD600', textShadow: '0 0 40px rgba(255,214,0,0.5)' }}>
                             {pin || <span className="text-white/15">——————</span>}
                         </div>
@@ -116,14 +118,14 @@ export default function TeacherLobbyPage() {
                                     border: `1px solid ${copied ? 'rgba(0,230,118,0.5)' : 'rgba(255,255,255,0.15)'}`,
                                     color: copied ? '#00E676' : 'rgba(255,255,255,0.7)'
                                 }}>
-                                {copied ? '✅ Nusxalandi!' : "🔗 O'yin linkini nusxalash"}
+                                {copied ? t('copied') : t('copyLink')}
                             </button>
                         )}
                     </div>
 
                     <button onClick={handleStart} disabled={!pin || players.length === 0 || loading}
                         className="btn-primary w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none">
-                        {loading ? '⚡ Boshlanmoqda...' : `🚀 Boshlash (${players.length})`}
+                        {loading ? t('starting') : `${t('start')} (${players.length})`}
                     </button>
                     {error && <p className="text-red-400 font-bold text-sm text-center">⚠️ {error}</p>}
                 </div>
@@ -132,11 +134,11 @@ export default function TeacherLobbyPage() {
                 <div className="flex-1">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-white font-extrabold text-lg">
-                            Qo&apos;shilganlar <span className="text-white/40 ml-1 text-base">({players.length})</span>
+                            {t('joinedPlayers')} <span className="text-white/40 ml-1 text-base">({players.length})</span>
                             {teamMode && (
                                 <span className="ml-2 px-2 py-0.5 rounded-lg text-xs font-black tracking-widest"
                                     style={{ background: 'rgba(14,165,233,0.15)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.3)' }}>
-                                    JAMOAVIY
+                                    {t('teamBadge')}
                                 </span>
                             )}
                         </h2>
@@ -148,8 +150,8 @@ export default function TeacherLobbyPage() {
                     {players.length === 0 ? (
                         <div className="glass p-16 rounded-3xl text-center">
                             <div className="text-6xl mb-4 animate-pulse-slow">🕐</div>
-                            <p className="text-white/40 font-bold text-xl">O&apos;yinchilar kutilmoqda...</p>
-                            <p className="text-white/25 text-sm mt-1">PIN yoki QR orqali kirishsin</p>
+                            <p className="text-white/40 font-bold text-xl">{t('waitingPlayers')}</p>
+                            <p className="text-white/25 text-sm mt-1">{t('waitingHint')}</p>
                         </div>
                     ) : teamMode && teams.length > 0 ? (
                         <div className="space-y-5">
@@ -161,10 +163,10 @@ export default function TeacherLobbyPage() {
                                         <div className="flex items-center gap-3 mb-3">
                                             <span className="text-2xl">{team.emoji}</span>
                                             <h3 className="text-white font-black text-base">{team.name}</h3>
-                                            <span className="text-white/50 text-sm font-bold">{members.length} a&apos;zo</span>
+                                            <span className="text-white/50 text-sm font-bold">{members.length} {t('members')}</span>
                                         </div>
                                         {members.length === 0 ? (
-                                            <p className="text-white/30 text-sm font-semibold italic">— Hali hech kim tanlamagan —</p>
+                                            <p className="text-white/30 text-sm font-semibold italic">{t('noOneChosen')}</p>
                                         ) : (
                                             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                                                 {members.map(p => (
@@ -187,10 +189,10 @@ export default function TeacherLobbyPage() {
                                         style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)' }}>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="text-xl">⏳</span>
-                                            <h3 className="text-white/60 font-black text-sm">Tanlamaganlar</h3>
+                                            <h3 className="text-white/60 font-black text-sm">{t('unassigned')}</h3>
                                             <span className="text-white/40 text-xs font-bold">({unassigned.length})</span>
                                         </div>
-                                        <p className="text-white/40 text-xs font-semibold mb-2">O&apos;yin boshlanganda avtomatik ravishda eng kam a&apos;zoli jamoaga qo&apos;shiladi.</p>
+                                        <p className="text-white/40 text-xs font-semibold mb-2">{t('autoAssign')}</p>
                                         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                                             {unassigned.map(p => (
                                                 <div key={p.id} className="glass p-2 rounded-xl text-center opacity-70">

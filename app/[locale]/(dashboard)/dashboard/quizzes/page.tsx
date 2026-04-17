@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 interface Quiz {
     id: string;
@@ -37,6 +38,7 @@ export default function QuizzesPage() {
     const [page, setPage] = useState(1);
     const [deleting, setDeleting] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const t = useTranslations('Quizzes');
 
     useEffect(() => {
         if (status === 'unauthenticated') router.replace(`/${locale}/login`);
@@ -83,15 +85,15 @@ export default function QuizzesPage() {
             {/* Header */}
             <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
                 <div>
-                    <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-1">Boshqaruv paneli</p>
-                    <h1 className="text-3xl font-black text-white">🧩 Quizlarim</h1>
+                    <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-1">{t('breadcrumb')}</p>
+                    <h1 className="text-3xl font-black text-white">{t('title')}</h1>
                 </div>
                 <Link
                     href={`/${locale}/quiz/create`}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm transition-all hover:scale-105 shrink-0"
                     style={{ background: 'rgba(0,230,118,0.15)', color: '#00E676', border: '1px solid rgba(0,230,118,0.25)' }}
                 >
-                    ➕ Yangi quiz
+                    {t('newQuiz')}
                 </Link>
             </div>
 
@@ -99,7 +101,7 @@ export default function QuizzesPage() {
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <input
                     type="text"
-                    placeholder="Quiz nomi bo'yicha qidirish..."
+                    placeholder={t('searchPlaceholder')}
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white placeholder-white/30 outline-none transition-all"
@@ -116,7 +118,7 @@ export default function QuizzesPage() {
                                 : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)' }
                             }
                         >
-                            {f === 'all' ? 'Barchasi' : f === 'public' ? 'Ochiq' : 'Yopiq'}
+                            {f === 'all' ? t('filterAll') : f === 'public' ? t('filterPublic') : t('filterPrivate')}
                         </button>
                     ))}
                 </div>
@@ -128,14 +130,14 @@ export default function QuizzesPage() {
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
                 {loading ? (
-                    <div className="flex items-center justify-center py-16 text-white/30 font-bold">Yuklanmoqda...</div>
+                    <div className="flex items-center justify-center py-16 text-white/30 font-bold">{t('loading')}</div>
                 ) : !data || data.quizzes.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center">
                         <span className="text-4xl">🧩</span>
-                        <p className="text-white/40 font-bold">Hech narsa topilmadi</p>
+                        <p className="text-white/40 font-bold">{t('notFound')}</p>
                         {search && (
                             <button onClick={() => setSearch('')} className="text-blue-400 text-sm font-bold hover:underline">
-                                Qidiruvni tozalash
+                                {t('clearSearch')}
                             </button>
                         )}
                     </div>
@@ -143,7 +145,7 @@ export default function QuizzesPage() {
                     <>
                         {/* Desktop table header */}
                         <div className="hidden md:grid grid-cols-[1fr_80px_90px_100px_120px] px-5 py-3 border-b border-white/5">
-                            {['Nomi', 'Savollar', 'Holati', 'Yaratilgan', 'Amallar'].map(h => (
+                            {[t('colName'), t('colQuestions'), t('colStatus'), t('colCreated'), t('colActions')].map(h => (
                                 <span key={h} className="text-white/25 text-xs font-black uppercase tracking-wider">{h}</span>
                             ))}
                         </div>
@@ -170,7 +172,7 @@ export default function QuizzesPage() {
                                         : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }
                                     }
                                 >
-                                    {quiz.isPublic ? 'Ochiq' : 'Yopiq'}
+                                    {quiz.isPublic ? t('filterPublic') : t('filterPrivate')}
                                 </span>
                                 <span className="text-white/30 text-xs font-semibold">
                                     {new Date(quiz.createdAt).toLocaleDateString('uz-UZ')}
@@ -181,14 +183,14 @@ export default function QuizzesPage() {
                                         className="px-3 py-1.5 rounded-lg text-xs font-black transition-all hover:scale-105"
                                         style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}
                                     >
-                                        Tahrirlash
+                                        {t('edit')}
                                     </Link>
                                     <button
                                         onClick={() => setConfirmDelete(quiz.id)}
                                         className="px-3 py-1.5 rounded-lg text-xs font-black transition-all hover:scale-105"
                                         style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}
                                     >
-                                        O'chirish
+                                        {t('delete')}
                                     </button>
                                 </div>
                             </motion.div>
@@ -206,7 +208,7 @@ export default function QuizzesPage() {
                         className="px-4 py-2 rounded-xl text-sm font-black disabled:opacity-30 transition-all"
                         style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)' }}
                     >
-                        ← Oldingi
+                        {t('prev')}
                     </button>
                     <span className="text-white/40 text-sm font-bold px-2">{page} / {data.pages}</span>
                     <button
@@ -215,7 +217,7 @@ export default function QuizzesPage() {
                         className="px-4 py-2 rounded-xl text-sm font-black disabled:opacity-30 transition-all"
                         style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)' }}
                     >
-                        Keyingi →
+                        {t('next')}
                     </button>
                 </div>
             )}
@@ -236,15 +238,15 @@ export default function QuizzesPage() {
                             style={{ background: 'rgba(10,14,30,0.98)', border: '1px solid rgba(239,68,68,0.3)' }}
                         >
                             <span className="text-4xl">🗑️</span>
-                            <h3 className="text-white font-black text-xl">Quizni o'chirish</h3>
-                            <p className="text-white/50 text-sm">Bu amalni ortga qaytarib bo'lmaydi. Davom etasizmi?</p>
+                            <h3 className="text-white font-black text-xl">{t('deleteTitle')}</h3>
+                            <p className="text-white/50 text-sm">{t('deleteConfirm')}</p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setConfirmDelete(null)}
                                     className="flex-1 py-2.5 rounded-xl font-black text-sm text-white/50 transition-all hover:text-white"
                                     style={{ background: 'rgba(255,255,255,0.06)' }}
                                 >
-                                    Bekor qilish
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     onClick={() => handleDelete(confirmDelete)}
@@ -252,7 +254,7 @@ export default function QuizzesPage() {
                                     className="flex-1 py-2.5 rounded-xl font-black text-sm transition-all hover:scale-105 disabled:opacity-60"
                                     style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
                                 >
-                                    {deleting === confirmDelete ? "O'chirilmoqda..." : "O'chirish"}
+                                    {deleting === confirmDelete ? t('deleting') : t('delete')}
                                 </button>
                             </div>
                         </motion.div>

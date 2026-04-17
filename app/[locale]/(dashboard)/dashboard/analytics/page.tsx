@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 interface WeekDay {
     date: string;
@@ -57,8 +58,7 @@ function BarChart({ data }: { data: WeekDay[] }) {
     );
 }
 
-function downloadCSV(rows: CsvRow[]) {
-    const headers = ['ID', 'Nomi', "Ta'rif", 'Ochiq/Yopiq', 'Savollar soni', 'Yaratilgan sana'];
+function downloadCSV(rows: CsvRow[], headers: string[]) {
     const csvContent = [
         headers.join(','),
         ...rows.map(r =>
@@ -78,6 +78,7 @@ function downloadCSV(rows: CsvRow[]) {
 export default function AnalyticsPage() {
     const { status } = useSession();
     const router = useRouter();
+    const t = useTranslations('Analytics');
     const params = useParams();
     const locale = (params?.locale as string) ?? 'uz';
 
@@ -100,7 +101,7 @@ export default function AnalyticsPage() {
     if (status === 'loading' || loading) {
         return (
             <div className="flex items-center justify-center min-h-64 text-white/30 font-bold text-lg">
-                Yuklanmoqda...
+                {t('loading')}
             </div>
         );
     }
@@ -113,16 +114,16 @@ export default function AnalyticsPage() {
             {/* Header */}
             <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
                 <div>
-                    <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-1">Boshqaruv paneli</p>
-                    <h1 className="text-3xl font-black text-white">📈 Tahlil</h1>
+                    <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-1">{t('breadcrumb')}</p>
+                    <h1 className="text-3xl font-black text-white">{t('title')}</h1>
                 </div>
                 {data && data.csvData.length > 0 && (
                     <button
-                        onClick={() => downloadCSV(data.csvData)}
+                        onClick={() => downloadCSV(data.csvData, [t('csvId'), t('csvName'), t('csvDesc'), t('csvPublic'), t('csvQCount'), t('csvCreated')])}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm transition-all hover:scale-105 shrink-0"
                         style={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', border: '1px solid rgba(139,92,246,0.25)' }}
                     >
-                        ⬇️ CSV eksport
+                        {t('csvExport')}
                     </button>
                 )}
             </div>
@@ -135,9 +136,9 @@ export default function AnalyticsPage() {
                     className="rounded-2xl p-5 flex flex-col gap-2"
                     style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}
                 >
-                    <p className="text-white/30 text-xs font-black uppercase tracking-wider">Bu hafta yaratildi</p>
+                    <p className="text-white/30 text-xs font-black uppercase tracking-wider">{t('thisWeek')}</p>
                     <p className="text-3xl font-black text-blue-400">{totalThisWeek}</p>
-                    <p className="text-white/30 text-xs font-semibold">so'nggi 7 kun</p>
+                    <p className="text-white/30 text-xs font-semibold">{t('last7Days')}</p>
                 </motion.div>
                 <motion.div
                     initial={{ opacity: 0, y: 12 }}
@@ -146,9 +147,9 @@ export default function AnalyticsPage() {
                     className="rounded-2xl p-5 flex flex-col gap-2"
                     style={{ background: 'rgba(0,230,118,0.08)', border: '1px solid rgba(0,230,118,0.15)' }}
                 >
-                    <p className="text-white/30 text-xs font-black uppercase tracking-wider">Faol kunlar</p>
+                    <p className="text-white/30 text-xs font-black uppercase tracking-wider">{t('activeDays')}</p>
                     <p className="text-3xl font-black" style={{ color: '#00E676' }}>{activeDays}</p>
-                    <p className="text-white/30 text-xs font-semibold">7 kundan</p>
+                    <p className="text-white/30 text-xs font-semibold">{t('outOf7')}</p>
                 </motion.div>
             </div>
 
@@ -160,12 +161,12 @@ export default function AnalyticsPage() {
                 className="rounded-2xl p-6 mb-8"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-                <h2 className="text-white font-black text-lg mb-5">Haftalik faollik</h2>
+                <h2 className="text-white font-black text-lg mb-5">{t('weeklyActivity')}</h2>
                 {data && data.weekly.length > 0 ? (
                     <BarChart data={data.weekly} />
                 ) : (
                     <div className="flex items-center justify-center h-40 text-white/20 font-bold text-sm">
-                        Ma'lumot yo'q
+                        {t('noData')}
                     </div>
                 )}
             </motion.div>
