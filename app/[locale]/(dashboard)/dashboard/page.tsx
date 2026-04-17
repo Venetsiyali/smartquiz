@@ -101,7 +101,7 @@ export default function DashboardPage() {
                         <span className="text-amber-400 text-xs font-black tracking-widest uppercase">Zukkoo Platformasi</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-3 drop-shadow-sm">
-                        {session?.user?.name ? `Salom, ${session.user.name.split(' ')[0]}!` : 'Salom, Zukko!'} 👋
+                        {`Salom, ${session?.user?.name?.split(' ')[0] || session?.user?.email?.split('@')[0] || 'do\'st'}!`} 👋
                     </h1>
                     <p className="text-white/60 text-sm font-semibold flex items-center gap-2 bg-black/20 px-5 py-2 rounded-2xl border border-black/20 backdrop-blur-sm" style={{ color: level.color ?? '#facc15' }}>
                         <span className="text-lg">{level.icon}</span> 
