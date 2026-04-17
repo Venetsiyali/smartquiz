@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 
 export default function BlogIndexPage({ params }: { params: { locale: string } }) {
     const { locale } = params;
+    const dateLocale = locale === 'en' ? 'en-US' : locale === 'ru' ? 'ru-RU' : 'uz-Latn-UZ';
 
     const sortedArticles = [...articles]
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -123,7 +124,7 @@ export default function BlogIndexPage({ params }: { params: { locale: string } }
                                     </p>
                                     <div className="mt-auto flex items-center justify-between">
                                         <time dateTime={article.date} className="text-white/30 text-xs font-bold">
-                                            {new Date(article.date).toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            {new Date(article.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </time>
                                         <Link
                                             href={`/${locale}/blog/${article.slug}`}

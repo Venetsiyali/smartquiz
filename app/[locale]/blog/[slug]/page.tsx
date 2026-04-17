@@ -58,6 +58,7 @@ export default function ArticlePage({ params }: { params: { slug: string, locale
     }
 
     const { title, excerpt, content, keywords, date, imageUrl, slug } = article;
+    const dateLocale = params.locale === 'en' ? 'en-US' : params.locale === 'ru' ? 'ru-RU' : 'uz-Latn-UZ';
     const authorName = "Nasridinov Rustamjon";
     const authorUrl = "https://www.zukkoo.uz";
 
@@ -113,7 +114,7 @@ export default function ArticlePage({ params }: { params: { slug: string, locale
                                 </span>
                             ))}
                         </div>
-                        <time className="text-white/40 text-sm font-semibold">{new Date(date).toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+                        <time className="text-white/40 text-sm font-semibold">{new Date(date).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}</time>
                     </header>
 
                     <div 
