@@ -123,9 +123,11 @@ export default function LandingPage() {
                 >
                     <div className="flex flex-row items-end justify-between bg-gradient-to-br from-blue-900/30 via-slate-900/50 to-purple-900/30 p-8 md:p-12 rounded-[2.5rem] border border-white/10 relative overflow-hidden shadow-2xl">
                         
-                        {/* Chap Qahramon (O'g'il bola) */}
-                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 w-48 relative translate-y-6">
-                            <MascotSprite state="idle_boy" size={200} />
+                        {/* Chap Qahramon (O'g'il bola - transparent) */}
+                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 w-56 relative translate-y-6">
+                            <div className="relative w-[220px] h-[360px]">
+                                <Image src="/bola.png" alt="Zukko Bola" fill className="object-contain drop-shadow-2xl" priority />
+                            </div>
                         </div>
 
                         {/* Markaziy Kontent */}
