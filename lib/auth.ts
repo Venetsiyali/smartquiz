@@ -85,16 +85,18 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id;
-                token.name = user.name;
+                token.name = user.name ?? token.name;
                 // @ts-ignore
                 token.role = user.role || "STUDENT";
                 // @ts-ignore
                 token.plan = user.plan || "FREE";
 
-                await prisma.user.update({
-                    where: { id: user.id },
-                    data: { lastLogin: new Date() },
-                });
+                try {
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { lastLogin: new Date() },
+                    });
+                } catch (_) {}
             }
             if (trigger === "update" && session) {
                 token.role = session.role;
