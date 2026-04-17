@@ -13,6 +13,8 @@ import SocialProof from '@/components/home/SocialProof';
 import HowItWorks from '@/components/home/HowItWorks';
 import Leaderboard from '@/components/gamification/Leaderboard';
 import InstallBanner from '@/components/pwa/InstallBanner';
+import { MascotSprite } from '@/components/gamification/MascotSprite';
+
 
 const recentArticles = [...articles]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -117,50 +119,70 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full max-w-6xl mb-8"
+                    className="w-full max-w-6xl mb-12 relative"
                 >
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6">
-                        <div>
-                            <p className="text-white/40 font-bold text-xs tracking-widest mb-1 uppercase">
+                    <div className="flex flex-row items-end justify-between bg-gradient-to-br from-blue-900/30 via-slate-900/50 to-purple-900/30 p-8 md:p-12 rounded-[2.5rem] border border-white/10 relative overflow-hidden shadow-2xl">
+                        
+                        {/* Chap Qahramon (O'g'il bola) */}
+                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 w-48 relative translate-y-6">
+                            <MascotSprite state="idle_boy" size={200} />
+                        </div>
+
+                        {/* Markaziy Kontent */}
+                        <div className="flex-1 flex flex-col items-center text-center z-20 relative px-4">
+                            <p className="text-amber-400 font-bold text-xs tracking-widest mb-4 uppercase bg-amber-500/10 px-4 py-1.5 rounded-full border border-amber-500/20 shadow-inner inline-block">
                                 {t(`greeting.${greetingKey}`)}
                             </p>
-                            <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
-                                {t('hero.hello')},{' '}
-                                <span className="logo-z">{userName || 'Zukko'}</span>! 👋
-                                <span className="block text-white/50 font-semibold text-lg md:text-xl mt-1">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-4 drop-shadow-xl flex flex-col gap-2">
+                                <span>{t('hero.hello')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">{userName || 'Zukko'}</span>! 👋</span>
+                                <span className="text-white/70 font-extrabold text-2xl md:text-3xl mt-2 drop-shadow-md">
                                     {t('hero.whatToPlay')}
                                 </span>
                             </h1>
-                            {/* Value Proposition */}
-                            <p className="text-sm font-bold mt-3" style={{ color: '#00E676' }}>
-                                O'zbekiston o'qituvchilari uchun #1 bepul interaktiv quiz platformasi
+                            
+                            {/* Maqsad yozuvi */}
+                            <p className="text-base md:text-lg font-bold mt-2 text-emerald-400 mb-8 drop-shadow bg-emerald-500/10 px-6 py-2 rounded-2xl border border-emerald-500/20">
+                                ✨ O'zbekiston o'qituvchilari uchun #1 interaktiv quiz platformasi
                             </p>
-                            <p className="text-white/30 text-xs font-semibold mt-1">
-                                500+ o'qituvchi ishonadi · 50,000+ quiz o'tkazildi
-                            </p>
-                            {/* Big CTA */}
-                            <button
-                                onClick={() => router.push('/play')}
-                                className="mt-4 px-6 py-3 rounded-2xl font-black text-base transition-all hover:scale-105 hover:shadow-lg inline-flex items-center gap-2"
-                                style={{ background: 'linear-gradient(135deg, #00E676, #00b894)', color: '#0a0e1e', boxShadow: '0 0 24px rgba(0,230,118,0.35)' }}
-                            >
-                                🚀 Hozir Boshlang — Bepul
-                            </button>
-                        </div>
-                        <div className="sm:ml-auto flex items-center gap-3 shrink-0">
-                            <div className="glass px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold"
-                                style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-                                <span className="text-white/40">{t('hero.mode')}:</span>
-                                <span style={{ color: isPro ? '#FFD700' : '#00E676' }}>
-                                    {isPro ? t('hero.pro') : t('hero.free')}
-                                </span>
+                            
+                            {/* Tugmalar */}
+                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                                <button
+                                    onClick={() => router.push('/play')}
+                                    className="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-lg transition-transform hover:scale-105 shadow-[0_0_40px_rgba(0,230,118,0.4)] flex items-center justify-center gap-3 relative overflow-hidden group"
+                                    style={{ background: 'linear-gradient(135deg, #00E676, #00b894)', color: '#0a0e1e' }}
+                                >
+                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-15deg] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
+                                    <span className="text-2xl">🚀</span> Hozir Boshlang — Bepul
+                                </button>
+
+                                <button onClick={() => router.push('/play')}
+                                    className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base transition-all hover:bg-white/10 flex items-center justify-center gap-3 text-white border border-white/20 bg-white/5 backdrop-blur-md">
+                                    {t('hero.enterGame')} <span className="text-white/40">PIN orqali</span> →
+                                </button>
                             </div>
-                            <button onClick={() => router.push('/play')}
-                                className="px-4 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105 flex items-center gap-2"
-                                style={{ background: 'rgba(0,230,118,0.12)', border: '1px solid rgba(0,230,118,0.3)', color: '#00E676' }}>
-                                {t('hero.enterGame')}
-                            </button>
+                            
+                            <div className="flex items-center gap-3 mt-8">
+                                <div className="flex -space-x-3">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-[#151e32] bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[10px]">🤓</div>
+                                    ))}
+                                </div>
+                                <p className="text-white/40 text-xs font-semibold text-left leading-tight">
+                                    500+ o'qituvchi va <br/><span className="text-white text-sm">50,000+</span> o'quvchilar ishonchi
+                                </p>
+                            </div>
                         </div>
+
+                        {/* O'ng Qahramon (Qiz bola) */}
+                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 w-48 relative translate-y-6">
+                            <MascotSprite state="idle_girl" size={200} />
+                        </div>
+                        
+                        {/* Orqa fon nur effektlari */}
+                        <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-500/30 blur-[130px] rounded-full pointer-events-none"></div>
+                        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-500/30 blur-[130px] rounded-full pointer-events-none"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-purple-500/10 blur-[150px] rounded-full pointer-events-none"></div>
                     </div>
                 </motion.div>
 
