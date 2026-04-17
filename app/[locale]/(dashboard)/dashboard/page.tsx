@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getLevelFromXP } from '@/lib/gamification/xp';
+import { MascotSprite } from '@/components/gamification/MascotSprite';
 
 interface Stats {
     totalQuizzes: number;
@@ -78,16 +79,45 @@ export default function DashboardPage() {
 
     return (
         <div className="max-w-5xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-                <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-1">Xush kelibsiz</p>
-                <h1 className="text-3xl md:text-4xl font-black text-white">
-                    {session?.user?.name ? `Salom, ${session.user.name.split(' ')[0]}! 👋` : 'Bosh panel 📊'}
-                </h1>
-                <p className="text-white/40 text-sm font-semibold mt-1" style={{ color: level.color }}>
-                    {level.icon} {level.name} · {stats.xp.toLocaleString()} XP
-                </p>
-            </div>
+            {/* Header with Mascots */}
+            <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 flex items-center justify-between rounded-3xl p-6 sm:p-8 relative overflow-hidden"
+                style={{ 
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+                }}
+            >
+                {/* Left Mascot (Boy) */}
+                <div className="hidden md:flex transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 w-32 justify-center">
+                    <MascotSprite state="idle_boy" size={130} />
+                </div>
+                
+                {/* Center Content */}
+                <div className="text-center flex-1 z-20 flex flex-col items-center justify-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
+                        <span className="text-amber-400 text-xs font-black tracking-widest uppercase">Zukkoo Platformasi</span>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-3 drop-shadow-sm">
+                        {session?.user?.name ? `Salom, ${session.user.name.split(' ')[0]}!` : 'Salom, Zukko!'} 👋
+                    </h1>
+                    <p className="text-white/60 text-sm font-semibold flex items-center gap-2 bg-black/20 px-5 py-2 rounded-2xl border border-black/20 backdrop-blur-sm" style={{ color: level.color ?? '#facc15' }}>
+                        <span className="text-lg">{level.icon}</span> 
+                        {level.name} <span className="text-white/20">|</span> <span className="text-white">{stats.xp.toLocaleString()} XP</span>
+                    </p>
+                </div>
+
+                {/* Right Mascot (Girl) */}
+                <div className="hidden md:flex transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 w-32 justify-center">
+                    <MascotSprite state="idle_girl" size={130} />
+                </div>
+                
+                {/* Decorative Background Accents */}
+                <div className="absolute top-[-50%] left-[-10%] w-[40%] h-[200%] bg-blue-500/10 blur-[100px] z-0 pointer-events-none rounded-full rotate-12"></div>
+                <div className="absolute top-[-50%] right-[-10%] w-[40%] h-[200%] bg-purple-500/10 blur-[100px] z-0 pointer-events-none rounded-full -rotate-12"></div>
+            </motion.div>
 
             {/* Stats grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
