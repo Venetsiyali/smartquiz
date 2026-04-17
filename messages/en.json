@@ -26,7 +26,20 @@
             "createQuiz": "✨ Create Quiz",
             "goPro": "👑 Upgrade to Pro"
         },
-        "footer": "© 2026 Zukkoo · TUIT ICT Department · All rights reserved"
+        "footer": "© 2026 Zukkoo · TUIT ICT Department · All rights reserved",
+        "articlesTitle": "Articles & Insights",
+        "articlesSubtitle": "Education and technology trends",
+        "allArticles": "View all articles",
+        "readMore": "Read more",
+        "footerLinks": {
+            "blog": "Blog",
+            "pricing": "Pricing",
+            "author": "Author",
+            "support": "Support",
+            "about": "About Us",
+            "privacy": "Privacy",
+            "terms": "Terms"
+        }
     },
     "Games": {
         "classic": {
@@ -351,6 +364,77 @@
             "analyzing": "Analyzing...",
             "analyzeBtn": "🤖 Analyze with AI",
             "charsRead": "characters read"
+        }
+    },
+    "SocialProof": {
+        "subtitle": "Trusted by Uzbekistan teachers",
+        "teachers": "Teachers using",
+        "quizzes": "Quizzes hosted",
+        "games": "Game modes"
+    },
+    "HowItWorks": {
+        "subtitle": "Steps",
+        "title": "How it works?",
+        "desc": "Start an interactive lesson in 3 steps",
+        "steps": {
+            "step1": {
+                "title": "Create Quiz",
+                "desc": "Enter a topic - AI automatically prepares questions. Or type manually. 2 minutes is enough."
+            },
+            "step2": {
+                "title": "Connect students",
+                "desc": "Send the PIN or QR code to your students. No sign-up required."
+            },
+            "step3": {
+                "title": "Play and Learn",
+                "desc": "Real-time leaderboard, animations, and instant feedback. Fun lessons — visible results."
+            }
+        }
+    },
+    "Articles": {
+        "zamonaviy-talimda-gamifikatsiyaning-orni": {
+            "title": "The Role of Gamification in Modern Education",
+            "excerpt": "Scientific and practical insights on why games teach better than traditional lessons."
+        },
+        "suniy-intellekt-va-talim-texnologiyalari": {
+            "title": "Artificial Intelligence and EdTech: 2026 Trends",
+            "excerpt": "Analytical article on how AI can individualize the learning process."
+        },
+        "malumotlar-tahlili-va-monitoring": {
+            "title": "Data Analysis and Monitoring in Education",
+            "excerpt": "Connecting hydrological monitoring and data skills to educational analytics."
+        },
+        "kahoot-va-zukkoo-taqqoslash-2026": {
+            "title": "Kahoot vs Zukkoo: Which is Better for Teachers?",
+            "excerpt": "Want to know the difference? A full 2026 comparison by price, features, and localization."
+        },
+        "5-daqiqada-quiz-yaratish-oquvchilar-uchun": {
+            "title": "Create an Online Quiz in 5 Minutes: Teacher's Guide",
+            "excerpt": "Want to create a quiz fast? Step-by-step guide with Zukkoo — prepare, host, review."
+        },
+        "gamifikatsiya-nima-talimda-qollanish": {
+            "title": "What is Gamification and How it Changes Learning?",
+            "excerpt": "It's not just a game. Gamification increases motivation by 48%. Scientific facts and examples."
+        },
+        "ozbekistonda-raqamli-talim-2026": {
+            "title": "Digital Education in Uzbekistan 2026",
+            "excerpt": "Where does digital education stand in 2026? Main challenges and practical solutions."
+        },
+        "maktab-darsida-viktorina-10-maslahat": {
+            "title": "Hosting Quizzes in Class: 10 Practical Tips",
+            "excerpt": "10 practical tips for teachers — from writing questions to analyzing results."
+        },
+        "malumotlar-dinamikasini-monitoring-qilish": {
+            "title": "Monitoring Data Dynamics in Intelligent Education Systems",
+            "excerpt": "How the methodology of hydrological monitoring improves educational technology."
+        },
+        "ozbekistonda-interaktiv-talim-2026": {
+            "title": "Interactive Education: 5 Innovative Ways to Boost Efficiency",
+            "excerpt": "A practical guide for teachers: keeping students' attention and teaching via gamification."
+        },
+        "neyropedagogika-va-gamifikatsiya": {
+            "title": "Neuropedagogy and Gamification: Why games replace traditional tests",
+            "excerpt": "How the brain receives information and how the dopamine mechanism accelerates learning."
         }
     }
 }

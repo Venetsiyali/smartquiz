@@ -95,6 +95,8 @@ export default function LandingPage() {
     const [greetingKey, setGreetingKey] = useState('morning');
     const t = useTranslations('Home');
     const tGames = useTranslations('Games');
+    const tExtras = useTranslations('HomeExtras');
+    const tArticles = useTranslations('Articles');
     const locale = useLocale();
 
     useEffect(() => {
@@ -302,11 +304,11 @@ export default function LandingPage() {
                 <section className="w-full max-w-6xl mt-16 mb-8 relative z-10">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-black text-white">Maqolalar va Ilmiy Yangiliklar</h2>
-                            <p className="text-white/40 font-bold text-sm mt-1">Ta'lim va texnologiya tendensiyalari</p>
+                            <h2 className="text-2xl md:text-3xl font-black text-white">{tExtras('articlesTitle')}</h2>
+                            <p className="text-white/40 font-bold text-sm mt-1">{tExtras('articlesSubtitle')}</p>
                         </div>
                         <Link href={`/${locale}/blog`} className="text-blue-400 hover:text-blue-300 font-bold text-sm transition-colors flex items-center gap-1">
-                            Barcha maqolalar <span>→</span>
+                            {tExtras('allArticles')} <span>→</span>
                         </Link>
                     </div>
 
@@ -339,16 +341,16 @@ export default function LandingPage() {
                                     </div>
                                     <h3 className="text-white font-bold text-lg leading-snug mb-3 group-hover:text-blue-300 transition-colors line-clamp-2">
                                         <Link href={`/${locale}/blog/${article.slug}`}>
-                                            {article.title}
+                                            {tArticles(`${article.slug}.title`)}
                                         </Link>
                                     </h3>
                                     <p className="text-white/50 text-sm leading-relaxed mb-6 line-clamp-3">
-                                        {article.excerpt}
+                                        {tArticles(`${article.slug}.excerpt`)}
                                     </p>
                                     <div className="mt-auto flex items-center justify-between">
-                                        <time className="text-white/30 text-xs font-bold">{new Date(article.date).toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+                                        <time className="text-white/30 text-xs font-bold">{new Date(article.date).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}</time>
                                         <Link href={`/${locale}/blog/${article.slug}`} className="text-white font-bold text-sm bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition-all flex items-center gap-2">
-                                            Batafsil <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                            {tExtras('readMore')} <span className="group-hover:translate-x-1 transition-transform">→</span>
                                         </Link>
                                     </div>
                                 </div>
@@ -364,13 +366,13 @@ export default function LandingPage() {
                 <div className="max-w-6xl mx-auto flex flex-col items-center gap-4">
                     {/* Links */}
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-white/40 font-semibold text-sm">
-                        <Link href={`/${locale}/blog`} className="hover:text-white/70 transition-colors">Blog</Link>
-                        <Link href={`/${locale}/pricing`} className="hover:text-white/70 transition-colors">Tariflar</Link>
-                        <Link href={`/${locale}/muallif`} className="hover:text-white/70 transition-colors">Muallif</Link>
-                        <a href="https://t.me/zukkoo_uz" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">Yordam</a>
-                        <Link href={`/${locale}/about`} className="hover:text-white/70 transition-colors">Haqimizda</Link>
-                        <Link href={`/${locale}/privacy`} className="hover:text-white/70 transition-colors">Maxfiylik</Link>
-                        <Link href={`/${locale}/terms`} className="hover:text-white/70 transition-colors">Shartlar</Link>
+                        <Link href={`/${locale}/blog`} className="hover:text-white/70 transition-colors">{tExtras('footerLinks.blog')}</Link>
+                        <Link href={`/${locale}/pricing`} className="hover:text-white/70 transition-colors">{tExtras('footerLinks.pricing')}</Link>
+                        <Link href={`/${locale}/muallif`} className="hover:text-white/70 transition-colors">{tExtras('footerLinks.author')}</Link>
+                        <a href="https://t.me/zukkoo_uz" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">{tExtras('footerLinks.support')}</a>
+                        <Link href={`/${locale}/about`} className="hover:text-white/70 transition-colors">{tExtras('footerLinks.about')}</Link>
+                        <Link href={`/${locale}/privacy`} className="hover:text-white/70 transition-colors">{tExtras('footerLinks.privacy')}</Link>
+                        <Link href={`/${locale}/terms`} className="hover:text-white/70 transition-colors">{tExtras('footerLinks.terms')}</Link>
                     </div>
                     {/* Social icons */}
                     <div className="flex items-center gap-4">

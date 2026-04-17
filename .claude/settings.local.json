@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(ls c:/Users/Asus/SmartQuiz/public/*.jpg)",
+      "Bash(ls c:/Users/Asus/SmartQuiz/public/*.png)",
+      "Bash(mkdir -p c:/Users/Asus/SmartQuiz/public/images/articles)",
+      "Bash(cp interaktiv-dars-metodlari.webp c:/Users/Asus/SmartQuiz/public/images/articles/)",
+      "Bash(cp neyropedagogika-ta-limda.webp c:/Users/Asus/SmartQuiz/public/images/articles/)",
+      "Bash(cp ta-lim-kelajagi-trendlari-2030.webp c:/Users/Asus/SmartQuiz/public/images/articles/)",
+      "Bash(cp \"gamifikatsiya-ta-limda.webp.jpg\" c:/Users/Asus/SmartQuiz/public/images/articles/gamifikatsiya-ta-limda.webp)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(cat next.config.js)",
+      "Bash(cat next.config.mjs)",
+      "Bash(cat next.config.ts)",
+      "Bash(cat lib/prisma.ts)",
+      "Bash(cat lib/db.ts)",
+      "Bash(cat lib/database.ts)",
+      "Bash(ls lib/)",
+      "Bash(ls app/api/gamification/)",
+      "Bash(ls lib/gamification/)",
+      "Bash(ls components/gamification/)",
+      "Bash(npx prisma:*)",
+      "Bash(ls app/layout.tsx)",
+      "Bash(cat app/layout.tsx)",
+      "Bash(npx next:*)",
+      "Bash(ls components/seo/)",
+      "Bash(cat app/\\\\[locale\\\\]/play/layout.tsx)",
+      "Bash(cat app/\\\\[locale\\\\]/pricing/layout.tsx)",
+      "Bash(ls public/icons/)",
+      "Bash(ls components/pwa/)",
+      "Bash(cat public/offline.html)",
+      "Bash(grep -n \"debounce\\\\|setTimeout\" app/\\\\\\\\[locale\\\\\\\\]/play/game/page.tsx)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 const STEPS = [
     {
@@ -33,6 +34,8 @@ const STEPS = [
 ];
 
 export default function HowItWorks() {
+    const t = useTranslations('HowItWorks');
+
     return (
         <section className="w-full max-w-6xl mt-8 mb-4 relative z-10">
             <motion.div
@@ -42,9 +45,9 @@ export default function HowItWorks() {
                 transition={{ duration: 0.5 }}
                 className="mb-8 text-center"
             >
-                <p className="text-white/30 font-bold text-xs tracking-widest mb-2 uppercase">Bosqichlar</p>
-                <h2 className="text-2xl md:text-3xl font-black text-white">Qanday ishlaydi?</h2>
-                <p className="text-white/40 text-sm font-medium mt-2">3 qadamda interaktiv dars boshlang</p>
+                <p className="text-white/30 font-bold text-xs tracking-widest mb-2 uppercase">{t('subtitle')}</p>
+                <h2 className="text-2xl md:text-3xl font-black text-white">{t('title')}</h2>
+                <p className="text-white/40 text-sm font-medium mt-2">{t('desc')}</p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative">
@@ -77,8 +80,8 @@ export default function HowItWorks() {
                         <span className="text-4xl mb-4">{step.icon}</span>
 
                         {/* Content */}
-                        <h3 className="text-white font-black text-lg mb-2">{step.title}</h3>
-                        <p className="text-white/50 text-sm font-medium leading-relaxed">{step.desc}</p>
+                        <h3 className="text-white font-black text-lg mb-2">{t(`steps.step${i + 1}.title`)}</h3>
+                        <p className="text-white/50 text-sm font-medium leading-relaxed">{t(`steps.step${i + 1}.desc`)}</p>
 
                         {/* Arrow (mobile only) */}
                         {i < STEPS.length - 1 && (

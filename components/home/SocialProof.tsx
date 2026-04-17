@@ -1,20 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';import { useTranslations } from 'next-intl';
 
 interface StatItem {
     value: number;
     suffix: string;
-    label: string;
+    labelKey: string;
     icon: string;
     color: string;
 }
 
 const STATS: StatItem[] = [
-    { value: 500,    suffix: '+', label: "O'qituvchi ishlatadi",    icon: '👩‍🏫', color: '#00E676' },
-    { value: 50000,  suffix: '+', label: 'Quiz o\'tkazildi',         icon: '🎮', color: '#3b82f6' },
-    { value: 6,      suffix: '',  label: 'Xil o\'yin turi',           icon: '🏆', color: '#FFD700' },
+    { value: 500,    suffix: '+', labelKey: 'teachers',    icon: '👩‍🏫', color: '#00E676' },
+    { value: 50000,  suffix: '+', labelKey: 'quizzes',     icon: '🎮', color: '#3b82f6' },
+    { value: 6,      suffix: '',  labelKey: 'games',       icon: '🏆', color: '#FFD700' },
 ];
 
 function AnimatedCounter({ target, suffix, color }: { target: number; suffix: string; color: string }) {
@@ -48,6 +48,8 @@ function AnimatedCounter({ target, suffix, color }: { target: number; suffix: st
 }
 
 export default function SocialProof() {
+    const t = useTranslations('SocialProof');
+
     return (
         <section className="w-full max-w-6xl mt-12 mb-4 relative z-10">
             <motion.div
@@ -67,13 +69,13 @@ export default function SocialProof() {
                     style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(59,130,246,0.08) 0%, transparent 70%)' }} />
 
                 <p className="text-white/30 font-bold text-xs tracking-widest mb-8 uppercase text-center relative z-10">
-                    O'zbekiston o'qituvchilari ishonadi
+                    {t('subtitle')}
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative z-10">
                     {STATS.map((stat, i) => (
                         <motion.div
-                            key={stat.label}
+                            key={stat.labelKey}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
@@ -84,7 +86,7 @@ export default function SocialProof() {
                             <div className="flex items-baseline gap-1">
                                 <AnimatedCounter target={stat.value} suffix={stat.suffix} color={stat.color} />
                             </div>
-                            <p className="text-white/50 font-semibold text-sm">{stat.label}</p>
+                            <p className="text-white/50 font-semibold text-sm">{t(stat.labelKey)}</p>
                         </motion.div>
                     ))}
                 </div>
