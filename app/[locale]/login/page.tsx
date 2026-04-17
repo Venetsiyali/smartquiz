@@ -140,21 +140,27 @@ export default function LoginPage() {
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-            <div className="hidden md:flex w-1/2 p-8 items-center justify-center relative z-10">
-                <div className="relative w-full max-w-2xl aspect-[2/1] rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(37,99,235,0.2)] border border-white/10 group">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/50 to-transparent mix-blend-overlay z-10 pointer-events-none"></div>
-                    <Image
-                        src="/images/hero.jpg"
-                        alt="Zukkoo Hero"
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                        priority
-                        unoptimized
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent z-20">
-                        <h2 className="text-3xl font-black text-white mb-2">{t('hero.title')}</h2>
-                        <p className="text-white/70">{t('hero.desc')}</p>
+            <div className="hidden md:flex w-1/2 p-4 lg:p-8 items-center justify-center relative z-10">
+                <div className="relative w-full max-w-xl bg-gradient-to-br from-[#0f172a] to-[#0a0f1c] rounded-[2.5rem] p-8 lg:p-12 overflow-visible shadow-[0_0_50px_rgba(37,99,235,0.15)] border border-white/5 h-[380px] lg:h-[450px] flex flex-col justify-end lg:justify-center mt-20 md:mt-0">
+                    <div className="relative z-20 w-[65%] sm:w-[50%] lg:w-[60%]">
+                        <h2 className="text-3xl lg:text-5xl font-black text-white mb-3 lg:mb-4 leading-tight drop-shadow-md">
+                            Kelajak ta'limi <br className="hidden lg:block"/> shu yerda
+                        </h2>
+                        <p className="text-white/60 text-sm lg:text-base leading-relaxed">
+                            O'quvchilaringizni Zukkoo bilan yangi darajaga olib chiqing
+                        </p>
                     </div>
+                    
+                    {/* Bola qahramon va yoritish effektlari */}
+                    <div className="absolute -right-16 lg:-right-24 -top-24 lg:-top-32 w-[300px] lg:w-[480px] h-[450px] lg:h-[650px] z-30 pointer-events-none drop-shadow-[0_0_80px_rgba(255,215,0,0.15)]">
+                        <Image src="/bola.png" alt="Zukko Bola" fill className="object-contain" priority />
+                    </div>
+                    
+                    {/* Floating bezaklar */}
+                    <div className="absolute -top-10 left-10 text-3xl lg:text-4xl animate-bounce" style={{ animationDuration: '3s' }}>💡</div>
+                    <div className="absolute bottom-20 left-10 text-3xl lg:text-5xl animate-bounce" style={{ animationDuration: '4s' }}>🧩</div>
+                    <div className="absolute top-20 right-1/2 text-2xl lg:text-4xl animate-bounce" style={{ animationDuration: '2.5s' }}>❓</div>
+                    <div className="absolute -bottom-5 right-20 text-3xl lg:text-4xl animate-bounce" style={{ animationDuration: '3.5s' }}>🚀</div>
                 </div>
             </div>
 
