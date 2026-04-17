@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useSubscription, CrownBadge } from '@/lib/subscriptionContext';
 import { motion } from 'framer-motion';
@@ -88,6 +89,7 @@ function getGreetingKey() {
 export default function LandingPage() {
     console.log("==== LANDING PAGE RENDERED ====");
     const router = useRouter();
+    const { data: session } = useSession();
     const { isPro } = useSubscription();
     const [userName, setUserName] = useState('');
     const [greetingKey, setGreetingKey] = useState('morning');
@@ -96,10 +98,11 @@ export default function LandingPage() {
     const locale = useLocale();
 
     useEffect(() => {
-        const name = localStorage.getItem('zk_teacher_name') || '';
-        setUserName(name);
+        const storedName = localStorage.getItem('zk_teacher_name') || '';
+        const sessionName = session?.user?.name?.split(' ')[0] || session?.user?.email?.split('@')[0];
+        setUserName(sessionName || storedName);
         setGreetingKey(getGreetingKey());
-    }, []);
+    }, [session]);
 
     return (
         <div className="bg-landing min-h-screen flex flex-col">
