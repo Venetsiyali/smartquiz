@@ -245,7 +245,7 @@ export default function AboutPage({ params }: { params: { locale: string } }) {
                         {/* CTA */}
                         <div className="flex flex-col sm:flex-row gap-3 pt-2">
                             <Link
-                                href={`/${params.locale}/play`}
+                                href={`/${params.locale}/teacher/create`}
                                 className="flex-1 text-center py-3 rounded-xl font-black text-sm transition-all hover:scale-105"
                                 style={{ background: 'linear-gradient(135deg, #00E676, #00C853)', color: '#000' }}
                             >

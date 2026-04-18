@@ -154,7 +154,7 @@ export default function LandingPage() {
                             {/* Tugmalar */}
                             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                                 <button
-                                    onClick={() => router.push('/play')}
+                                    onClick={() => router.push(`/${locale}/teacher/create`)}
                                     className="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-lg transition-transform hover:scale-105 shadow-[0_0_40px_rgba(0,230,118,0.4)] flex items-center justify-center gap-3 relative overflow-hidden group"
                                     style={{ background: 'linear-gradient(135deg, #00E676, #00b894)', color: '#0a0e1e' }}
                                 >
