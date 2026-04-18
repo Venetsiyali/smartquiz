@@ -134,6 +134,36 @@ model LibraryQuiz {
 }
 
 // ==========================================
+// QISHLOQ BOZORI O'YIN
+// ==========================================
+
+model BozorSession {
+  id          String      @id @default(cuid())
+  character   String      @default("polvon")
+  teamCount   Int         @default(2)
+  timePerQ    Int         @default(20)
+  economyOn   Boolean     @default(true)
+  status      String      @default("waiting")
+  questions   Json
+  createdAt   DateTime    @default(now())
+  teams       BozorTeam[]
+
+  @@map("bozor_sessions")
+}
+
+model BozorTeam {
+  id         String       @id @default(cuid())
+  sessionId  String
+  session    BozorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  teamIndex  Int
+  name       String
+  coins      Int          @default(0)
+  shopLevel  Int          @default(1)
+
+  @@map("bozor_teams")
+}
+
+// ==========================================
 // GAME SAVING (Savollar Xazinasi)
 // ==========================================
 
