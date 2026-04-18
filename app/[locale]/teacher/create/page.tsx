@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
+import RateLimitModal from '@/components/ai/RateLimitModal';
 
 type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
 
@@ -60,6 +61,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
     const [error, setError] = useState('');
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
     const [fileInfo, setFileInfo] = useState<{ name: string; chars: number } | null>(null);
+    const [rateLimit, setRateLimit] = useState<{ retryAfter: number | null } | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleUpload = async () => {
@@ -75,6 +77,11 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
         try {
             const res = await fetch('/api/ai/upload', { method: 'POST', body: fd });
             const data = await res.json();
+            if (res.status === 429 && data.rateLimited) {
+                setRateLimit({ retryAfter: data.retryAfter ?? null });
+                setLoading(false);
+                return;
+            }
             if (!res.ok) { setError(data.error || t('error')); setLoading(false); return; }
 
             const mapped: QuizQuestion[] = data.questions.map((q: any) => ({
@@ -91,6 +98,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+            {rateLimit && <RateLimitModal retryAfter={rateLimit.retryAfter} onClose={() => { setRateLimit(null); onClose(); }} />}
             <div className="glass w-full max-w-2xl rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto scrollbar-hide">
                 <div className="flex items-center justify-between">
                     <div>
@@ -213,6 +221,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
+    const [rateLimit, setRateLimit] = useState<{ retryAfter: number | null } | null>(null);
 
     // O'yin turi bo'yicha label
     const gameLabel: Record<string, string> = {
@@ -297,6 +306,11 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
                 body: JSON.stringify({ topic, count, language: lang, gameType, timeLimit }),
             });
             const data = await res.json();
+            if (res.status === 429 && data.rateLimited) {
+                setRateLimit({ retryAfter: data.retryAfter ?? null });
+                setLoading(false);
+                return;
+            }
             if (!res.ok) { setError(data.error || 'Xatolik'); setLoading(false); return; }
             const mapped = mapAIResponse(data.questions || []);
             if (mapped.length === 0) { setError("AI savollarni to'g'ri formatlamadi"); setLoading(false); return; }
@@ -307,6 +321,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+            {rateLimit && <RateLimitModal retryAfter={rateLimit.retryAfter} onClose={() => { setRateLimit(null); onClose(); }} />}
             <div className="glass w-full max-w-xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto scrollbar-hide">
                 <div className="flex items-center justify-between">
                     <div>

@@ -33,6 +33,19 @@ async function extractText(file: File): Promise<string> {
 }
 
 
+function parseRetryAfter(err: any): number | null {
+    try {
+        const header = err?.headers?.get?.('retry-after') ?? err?.headers?.['retry-after'];
+        if (header) return Math.ceil(parseInt(String(header), 10));
+    } catch {}
+    const msg: string = err?.message ?? err?.error?.message ?? JSON.stringify(err?.error ?? '');
+    const sec = msg.match(/try again in (\d+(?:\.\d+)?)\s*s/i);
+    if (sec) return Math.ceil(parseFloat(sec[1]));
+    const min = msg.match(/try again in (\d+(?:\.\d+)?)\s*m/i);
+    if (min) return Math.ceil(parseFloat(min[1]) * 60);
+    return null;
+}
+
 export async function POST(req: Request) {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -143,6 +156,12 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         return NextResponse.json({ questions, fileInfo: { name: file.name, chars: truncated.length } });
     } catch (err: any) {
         console.error('Upload AI error:', err);
+        if (err?.status === 429) {
+            return NextResponse.json(
+                { rateLimited: true, retryAfter: parseRetryAfter(err) },
+                { status: 429 }
+            );
+        }
         return NextResponse.json({ error: err?.message || 'AI xatoligi' }, { status: 500 });
     }
 }

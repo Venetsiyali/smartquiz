@@ -24,7 +24,13 @@
             "enterGame": "📱 Войти в игру",
             "gameTypes": "ВИДЫ ИГР",
             "createQuiz": "✨ Создать квиз",
-            "goPro": "👑 Перейти в Pro режим"
+            "goPro": "👑 Перейти в Pro режим",
+            "platformSlogan": "✨ Платформа интерактивных квизов №1 для учителей",
+            "startFree": "🚀 Начать сейчас — Бесплатно",
+            "pinHint": "по PIN-коду",
+            "trustStats": "500+ учителей и",
+            "trustStudents": "50 000+",
+            "trustSuffix": "учеников доверяют нам"
         },
         "footer": "© 2026 Zukkoo · Кафедра ИОТ ТУИТ · Все права защищены",
         "articlesTitle": "Статьи и Научные Новости",
@@ -129,7 +135,18 @@
     "WaitingRoom": {
         "welcome": "ДОБРО ПОЖАЛОВАТЬ",
         "pinCode": "ПИН-КОД",
-        "waitingTeacher": "Ожидаем, пока учитель начнет игру"
+        "waitingTeacher": "Ожидаем, пока учитель начнет игру",
+        "teamSelected": "✅ Команда выбрана",
+        "selectTeam": "🏁 Выберите команду",
+        "members": "участников",
+        "changeTeam": "Нажмите другую команду, чтобы сменить"
+    },
+    "DashboardNav": {
+        "dashboard": "Главная панель",
+        "quizzes": "Мои квизы",
+        "analytics": "Аналитика",
+        "play": "Играть",
+        "newQuiz": "Новый квиз"
     },
     "Common": {
         "start": "Начать игру",

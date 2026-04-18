@@ -146,7 +146,7 @@ export default function WaitingPage() {
                 {teamMode && teams.length > 0 && (
                     <div className="space-y-3">
                         <p className="text-white font-black text-lg">
-                            {myTeamId ? '✅ Jamoangiz tanlandi' : '🏁 Jamoangizni tanlang'}
+                            {myTeamId ? t('teamSelected') : t('selectTeam')}
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                             {teams.map(team => {
@@ -166,7 +166,7 @@ export default function WaitingPage() {
                                     >
                                         <span className="text-3xl">{team.emoji}</span>
                                         <span className="text-white font-black text-sm">{team.name}</span>
-                                        <span className="text-white/50 text-xs font-bold">{count} a&apos;zo</span>
+                                        <span className="text-white/50 text-xs font-bold">{count} {t('members')}</span>
                                     </button>
                                 );
                             })}
@@ -175,7 +175,7 @@ export default function WaitingPage() {
                             <p className="text-red-400 font-bold text-sm bg-red-500/10 rounded-xl py-2">⚠️ {chooseError}</p>
                         )}
                         {myTeamId && (
-                            <p className="text-white/50 text-xs font-semibold">Boshqa jamoani bosib, o&apos;zgartira olasiz</p>
+                            <p className="text-white/50 text-xs font-semibold">{t('changeTeam')}</p>
                         )}
                     </div>
                 )}

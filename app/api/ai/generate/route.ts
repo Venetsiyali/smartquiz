@@ -306,6 +306,20 @@ function filterDuplicates(newQuestions: any[], existingTexts: string[]): any[] {
     });
 }
 
+// ─── Retry-after extractor ───────────────────────────────────────────────────
+function parseRetryAfter(err: any): number | null {
+    try {
+        const header = err?.headers?.get?.('retry-after') ?? err?.headers?.['retry-after'];
+        if (header) return Math.ceil(parseInt(String(header), 10));
+    } catch {}
+    const msg: string = err?.message ?? err?.error?.message ?? JSON.stringify(err?.error ?? '');
+    const sec = msg.match(/try again in (\d+(?:\.\d+)?)\s*s/i);
+    if (sec) return Math.ceil(parseFloat(sec[1]));
+    const min = msg.match(/try again in (\d+(?:\.\d+)?)\s*m/i);
+    if (min) return Math.ceil(parseFloat(min[1]) * 60);
+    return null;
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -360,6 +374,12 @@ export async function POST(req: Request) {
 
             return NextResponse.json({ questions: finalQuestions, gameType });
         } catch (err: any) {
+            if (err?.status === 429) {
+                return NextResponse.json(
+                    { rateLimited: true, retryAfter: parseRetryAfter(err) },
+                    { status: 429 }
+                );
+            }
             lastError = err?.message || 'AI xatoligi';
             console.error(`AI attempt ${attempt + 1} failed:`, err);
         }

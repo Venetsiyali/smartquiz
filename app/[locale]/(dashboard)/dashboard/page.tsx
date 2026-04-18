@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { getLevelFromXP } from '@/lib/gamification/xp';
 import { MascotSprite } from '@/components/gamification/MascotSprite';
+import PopularQuizzesCarousel from '@/components/library/PopularQuizzesCarousel';
 
 interface Stats {
     totalQuizzes: number;
@@ -81,6 +82,8 @@ export default function DashboardPage() {
 
     return (
         <div className="max-w-5xl mx-auto">
+            <PopularQuizzesCarousel />
+
             {/* Header with Mascots */}
             <motion.div 
                 initial={{ opacity: 0, y: -20 }}
@@ -93,8 +96,13 @@ export default function DashboardPage() {
                 }}
             >
                 {/* Left Mascot (Boy) */}
-                <div className="hidden md:flex transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 w-32 justify-center">
-                    <MascotSprite state="idle_boy" size={130} />
+                <div className="flex shrink-0 z-10 justify-center">
+                    <div className="block md:hidden hover:scale-110 hover:-rotate-3 transition-transform duration-300">
+                        <MascotSprite state="idle_boy" size={55} />
+                    </div>
+                    <div className="hidden md:block hover:scale-110 hover:-rotate-3 transition-transform duration-300">
+                        <MascotSprite state="idle_boy" size={130} />
+                    </div>
                 </div>
                 
                 {/* Center Content */}
@@ -112,8 +120,13 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Right Mascot (Girl) */}
-                <div className="hidden md:flex transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 w-32 justify-center">
-                    <MascotSprite state="idle_girl" size={130} />
+                <div className="flex shrink-0 z-10 justify-center">
+                    <div className="block md:hidden hover:scale-110 hover:rotate-3 transition-transform duration-300">
+                        <MascotSprite state="idle_girl" size={55} />
+                    </div>
+                    <div className="hidden md:block hover:scale-110 hover:rotate-3 transition-transform duration-300">
+                        <MascotSprite state="idle_girl" size={130} />
+                    </div>
                 </div>
                 
                 {/* Decorative Background Accents */}
@@ -122,7 +135,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Stats grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                 <StatCard icon="🧩" label={t('totalQuizzes')} value={stats.totalQuizzes} />
                 <StatCard icon="🌐" label={t('publicQuizzes')} value={stats.publicQuizzes} color="#3b82f6" />
                 <StatCard icon="🎮" label={t('gamesPlayed')} value={stats.totalGamesPlayed} color="#00E676" />

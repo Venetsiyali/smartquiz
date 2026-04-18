@@ -128,8 +128,8 @@ export default function LandingPage() {
                     <div className="flex flex-row items-end justify-between bg-gradient-to-br from-blue-900/30 via-slate-900/50 to-purple-900/30 p-8 md:p-12 rounded-[2.5rem] border border-white/10 relative overflow-hidden shadow-2xl">
                         
                         {/* Chap Qahramon (O'g'il bola - transparent) */}
-                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 w-56 relative translate-y-6">
-                            <div className="relative w-[220px] h-[360px]">
+                        <div className="flex flex-col justify-end transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 relative translate-y-6 w-16 sm:w-28 lg:w-56">
+                            <div className="relative w-[64px] h-[104px] sm:w-[110px] sm:h-[180px] lg:w-[220px] lg:h-[360px]">
                                 <Image src="/bola.png" alt="Zukko Bola" fill className="object-contain drop-shadow-2xl" priority />
                             </div>
                         </div>
@@ -148,7 +148,7 @@ export default function LandingPage() {
                             
                             {/* Maqsad yozuvi */}
                             <p className="text-base md:text-lg font-bold mt-2 text-emerald-400 mb-8 drop-shadow bg-emerald-500/10 px-6 py-2 rounded-2xl border border-emerald-500/20">
-                                ✨ O'zbekiston o'qituvchilari uchun #1 interaktiv quiz platformasi
+                                {t('hero.platformSlogan')}
                             </p>
                             
                             {/* Tugmalar */}
@@ -159,12 +159,12 @@ export default function LandingPage() {
                                     style={{ background: 'linear-gradient(135deg, #00E676, #00b894)', color: '#0a0e1e' }}
                                 >
                                     <div className="absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-15deg] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
-                                    <span className="text-2xl">🚀</span> Hozir Boshlang — Bepul
+                                    {t('hero.startFree')}
                                 </button>
 
                                 <button onClick={() => router.push('/play')}
                                     className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base transition-all hover:bg-white/10 flex items-center justify-center gap-3 text-white border border-white/20 bg-white/5 backdrop-blur-md">
-                                    {t('hero.enterGame')} <span className="text-white/40">PIN orqali</span> →
+                                    {t('hero.enterGame')} <span className="text-white/40">{t('hero.pinHint')}</span> →
                                 </button>
                             </div>
                             
@@ -175,14 +175,14 @@ export default function LandingPage() {
                                     ))}
                                 </div>
                                 <p className="text-white/40 text-xs font-semibold text-left leading-tight">
-                                    500+ o'qituvchi va <br/><span className="text-white text-sm">50,000+</span> o'quvchilar ishonchi
+                                    {t('hero.trustStats')} <br/><span className="text-white text-sm">{t('hero.trustStudents')}</span> {t('hero.trustSuffix')}
                                 </p>
                             </div>
                         </div>
 
                         {/* O'ng Qahramon (Qiz bola - transparent) */}
-                        <div className="hidden lg:flex flex-col justify-end transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 w-56 relative translate-y-6">
-                            <div className="relative w-[220px] h-[360px]">
+                        <div className="flex flex-col justify-end transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 relative translate-y-6 w-16 sm:w-28 lg:w-56">
+                            <div className="relative w-[64px] h-[104px] sm:w-[110px] sm:h-[180px] lg:w-[220px] lg:h-[360px]">
                                 <Image src="/qiz.png" alt="Zukko Qiz" fill className="object-contain drop-shadow-2xl" priority />
                             </div>
                         </div>

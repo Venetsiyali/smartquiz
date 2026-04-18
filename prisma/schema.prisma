@@ -12,6 +12,7 @@ enum Role {
   STUDENT
   TEACHER
   ADMIN
+  MODERATOR
 }
 
 enum Plan {
@@ -108,6 +109,28 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ==========================================
+// LIBRARY QUIZZES (Kutubxona — alohida jadval)
+// ==========================================
+
+model LibraryQuiz {
+  id          String   @id @default(cuid())
+  title       String
+  subject     String
+  grade       String   @default("Barcha")
+  game_type   String   @default("Klassik")
+  badge_type  String   @default("Yangi qo'shildi")
+  play_count  Int      @default(0)
+  rating      Float    @default(0)
+  is_pinned   Boolean  @default(false)
+  is_seasonal Boolean  @default(false)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  questions   Json
+
+  @@map("library_quizzes")
 }
 
 // ==========================================

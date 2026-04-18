@@ -24,7 +24,13 @@
             "enterGame": "📱 Enter Game",
             "gameTypes": "GAME MODES",
             "createQuiz": "✨ Create Quiz",
-            "goPro": "👑 Upgrade to Pro"
+            "goPro": "👑 Upgrade to Pro",
+            "platformSlogan": "✨ #1 interactive quiz platform for educators",
+            "startFree": "🚀 Start Now — Free",
+            "pinHint": "via PIN",
+            "trustStats": "500+ teachers and",
+            "trustStudents": "50,000+",
+            "trustSuffix": "students trust us"
         },
         "footer": "© 2026 Zukkoo · TUIT ICT Department · All rights reserved",
         "articlesTitle": "Articles & Insights",
@@ -129,7 +135,18 @@
     "WaitingRoom": {
         "welcome": "WELCOME",
         "pinCode": "PIN CODE",
-        "waitingTeacher": "Waiting for the teacher to start the game"
+        "waitingTeacher": "Waiting for the teacher to start the game",
+        "teamSelected": "✅ Your team is selected",
+        "selectTeam": "🏁 Choose your team",
+        "members": "members",
+        "changeTeam": "Tap another team to switch"
+    },
+    "DashboardNav": {
+        "dashboard": "Dashboard",
+        "quizzes": "My Quizzes",
+        "analytics": "Analytics",
+        "play": "Play",
+        "newQuiz": "New Quiz"
     },
     "Common": {
         "start": "Start Game",

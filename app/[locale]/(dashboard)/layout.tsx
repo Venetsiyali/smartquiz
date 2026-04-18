@@ -5,16 +5,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-
-const NAV_ITEMS = [
-    { href: '/dashboard', label: 'Bosh panel', icon: '📊' },
-    { href: '/dashboard/quizzes', label: "Quizlarim", icon: '🧩' },
-    { href: '/dashboard/analytics', label: 'Tahlil', icon: '📈' },
-];
+import { useTranslations } from 'next-intl';
 
 function Sidebar({ locale, onClose }: { locale: string; onClose?: () => void }) {
     const pathname = usePathname();
     const { data: session } = useSession();
+    const t = useTranslations('DashboardNav');
+
+    const NAV_ITEMS = [
+        { href: '/dashboard', label: t('dashboard'), icon: '📊' },
+        { href: '/dashboard/quizzes', label: t('quizzes'), icon: '🧩' },
+        { href: '/dashboard/analytics', label: t('analytics'), icon: '📈' },
+    ];
 
     return (
         <aside
@@ -69,7 +71,7 @@ function Sidebar({ locale, onClose }: { locale: string; onClose?: () => void }) 
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-white/40 hover:text-white/70 transition-colors"
                 >
                     <span>🎮</span>
-                    <span>O'ynash</span>
+                    <span>{t('play')}</span>
                 </Link>
                 <Link
                     href={`/${locale}/quiz/create`}
@@ -78,7 +80,7 @@ function Sidebar({ locale, onClose }: { locale: string; onClose?: () => void }) 
                     style={{ background: 'rgba(0,230,118,0.1)', color: '#00E676', border: '1px solid rgba(0,230,118,0.2)' }}
                 >
                     <span>➕</span>
-                    <span>Yangi quiz</span>
+                    <span>{t('newQuiz')}</span>
                 </Link>
             </div>
 

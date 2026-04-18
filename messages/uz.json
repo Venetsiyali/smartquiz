@@ -24,7 +24,13 @@
             "enterGame": "📱 O'yinga kirish",
             "gameTypes": "O'YIN TURLARI",
             "createQuiz": "✨ Quiz yaratish",
-            "goPro": "👑 Pro rejimga o'tish"
+            "goPro": "👑 Pro rejimga o'tish",
+            "platformSlogan": "✨ O'zbekiston o'qituvchilari uchun #1 interaktiv quiz platformasi",
+            "startFree": "🚀 Hozir Boshlang — Bepul",
+            "pinHint": "PIN orqali",
+            "trustStats": "500+ o'qituvchi va",
+            "trustStudents": "50,000+",
+            "trustSuffix": "o'quvchilar ishonchi"
         },
         "footer": "© 2026 Zukkoo · TUIT ATT bo'limi · Barcha huquqlar himoyalangan",
         "articlesTitle": "Maqolalar va Ilmiy Yangiliklar",
@@ -129,7 +135,18 @@
     "WaitingRoom": {
         "welcome": "XUSH KELIBSIZ",
         "pinCode": "PIN KOD",
-        "waitingTeacher": "O'qituvchi o'yinni boshlashini kutmoqda"
+        "waitingTeacher": "O'qituvchi o'yinni boshlashini kutmoqda",
+        "teamSelected": "✅ Jamoangiz tanlandi",
+        "selectTeam": "🏁 Jamoangizni tanlang",
+        "members": "a'zo",
+        "changeTeam": "Boshqa jamoani bosib, o'zgartira olasiz"
+    },
+    "DashboardNav": {
+        "dashboard": "Bosh panel",
+        "quizzes": "Quizlarim",
+        "analytics": "Tahlil",
+        "play": "O'ynash",
+        "newQuiz": "Yangi quiz"
     },
     "Common": {
         "start": "O'yinni boshlash",
