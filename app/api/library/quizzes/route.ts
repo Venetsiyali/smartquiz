@@ -43,7 +43,8 @@ export async function GET(req: Request) {
         ...(subject ? { subject } : {}),
     };
 
-    const selected: typeof (await prisma.libraryQuiz.findFirst())[] = [];
+    type LibraryQuiz = Awaited<ReturnType<typeof prisma.libraryQuiz.findFirst>>;
+    const selected: LibraryQuiz[] = [];
     const excludeIds = () => selected.filter(Boolean).map(q => q!.id);
 
     // Slot 1: pinned quiz
