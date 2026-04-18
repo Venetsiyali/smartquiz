@@ -143,17 +143,15 @@ Faqat JSON formatida javob bering. Hech qanday kirish so'zi, markdown yoki qo'sh
 - Variantlarni boshida "A)", "B)" kabi harflar bilan boshlamang.
 
 # GAME TYPE RULES (qat'iy bajarish shart)
-1. classic/multiple/team → Savol + 4 variant, 1 to'g'ri javob. correctOptions: [indeks]. hint va explanation majburiy.
-2. truefalse → "isTrue": true/false. Biroz o'ylantiradigan tasdiqlar. hint va explanation majburiy.
+1. classic/multiple/team → Savol + 4 variant, 1 to'g'ri javob. correctOptions: [indeks]. hint majburiy.
+2. truefalse → "isTrue": true/false. Biroz o'ylantiradigan tasdiqlar. hint majburiy.
 3. order → "items": [...] massivida elementlar TO'G'RI tartibda joylashtirilsin. hint majburiy.
 4. match → "pairs": [{term, definition}] kamida 6 juft. Izohlar qisqa (max 10 so'z). hint majburiy.
 5. anagram → "word": "KATTA_HARF", "hint": "Qisqa ishora". Faqat ilmiy/texnik terminlar.
 
 # OUTPUT STRUCTURE
-Har bir savol uchun quyidagi qo'shimcha maydonlarni ham kiriting:
-- "learning_objective": Bu savol o'quvchiga nimani o'rgatadi? (1 jumla)
-- "hint": To'g'ri javobni emas, to'g'ri yo'lni ko'rsatuvchi ishora (1 jumla)
-- "explanation": Savol yechilgandan keyin chiqadigan chuqurroq tushuntirish (2-3 jumla)`;
+Har bir savol uchun quyidagi qo'shimcha maydonni kiriting:
+- "hint": To'g'ri javobni emas, to'g'ri yo'lni ko'rsatuvchi ishora (1 jumla)`;
 
 // ─── Dynamic system prompt builder ──────────────────────────────────────────
 function buildSystemPrompt(excludedTexts: string[]): string {
@@ -178,43 +176,43 @@ function buildPrompt(topic: string, gameType: string, count: number, language: s
         case 'classic':
         case 'team':
             return `${lang}. Mavzu: "${topic}". ${count} ta klassik test savoli tuz.
-Qoidalar: to'g'ri javob 1 ta, qolgan 3 variant ishonchli ammo noto'g'ri bo'lsin. Trivial ("kimdir nechta yil yashagan") savollardan qoching. Sabab-oqibat, qo'llash, tahlil qilish ko'nikmalarini sinang.
+Qoidalar: to'g'ri javob 1 ta, qolgan 3 variant ishonchli ammo noto'g'ri bo'lsin. Trivial savollardan qoching. Sabab-oqibat, tahlil ko'nikmalarini sinang.
 JSON sxemasi:
-{"questions":[{"text":"Savol?","options":["Variant A","Variant B","Variant C","Variant D"],"correctOptions":[2],"hint":"Bir jumla ishora","explanation":"2-3 jumlali chuqur izoh"}]}`;
+{"questions":[{"text":"Savol?","options":["Variant A","Variant B","Variant C","Variant D"],"correctOptions":[2],"hint":"Bir jumla ishora"}]}`;
 
         case 'truefalse':
             return `${lang}. Mavzu: "${topic}". ${count} ta Ha/Yo'q (True/False) savol tuz.
-Qoidalar: (1) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin, to'liq bema'ni emas. (3) Savollar biroz o'ylantirsin.
+Qoidalar: (1) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin. (3) Savollar biroz o'ylantirsin.
 JSON sxemasi:
-{"questions":[{"text":"Aniq tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora","explanation":"Nima uchun to'g'ri/noto'g'ri ekanligi"}]}`;
+{"questions":[{"text":"Aniq tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora"}]}`;
 
         case 'blitz':
             return `${lang}. Mavzu: "${topic}". ${count} ta BLITZ uslubida To'g'ri/Noto'g'ri savol tuz.
-Qoidalar: (1) Har bir tasdiq 0.3–2 soniya ichida javob berish uchun qisqa va aniq bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin. (3) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin. (4) Tezkor o'ylashni talab qilsin.
+Qoidalar: (1) Har bir tasdiq qisqa va aniq bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin. (3) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin.
 JSON sxemasi:
-{"questions":[{"text":"Qisqa tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora","explanation":"Qisqa izoh"}]}`;
+{"questions":[{"text":"Qisqa tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora"}]}`;
 
         case 'order':
             return `${lang}. Mavzu: "${topic}". ${count} ta mantiqiy tartib (Sorting) topshirig'i tuz.
-Qoidalar: (1) Har biri uchun 4-5 element bering. (2) Elementlar items massivida TO'G'RI tartibda bo'lishi shart. (3) Xronologik, algoritmik yoki sabab-oqibat zanjirlarini ishlating. (4) Har bir element 2-6 so'zdan iborat bo'lsin.
+Qoidalar: (1) Har biri uchun 4-5 element bering. (2) Elementlar items massivida TO'G'RI tartibda bo'lishi shart. (3) Xronologik yoki sabab-oqibat zanjirlarini ishlating.
 JSON sxemasi:
 {"questions":[{"text":"Quyidagi jarayonni to'g'ri tartibga soling:","items":["1-bosqich","2-bosqich","3-bosqich","4-bosqich"],"hint":"Bir jumla yo'naltiruvchi ishora"}]}`;
 
         case 'match':
             return `${lang}. Mavzu: "${topic}". ${count} ta moslik (Matching) to'plami tuz.
-Qoidalar: (1) Har to'plamda 6 ta juft bo'lsin. (2) term — qisqa atama yoki nom (max 3 so'z). (3) definition — 5-10 so'zli aniq ta'rif yoki izoh. (4) Juftlar o'zaro o'xshash bo'lmasin (aralashib ketmasin).
+Qoidalar: (1) Har to'plamda 6 ta juft bo'lsin. (2) term — qisqa atama yoki nom (max 3 so'z). (3) definition — 5-10 so'zli aniq ta'rif. (4) Juftlar o'zaro aralashib ketmasin.
 JSON sxemasi:
 {"questions":[{"text":"Ushbu atamalarni ta'riflari bilan moslang:","pairs":[{"term":"Atama 1","definition":"Aniq ta'rif 1"},{"term":"Atama 2","definition":"Aniq ta'rif 2"},{"term":"Atama 3","definition":"Aniq ta'rif 3"},{"term":"Atama 4","definition":"Aniq ta'rif 4"},{"term":"Atama 5","definition":"Aniq ta'rif 5"},{"term":"Atama 6","definition":"Aniq ta'rif 6"}],"hint":"Bir jumla ishora"}]}`;
 
         case 'anagram':
             return `${lang}. Mavzu: "${topic}". ${count} ta yashirin so'z (Anagram) topshirig'i tuz.
-Qoidalar: (1) FAQAT texnik/ilmiy terminlar. (2) So'z uzunligi 5–10 harf oralig'ida bo'lsin. (3) hint — so'zning ma'nosini EMAS, faqat sohasi yoki funksiyasini bildiruvchi ishora. (4) So'z katta harfda, faqat lotin harflari.
+Qoidalar: (1) FAQAT texnik/ilmiy terminlar. (2) So'z uzunligi 5–10 harf. (3) hint — so'zning sohasi yoki funksiyasini bildiruvchi ishora. (4) So'z katta harfda, faqat lotin harflari.
 JSON sxemasi:
 {"questions":[{"word":"ALGORITM","hint":"Muammoni hal qilish uchun qadamba-qadam yo'riqnoma"},{"word":"KOMPILER","hint":"Dastur kodini mashina tiliga o'giruvchi dastur"}]}`;
 
         default:
             return `${lang}. Mavzu: "${topic}". ${count} ta klassik test savoli tuz.
-{"questions":[{"text":"Savol?","options":["A","B","C","D"],"correctOptions":[2],"explanation":""}]}`;
+{"questions":[{"text":"Savol?","options":["A","B","C","D"],"correctOptions":[2],"hint":""}]}`;
     }
 }
 
@@ -320,10 +318,54 @@ function parseRetryAfter(err: any): number | null {
     return null;
 }
 
+// ─── API Key Pool helpers ─────────────────────────────────────────────────────
+function getKeys(envVar: string | undefined, fallback: string | undefined): string[] {
+    const multi = envVar?.split(',').map(k => k.trim()).filter(Boolean);
+    if (multi && multi.length > 0) return multi;
+    if (fallback) return [fallback];
+    return [];
+}
+
+async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<string> {
+    const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
+                generationConfig: { temperature: 0.85, responseMimeType: 'application/json' },
+            }),
+        }
+    );
+    if (!res.ok) {
+        const body = await res.text();
+        const err: any = new Error(`Gemini xatosi: ${res.status}`);
+        err.status = res.status;
+        err.details = body;
+        throw err;
+    }
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+async function callGroq(key: string, systemPrompt: string, userPrompt: string): Promise<string> {
+    const client = new Groq({ apiKey: key });
+    const completion = await client.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.85,
+        top_p: 1,
+        max_tokens: 4096,
+    });
+    return completion.choices[0]?.message?.content || '';
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
     const { topic, count = 5, language = 'uz', gameType = 'multiple', timeLimit = 20, provider = 'groq' } = await req.json();
 
     if (!topic || topic.trim().length < 2) {
@@ -340,82 +382,58 @@ export async function POST(req: Request) {
     const systemPrompt = buildSystemPrompt(existingTexts);
     const userPrompt = buildPrompt(enrichedTopic, gameType, count, language);
 
+    // ─── Multi-Key Pool setup ───────────────────────────────────────────────
+    const geminiKeys = getKeys(process.env.GEMINI_API_KEYS, process.env.GEMINI_API_KEY);
+    const groqKeys   = getKeys(process.env.GROQ_API_KEYS,   process.env.GROQ_API_KEY);
+
+    // Build ordered list of (provider, key) pairs to try — chosen provider first
+    type ProviderKey = { provider: 'gemini' | 'groq'; key: string };
+    const primaryList:   ProviderKey[] = (provider === 'gemini' ? geminiKeys : groqKeys).map(k => ({ provider: provider as 'gemini'|'groq', k })).map(({provider, k}) => ({provider, key: k}));
+    const fallbackList:  ProviderKey[] = (provider === 'gemini' ? groqKeys   : geminiKeys).map(k => ({ provider: provider === 'gemini' ? 'groq' : 'gemini', key: k }));
+    const allCandidates: ProviderKey[] = [...primaryList, ...fallbackList];
+
     let lastError = '';
-    let currentProvider = provider;
-    
-    // Retry up to 2 times — 2-urinishda yangi niche tanlanadi
-    for (let attempt = 0; attempt < 2; attempt++) {
+
+    for (let ci = 0; ci < allCandidates.length; ci++) {
+        const { provider: cur, key } = allCandidates[ci];
+        // On retry (ci > 0), pick a fresh niche for variety
+        const currentTopic      = ci === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
+        const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, count, language);
+
         try {
-            const currentTopic = attempt === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
-            const currentUserPrompt = attempt === 0 ? userPrompt : buildPrompt(currentTopic, gameType, count, language);
-            
             let raw = '';
-            
-            if (currentProvider === 'gemini') {
-                const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${currentUserPrompt}\n\nIMPORTANT: Return ONLY valid JSON format without any markdown code block wrappers (do not use \`\`\`json). I will parse the raw response with JSON.parse().` }] }],
-                        generationConfig: { temperature: 0.85, responseMimeType: "application/json" }
-                    })
-                });
-                if (!geminiRes.ok) {
-                    const errBody = await geminiRes.text();
-                    const errObj = new Error(`Gemini xatosi: ${geminiRes.status}`);
-                    (errObj as any).status = geminiRes.status;
-                    (errObj as any).details = errBody;
-                    throw errObj;
-                }
-                const geminiData = await geminiRes.json();
-                raw = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            } else {            
-                const completion = await groq.chat.completions.create({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: currentUserPrompt },
-                    ],
-                    temperature: 0.85,   // Ijodiylikni oshirish (0.65 → 0.85)
-                    top_p: 1,            // Barcha tokenlardan foydalanish
-                    max_tokens: 4096,
-                });
-                raw = completion.choices[0]?.message?.content || '';
+            if (cur === 'gemini') {
+                raw = await callGemini(key, systemPrompt, currentUserPrompt);
+            } else {
+                raw = await callGroq(key, systemPrompt, currentUserPrompt);
             }
 
-            const parsed = extractJson(raw);
-            let questions = normalizeQuestions(parsed, gameType, timeLimit);
+            const parsed    = extractJson(raw);
+            const questions = normalizeQuestions(parsed, gameType, timeLimit);
 
             if (!questions || questions.length === 0) {
                 lastError = "AI savollarni to'g'ri formatlamadi";
                 continue;
             }
 
-            // 4. Levenshtein filtr: 80%+ o'xshash savollarni olib tashlash
-            const filtered = filterDuplicates(questions, existingTexts);
-
-            // Agar ko'p savol filtrlandi (yarmidan ko'pi), original qaytarish
-            const finalQuestions = filtered.length >= Math.ceil(questions.length / 2)
-                ? filtered
-                : questions;
+            const filtered       = filterDuplicates(questions, existingTexts);
+            const finalQuestions = filtered.length >= Math.ceil(questions.length / 2) ? filtered : questions;
 
             return NextResponse.json({ questions: finalQuestions, gameType });
         } catch (err: any) {
-            if (currentProvider === 'groq') {
-                console.warn("Groq failed, falling back to Gemini...", err?.message || err);
-                currentProvider = 'gemini';
-                attempt--; // retry this attempt with Gemini
+            const status = err?.status ?? 0;
+            const isRateLimit = status === 429 || (err?.message && err.message.includes('429'));
+
+            if (isRateLimit) {
+                // Try next key / provider
+                console.warn(`[AI Pool] ${cur} key #${ci} rate-limited — trying next...`);
+                lastError = err?.message || 'Rate limited';
                 continue;
             }
-            
-            if (err?.status === 429 || (err?.message && err.message.includes('429'))) {
-                return NextResponse.json(
-                    { rateLimited: true, retryAfter: parseRetryAfter(err) },
-                    { status: 429 }
-                );
-            }
+
+            // Non-rate-limit error — log and try next
             lastError = err?.message || 'AI xatoligi';
-            console.error(`AI attempt ${attempt + 1} failed with ${currentProvider}:`, err);
+            console.error(`[AI Pool] ${cur} key #${ci} failed:`, err?.message || err);
         }
     }
 

@@ -47,7 +47,6 @@ function parseRetryAfter(err: any): number | null {
 }
 
 export async function POST(req: Request) {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -77,10 +76,10 @@ export async function POST(req: Request) {
 
     const langInstruction =
         language === 'uz'
-            ? "Barcha savollar, javoblar va izohlar faqat O'ZBEK tilida bo'lishi shart."
+            ? "Barcha savollar, javoblar va ishora (hint) faqat O'ZBEK tilida bo'lishi shart."
             : language === 'ru'
-                ? 'Все вопросы, варианты ответов и объяснения должны быть ИСКЛЮЧИТЕЛЬНО НА РУССКОМ ЯЗЫКЕ.'
-                : 'All questions, options, and explanations MUST BE STRICTLY IN ENGLISH. No Uzbek language.';
+                ? 'Все вопросы, варианты ответов и подсказки должны быть ИСКЛЮЧИТЕЛЬНО НА РУССКОМ ЯЗЫКЕ.'
+                : 'All questions, options, and hints MUST BE STRICTLY IN ENGLISH. No Uzbek language.';
 
     const prompt = `${langInstruction}
 
@@ -94,7 +93,7 @@ ${truncated}
 QAT'IY QOIDALAR:
 1. Har bir savolda TO'G'RI javobni HAR XIL pozitsiyaga qo'y (0,1,2,3 rotatsiya bilan).
 2. Noto'g'ri javoblar ishonchli va chalg'ituvchi bo'lsin.
-3. Har bir savol uchun qisqa "explanation" (izoh, 1-2 jumlа) yoz — nima uchun to'g'ri javob to'g'riligini tushuntir.
+3. Har bir savol uchun qisqa "hint" (1 jumla yo'naltiruvchi ishora) yoz.
 
 Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
 {
@@ -103,7 +102,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
       "text": "Savol?",
       "options": ["A", "B", "C", "D"],
       "correctOptions": [2],
-      "explanation": "Bu to'g'ri chunki..."
+      "hint": "To'g'ri javob tomonga ishora"
     }
   ]
 }`;
@@ -116,50 +115,57 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                 : "Sen matn asosida test savollari tuzuvchi AI yordamchisisiz. Faqat JSON formatda javob ber.";
 
     try {
+        // Build key pools
+        const geminiKeys = (process.env.GEMINI_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+        if (process.env.GEMINI_API_KEY && !geminiKeys.includes(process.env.GEMINI_API_KEY)) geminiKeys.unshift(process.env.GEMINI_API_KEY);
+        const groqKeys = (process.env.GROQ_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+        if (process.env.GROQ_API_KEY && !groqKeys.includes(process.env.GROQ_API_KEY)) groqKeys.unshift(process.env.GROQ_API_KEY);
+
+        type ProviderKey = { provider: 'gemini' | 'groq'; key: string };
+        const primaryList: ProviderKey[] = (provider === 'gemini' ? geminiKeys : groqKeys).map((k: string) => ({ provider: provider as 'gemini' | 'groq', key: k }));
+        const fallbackList: ProviderKey[] = (provider === 'gemini' ? groqKeys : geminiKeys).map((k: string) => ({ provider: (provider === 'gemini' ? 'groq' : 'gemini') as 'gemini' | 'groq', key: k }));
+        const allCandidates: ProviderKey[] = [...primaryList, ...fallbackList];
+
         let raw = '';
-        let currentProvider = provider;
+        let lastKeyErr = '';
 
-        const makeRequest = async () => {
-            if (currentProvider === 'gemini') {
-                const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}\n\nIMPORTANT: Return ONLY valid JSON format without any markdown code block wrappers (do not use \`\`\`json). I will parse the raw response with JSON.parse().` }] }],
-                        generationConfig: { temperature: 0.6, responseMimeType: "application/json" }
-                    })
-                });
-                if (!geminiRes.ok) {
-                    const errBody = await geminiRes.text();
-                    const errObj = new Error(`Gemini xatosi: ${geminiRes.status}`);
-                    (errObj as any).status = geminiRes.status;
-                    throw errObj;
+        for (let ci = 0; ci < allCandidates.length; ci++) {
+            const { provider: cur, key } = allCandidates[ci];
+            try {
+                if (cur === 'gemini') {
+                    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
+                            generationConfig: { temperature: 0.6, responseMimeType: 'application/json' },
+                        })
+                    });
+                    if (!geminiRes.ok) {
+                        const errObj: any = new Error(`Gemini xatosi: ${geminiRes.status}`);
+                        errObj.status = geminiRes.status;
+                        throw errObj;
+                    }
+                    const data = await geminiRes.json();
+                    raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                } else {
+                    const groq = new Groq({ apiKey: key });
+                    const completion = await groq.chat.completions.create({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: prompt },
+                        ],
+                        temperature: 0.6,
+                        max_tokens: 4096,
+                    });
+                    raw = completion.choices[0]?.message?.content || '';
                 }
-                const geminiData = await geminiRes.json();
-                return geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            } else {            
-                const completion = await groq.chat.completions.create({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: prompt },
-                    ],
-                    temperature: 0.6,
-                    max_tokens: 4096,
-                });
-                return completion.choices[0]?.message?.content || '';
-            }
-        };
-
-        try {
-            raw = await makeRequest();
-        } catch (err: any) {
-            if (currentProvider === 'groq') {
-                console.warn("Groq failed for upload, falling back to Gemini...", err?.message || err);
-                currentProvider = 'gemini';
-                raw = await makeRequest();
-            } else {
-                throw err;
+                break; // success — exit key loop
+            } catch (keyErr: any) {
+                lastKeyErr = keyErr?.message || 'xatolik';
+                console.warn(`[Upload AI Pool] ${cur} key #${ci} failed:`, lastKeyErr);
+                if (ci === allCandidates.length - 1) throw new Error(lastKeyErr);
             }
         }
 
