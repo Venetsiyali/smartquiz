@@ -1,539 +1,545 @@
 {
-    "Header": {
-        "dashboard": "Dashboard",
-        "settings": "Settings",
-        "logout": "Logout",
-        "login": "Log In",
-        "author": "Author",
-        "adminPanel": "Admin Panel",
-        "user": "User"
+  "Header": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Log In",
+    "author": "Author",
+    "adminPanel": "Admin Panel",
+    "user": "User"
+  },
+  "Home": {
+    "greeting": {
+      "night": "Good Night",
+      "morning": "Good Morning",
+      "afternoon": "Good Afternoon",
+      "evening": "Good Evening"
     },
-    "Home": {
-        "greeting": {
-            "night": "Good Night",
-            "morning": "Good Morning",
-            "afternoon": "Good Afternoon",
-            "evening": "Good Evening"
-        },
-        "hero": {
-            "hello": "Hello",
-            "whatToPlay": "What shall we play today?",
-            "mode": "Mode",
-            "pro": "👑 Pro",
-            "free": "🎮 Free",
-            "enterGame": "📱 Enter Game",
-            "gameTypes": "GAME MODES",
-            "createQuiz": "✨ Create Quiz",
-            "goPro": "👑 Upgrade to Pro",
-            "platformSlogan": "✨ #1 interactive quiz platform for educators",
-            "startFree": "🚀 Start Now — Free",
-            "pinHint": "via PIN",
-            "trustStats": "500+ teachers and",
-            "trustStudents": "50,000+",
-            "trustSuffix": "students trust us"
-        },
-        "footer": "© 2026 Zukkoo · TUIT ICT Department · All rights reserved",
-        "articlesTitle": "Articles & Insights",
-        "articlesSubtitle": "Education and technology trends",
-        "allArticles": "View all articles",
-        "readMore": "Read more",
-        "footerLinks": {
-            "blog": "Blog",
-            "pricing": "Pricing",
-            "author": "Author",
-            "support": "Support",
-            "about": "About Us",
-            "privacy": "Privacy",
-            "terms": "Terms"
-        }
+    "hero": {
+      "hello": "Hello",
+      "whatToPlay": "What shall we play today?",
+      "mode": "Mode",
+      "pro": "👑 Pro",
+      "free": "🎮 Free",
+      "enterGame": "📱 Enter Game",
+      "gameTypes": "GAME MODES",
+      "createQuiz": "✨ Create Quiz",
+      "goPro": "👑 Upgrade to Pro",
+      "platformSlogan": "✨ #1 interactive quiz platform for educators",
+      "startFree": "🚀 Start Now — Free",
+      "pinHint": "via PIN",
+      "trustStats": "500+ teachers and",
+      "trustStudents": "50,000+",
+      "trustSuffix": "students trust us"
     },
-    "Games": {
-        "classic": {
-            "name": "Quiz Arena",
-            "sub": "Classic Quiz",
-            "badge": "FREE",
-            "desc": "Multiple choice, True/False questions. Real-time leaderboard!"
-        },
-        "order": {
-            "name": "Logic Chain",
-            "sub": "Sorting Game",
-            "badge": "FREE",
-            "desc": "Arrange items in the correct logical order. Test your reasoning!"
-        },
-        "match": {
-            "name": "Battle of Terms",
-            "sub": "Matching Game",
-            "badge": "PRO",
-            "desc": "Connect pairs. Perfect for mastering terms and definitions."
-        },
-        "blitz": {
-            "name": "Blitz-Watch",
-            "sub": "True/False Duel",
-            "badge": "FREE",
-            "desc": "True or false? Decide in a split second! Race against the clock."
-        },
-        "anagram": {
-            "name": "Hidden Code",
-            "sub": "Anagram",
-            "badge": "PRO",
-            "desc": "Uncover the hidden word from scrambled letters. Speed & smarts!"
-        },
-        "team": {
-            "name": "Team Rescue",
-            "sub": "Team Mode",
-            "badge": "PRO",
-            "desc": "Win together! Build combos, use shields, stop opponents."
-        },
-        "card": {
-            "proNeeded": "Pro Required",
-            "proMode": "👑 Pro Mode",
-            "start": "Play Now"
-        }
-    },
-    "GamePlay": {
-        "notFound": "Game not found",
-        "home": "← Home",
-        "backToDash": "🏠 Back to Dashboard",
-        "stats": {
-            "score": "SCORE",
-            "time": "TIME",
-            "question": "QUESTION",
-            "progress": "PROGRESS"
-        },
-        "online": "LIVE PLAYERS",
-        "proRequired": "This game requires Pro mode",
-        "buttons": {
-            "goPro": "👑 Upgrade to Pro",
-            "back": "← Back",
-            "create": "🎓 Create Quiz",
-            "play": "📱 Enter Game",
-            "startRules": "Understood, let's start! 🚀"
-        }
-    },
-    "GameSession": {
-        "loading": "Loading question...",
-        "waiting": "⏳ Waiting for others to answer...",
-        "matchWaiting": "✅ Done! Waiting for others...",
-        "correct": "Correct!",
-        "incorrect": "Incorrect!",
-        "streak": "🔥 {streak} in a row! (+1.2x)",
-        "added": "ADDED",
-        "total": "Total",
-        "answersGuide": "ANSWERS GUIDE",
-        "didYouKnow": "💡 DID YOU KNOW?",
-        "continueIn": "Continue in: {time}s...",
-        "results": "🏆 Results",
-        "yourScore": "Your score",
-        "nextQuestion": "Waiting for next question...",
-        "gameOver": "Game Over!",
-        "yourResult": "YOUR RESULT",
-        "home": "🏠 Home Page",
-        "orderGameBadge": "CHAIN",
-        "matchGameBadge": "MATCH",
-        "pairsLoading": "Loading pairs..."
-    },
-    "WaitingRoom": {
-        "welcome": "WELCOME",
-        "pinCode": "PIN CODE",
-        "waitingTeacher": "Waiting for the teacher to start the game",
-        "teamSelected": "✅ Your team is selected",
-        "selectTeam": "🏁 Choose your team",
-        "members": "members",
-        "changeTeam": "Tap another team to switch"
-    },
-    "DashboardNav": {
-        "dashboard": "Dashboard",
-        "quizzes": "My Quizzes",
-        "analytics": "Analytics",
-        "play": "Play",
-        "newQuiz": "New Quiz"
-    },
-    "Common": {
-        "start": "Start Game",
-        "score": "Score",
-        "time": "Time",
-        "next": "Next",
-        "finish": "Finish",
-        "correct": "Correct!",
-        "wrong": "Wrong Answer",
-        "gameOver": "Game Over",
-        "tryAgain": "Try Again",
-        "backToDashboard": "Back to Dashboard"
-    },
-    "GamesList": {
-        "quizArena": {
-            "title": "Zukkoo",
-            "modalTitle": "Classic Quiz",
-            "modalSubtitle": "Rules 🏆",
-            "description": "Test your knowledge in a classic quiz format.",
-            "instructions": [
-                "Find the single correct answer out of 4 options.",
-                "Pay attention to time: the faster you answer, the more points you get!",
-                "Monitor the live leaderboard on the main screen after every question."
-            ],
-            "actionBtn": "Understood, let's go! 🚀"
-        },
-        "logicChain": {
-            "title": "Logic Chain",
-            "modalTitle": "Logic Chain:",
-            "modalSubtitle": "Restore the order! 🧱",
-            "description": "Arrange the items in the correct logical sequence.",
-            "instructions": [
-                "Drag the blocks and arrange them in the correct sequence from top to bottom.",
-                "The more accurate and faster your chain, the higher your score!",
-                "If you make a mistake, the system will show you the correct path."
-            ],
-            "actionBtn": "Start building the chain! ⚡"
-        },
-        "battleOfTerms": {
-            "title": "Battle of Terms",
-            "modalTitle": "Battle of Terms:",
-            "modalSubtitle": "Ignite the spark of knowledge! 🔥",
-            "description": "Match the correct terms with their definitions.",
-            "instructions": [
-                "Tap a term and its definition consecutively to match them.",
-                "Correct pairs disappear, while mistakes cost you precious time.",
-                "Aim for maximum accuracy to earn the 'Combo' bonus."
-            ],
-            "actionBtn": "Enter the battlefield! ⚔️"
-        },
-        "blitzWatch": {
-            "title": "Blitz-Watch",
-            "modalTitle": "Blitz-Watch:",
-            "modalSubtitle": "Are you ready for the knowledge race? ⚡",
-            "description": "Quickly decide if the statement is True or False.",
-            "instructions": [
-                "You have only 3-5 seconds for each question.",
-                "Only two choices: True (Green) or False (Red).",
-                "Don't make a mistake, or you'll lose your speed streak!"
-            ],
-            "actionBtn": "HIT THE GAS! 🏎️"
-        },
-        "hiddenCode": {
-            "title": "Hidden Code",
-            "modalTitle": "Hidden Code:",
-            "modalSubtitle": "Test your detective skills! 🔍",
-            "description": "Unscramble the letters to find the hidden scientific term.",
-            "instructions": [
-                "Assemble a meaningful IT term from scrambled letters.",
-                "Uncover the hidden code by placing each letter in its correct place.",
-                "If you struggle, use the 'Help' button (but it costs points!)."
-            ],
-            "actionBtn": "Let's start decoding! 🕵️‍♂️"
-        },
-        "teamRescue": {
-            "title": "Team Rescue",
-            "modalTitle": "Team Rescue:",
-            "modalSubtitle": "Unity is strength! 🤝",
-            "description": "Collaborate with your team to solve advanced challenges.",
-            "instructions": [
-                "You are part of a team, every answer matters for the group.",
-                "Correct answers bring the team closer to the finish line.",
-                "Don't make mistakes, otherwise your team's overall 'life' decreases."
-            ],
-            "actionBtn": "Ready to rescue the team! 🚀"
-        }
-    },
-    "Auth": {
-        "errors": {
-            "enterEmailPass": "Enter email and password",
-            "default": "An error occurred",
-            "network": "Network error",
-            "incompleteCode": "Enter the full 6-digit code",
-            "system": "System error"
-        },
-        "hero": {
-            "title": "The future of education is here",
-            "desc": "Take your students to the next level with Zukkoo"
-        },
-        "form": {
-            "loginTitle": "Log into Zukkoo",
-            "loginDesc": "Enter your email to sign in",
-            "otpTitle": "Verification Code",
-            "otpDesc": "A 6-digit code has been sent to your email",
-            "emailLabel": "Email Address",
-            "emailPlace": "name@gmail.com",
-            "passLabel": "Password",
-            "passPlace": "Enter password...",
-            "continue": "Continue",
-            "loginBtn": "Sign In",
-            "back": "Back",
-            "or": "or",
-            "google": "Sign in with Google"
-        }
-    },
-    "Settings": {
-        "title": "Settings",
-        "subtitle": "Account preferences",
-        "nameTitle": "Change Name",
-        "nameInput": "Your Name",
-        "save": "Save Changes",
-        "saving": "Saving...",
-        "passTitle": "Change Password",
-        "passEmptyNote": "Google accounts don't have passwords. Set a new one below.",
-        "passUpdateNote": "Enter your old password and create a new one.",
-        "oldPass": "Old Password (if applicable)",
-        "newPass": "New Password (min 6 chars)",
-        "confirmPass": "Confirm New Password",
-        "updatePassBtn": "Update Password",
-        "logoutTitle": "Sign Out",
-        "logoutBtn": "Log Out",
-        "errors": {
-            "default": "An error occurred",
-            "network": "Network error",
-            "mismatch": "New passwords do not match",
-            "nameSuccess": "Name updated successfully!",
-            "passSuccess": "Password updated! Please log in again."
-        }
-    },
-    "LobbyStats": {
-        "style1": "Hologram Arena",
-        "style2": "Circuit — Microchip",
-        "style3": "Glassmorphism · Transparent UI",
-        "style4": "Speed Race · Timer",
-        "style5": "Detective Smoke · Mystic",
-        "style6": "Cosmic Gold · Dark Space",
-        "features1": [
-            "⚡ Real-time rating",
-            "⏱️ Time per question",
-            "🏆 Live leaderboard",
-            "🎯 MCQ questions"
-        ],
-        "features2": [
-            "🔗 Drag & Drop UX",
-            "🧩 Logic sequence",
-            "⚡ Fast rating system",
-            "💡 Multiple paths"
-        ],
-        "features3": [
-            "💎 Match pairs",
-            "🔍 Term database",
-            "✨ Glassmorphism design",
-            "📊 Accuracy stats"
-        ],
-        "features4": [
-            "⚡ 0.3s reaction",
-            "🏁 Two choices: ✅ / ❌",
-            "🔥 Combo streak system",
-            "🎯 Science-based Qs"
-        ],
-        "features5": [
-            "🔐 Letter anagram",
-            "🔍 Detective style",
-            "🧩 Variable difficulty",
-            "⌨️ Tap to type"
-        ],
-        "features6": [
-            "🏁 2–6 teams",
-            "❤️ Team lives system",
-            "🔥 Combo bonus +100 p",
-            "🛡️ Tactical shield (Pro)"
-        ]
-    },
-    "TeacherCreate": {
-        "TopBar": {
-            "author": "👤 Author",
-            "file": "📄 File",
-            "ai": "🤖 AI",
-            "lobby": "🚀 Lobby",
-            "newQuestions": "New questions",
-            "continue": "✅ Continue"
-        },
-        "Editor": {
-            "quizName": "Quiz name (optional)...",
-            "yourName": "Your name...",
-            "enterQuestion": "Enter your question...",
-            "format": "Question format:",
-            "mcq": "📋 Multiple choice",
-            "tf": "✅ True/False",
-            "order": "🔗 Logic Chain",
-            "match": "💎 Battle of Terms",
-            "blitz": "⚡ Blitz-Watch",
-            "anagram": "🔐 Hidden Code",
-            "timeLimit": "TIME LIMIT",
-            "imgUrl": "IMAGE URL",
-            "explanation": "💡 EXPLANATION (optional)",
-            "explanationPlaceholder": "E.g: Chlorophyll helps in the process of photosynthesis...",
-            "variant": "{index}-option...",
-            "questionNo": "QUESTION #{number}",
-            "addQuestion": "+ Add Question",
-            "proMax50": "👑 Pro → 50 questions"
-        },
-        "Modals": {
-            "aiTitle": "🤖 AI Question Generator",
-            "aiSubtitle": "Groq · LLaMA 3.3-70B",
-            "aiTopicPlaceholder": "Enter topic (e.g. Optics, Algebra...)",
-            "count": "COUNT",
-            "lang": "LANG",
-            "time": "TIME",
-            "generateBtn": "✨ Generate",
-            "generating": "Generating...",
-            "topicRequired": "Enter a topic",
-            "error": "Error",
-            "serverError": "Server error",
-            "qsReady": "{count} questions ready",
-            "addBtn": "✅ Add to Quiz",
-            "fileTitle": "📄 Create Questions via File",
-            "fileSubtitle": "PDF or DOCX → AI → Questions",
-            "selectFile": "Select a file",
-            "dropzoneText": "Drop PDF/DOCX file here",
-            "orClick": "or click",
-            "analyzing": "Analyzing...",
-            "analyzeBtn": "🤖 Analyze with AI",
-            "charsRead": "characters read",
-            "aiOson": "Zukkoo AI (Easy)",
-            "aiQiyin": "Zukkoo AI (Hard)"
-        }
-    },
-    "SocialProof": {
-        "subtitle": "Trusted by Uzbekistan teachers",
-        "teachers": "Teachers using",
-        "quizzes": "Quizzes hosted",
-        "games": "Game modes"
-    },
-    "HowItWorks": {
-        "subtitle": "Steps",
-        "title": "How it works?",
-        "desc": "Start an interactive lesson in 3 steps",
-        "steps": {
-            "step1": {
-                "title": "Create Quiz",
-                "desc": "Enter a topic - AI automatically prepares questions. Or type manually. 2 minutes is enough."
-            },
-            "step2": {
-                "title": "Connect students",
-                "desc": "Send the PIN or QR code to your students. No sign-up required."
-            },
-            "step3": {
-                "title": "Play and Learn",
-                "desc": "Real-time leaderboard, animations, and instant feedback. Fun lessons — visible results."
-            }
-        }
-    },
-    "Dashboard": {
-        "loading": "Loading...",
-        "platform": "Zukkoo Platform",
-        "totalQuizzes": "Total quizzes",
-        "publicQuizzes": "Public quizzes",
-        "gamesPlayed": "Games played",
-        "streakDays": "days in a row",
-        "recentQuizzes": "Recent quizzes",
-        "viewAll": "View all →",
-        "noQuizzes": "No quizzes yet",
-        "createFirst": "➕ Create first quiz",
-        "public": "Public",
-        "private": "Private",
-        "questions": "questions",
-        "createQuizAction": "Create new quiz",
-        "startGameAction": "Start game",
-        "analyticsAction": "View analytics"
-    },
-    "Quizzes": {
-        "breadcrumb": "Dashboard",
-        "title": "🧩 My Quizzes",
-        "newQuiz": "➕ New Quiz",
-        "searchPlaceholder": "Search by quiz name...",
-        "filterAll": "All",
-        "filterPublic": "Public",
-        "filterPrivate": "Private",
-        "loading": "Loading...",
-        "notFound": "Nothing found",
-        "clearSearch": "Clear search",
-        "colName": "Name",
-        "colQuestions": "Questions",
-        "colStatus": "Status",
-        "colCreated": "Created",
-        "colActions": "Actions",
-        "edit": "Edit",
-        "delete": "Delete",
-        "prev": "← Prev",
-        "next": "Next →",
-        "deleteTitle": "Delete quiz",
-        "deleteConfirm": "This action cannot be undone. Continue?",
-        "cancel": "Cancel",
-        "deleting": "Deleting..."
-    },
-    "Analytics": {
-        "breadcrumb": "Dashboard",
-        "title": "📈 Analytics",
-        "csvExport": "⬇️ Export CSV",
-        "loading": "Loading...",
-        "thisWeek": "Created this week",
-        "last7Days": "last 7 days",
-        "activeDays": "Active days",
-        "outOf7": "out of 7",
-        "weeklyActivity": "Weekly activity",
-        "noData": "No data",
-        "csvId": "ID",
-        "csvName": "Name",
-        "csvDesc": "Description",
-        "csvPublic": "Public/Private",
-        "csvQCount": "Question count",
-        "csvCreated": "Created date"
-    },
-    "Lobby": {
-        "creating": "Creating...",
-        "ready": "Ready",
-        "qrCode": "QR CODE",
-        "pinCode": "PIN CODE",
-        "copyLink": "🔗 Copy game link",
-        "copied": "✅ Copied!",
-        "starting": "⚡ Starting...",
-        "start": "🚀 Start",
-        "joinedPlayers": "Joined",
-        "teamBadge": "TEAMS",
-        "waitingPlayers": "Waiting for players...",
-        "waitingHint": "Join via PIN or QR code",
-        "noOneChosen": "— Nobody chose yet —",
-        "members": "member",
-        "unassigned": "Unassigned",
-        "autoAssign": "Will be auto-assigned to the smallest team when the game starts.",
-        "minOnePlayers": "Need at least 1 player!"
-    },
-    "Articles": {
-        "zamonaviy-talimda-gamifikatsiyaning-orni": {
-            "title": "The Role of Gamification in Modern Education",
-            "excerpt": "Scientific and practical insights on why games teach better than traditional lessons."
-        },
-        "suniy-intellekt-va-talim-texnologiyalari": {
-            "title": "Artificial Intelligence and EdTech: 2026 Trends",
-            "excerpt": "Analytical article on how AI can individualize the learning process."
-        },
-        "malumotlar-tahlili-va-monitoring": {
-            "title": "Data Analysis and Monitoring in Education",
-            "excerpt": "Connecting hydrological monitoring and data skills to educational analytics."
-        },
-        "kahoot-va-zukkoo-taqqoslash-2026": {
-            "title": "Kahoot vs Zukkoo: Which is Better for Teachers?",
-            "excerpt": "Want to know the difference? A full 2026 comparison by price, features, and localization."
-        },
-        "5-daqiqada-quiz-yaratish-oquvchilar-uchun": {
-            "title": "Create an Online Quiz in 5 Minutes: Teacher's Guide",
-            "excerpt": "Want to create a quiz fast? Step-by-step guide with Zukkoo — prepare, host, review."
-        },
-        "gamifikatsiya-nima-talimda-qollanish": {
-            "title": "What is Gamification and How it Changes Learning?",
-            "excerpt": "It's not just a game. Gamification increases motivation by 48%. Scientific facts and examples."
-        },
-        "ozbekistonda-raqamli-talim-2026": {
-            "title": "Digital Education in Uzbekistan 2026",
-            "excerpt": "Where does digital education stand in 2026? Main challenges and practical solutions."
-        },
-        "maktab-darsida-viktorina-10-maslahat": {
-            "title": "Hosting Quizzes in Class: 10 Practical Tips",
-            "excerpt": "10 practical tips for teachers — from writing questions to analyzing results."
-        },
-        "malumotlar-dinamikasini-monitoring-qilish": {
-            "title": "Monitoring Data Dynamics in Intelligent Education Systems",
-            "excerpt": "How the methodology of hydrological monitoring improves educational technology."
-        },
-        "ozbekistonda-interaktiv-talim-2026": {
-            "title": "Interactive Education: 5 Innovative Ways to Boost Efficiency",
-            "excerpt": "A practical guide for teachers: keeping students' attention and teaching via gamification."
-        },
-        "neyropedagogika-va-gamifikatsiya": {
-            "title": "Neuropedagogy and Gamification: Why games replace traditional tests",
-            "excerpt": "How the brain receives information and how the dopamine mechanism accelerates learning."
-        }
+    "footer": "© 2026 Zukkoo · TUIT ICT Department · All rights reserved",
+    "articlesTitle": "Articles & Insights",
+    "articlesSubtitle": "Education and technology trends",
+    "allArticles": "View all articles",
+    "readMore": "Read more",
+    "footerLinks": {
+      "blog": "Blog",
+      "pricing": "Pricing",
+      "author": "Author",
+      "support": "Support",
+      "about": "About Us",
+      "privacy": "Privacy",
+      "terms": "Terms"
     }
+  },
+  "Games": {
+    "classic": {
+      "name": "Quiz Arena",
+      "sub": "Classic Quiz",
+      "badge": "FREE",
+      "desc": "Multiple choice, True/False questions. Real-time leaderboard!"
+    },
+    "order": {
+      "name": "Logic Chain",
+      "sub": "Sorting Game",
+      "badge": "FREE",
+      "desc": "Arrange items in the correct logical order. Test your reasoning!"
+    },
+    "match": {
+      "name": "Battle of Terms",
+      "sub": "Matching Game",
+      "badge": "PRO",
+      "desc": "Connect pairs. Perfect for mastering terms and definitions."
+    },
+    "blitz": {
+      "name": "Blitz-Watch",
+      "sub": "True/False Duel",
+      "badge": "FREE",
+      "desc": "True or false? Decide in a split second! Race against the clock."
+    },
+    "anagram": {
+      "name": "Hidden Code",
+      "sub": "Anagram",
+      "badge": "PRO",
+      "desc": "Uncover the hidden word from scrambled letters. Speed & smarts!"
+    },
+    "team": {
+      "name": "Team Rescue",
+      "sub": "Team Mode",
+      "badge": "PRO",
+      "desc": "Win together! Build combos, use shields, stop opponents."
+    },
+    "card": {
+      "proNeeded": "Pro Required",
+      "proMode": "👑 Pro Mode",
+      "start": "Play Now"
+    },
+    "bozor": {
+      "name": "Village Market",
+      "sub": "Monitor Game",
+      "badge": "FREE",
+      "desc": "Teams compete! Answer questions, earn coins, upgrade your shop!"
+    }
+  },
+  "GamePlay": {
+    "notFound": "Game not found",
+    "home": "← Home",
+    "backToDash": "🏠 Back to Dashboard",
+    "stats": {
+      "score": "SCORE",
+      "time": "TIME",
+      "question": "QUESTION",
+      "progress": "PROGRESS"
+    },
+    "online": "LIVE PLAYERS",
+    "proRequired": "This game requires Pro mode",
+    "buttons": {
+      "goPro": "👑 Upgrade to Pro",
+      "back": "← Back",
+      "create": "🎓 Create Quiz",
+      "play": "📱 Enter Game",
+      "startRules": "Understood, let's start! 🚀"
+    }
+  },
+  "GameSession": {
+    "loading": "Loading question...",
+    "waiting": "⏳ Waiting for others to answer...",
+    "matchWaiting": "✅ Done! Waiting for others...",
+    "correct": "Correct!",
+    "incorrect": "Incorrect!",
+    "streak": "🔥 {streak} in a row! (+1.2x)",
+    "added": "ADDED",
+    "total": "Total",
+    "answersGuide": "ANSWERS GUIDE",
+    "didYouKnow": "💡 DID YOU KNOW?",
+    "continueIn": "Continue in: {time}s...",
+    "results": "🏆 Results",
+    "yourScore": "Your score",
+    "nextQuestion": "Waiting for next question...",
+    "gameOver": "Game Over!",
+    "yourResult": "YOUR RESULT",
+    "home": "🏠 Home Page",
+    "orderGameBadge": "CHAIN",
+    "matchGameBadge": "MATCH",
+    "pairsLoading": "Loading pairs..."
+  },
+  "WaitingRoom": {
+    "welcome": "WELCOME",
+    "pinCode": "PIN CODE",
+    "waitingTeacher": "Waiting for the teacher to start the game",
+    "teamSelected": "✅ Your team is selected",
+    "selectTeam": "🏁 Choose your team",
+    "members": "members",
+    "changeTeam": "Tap another team to switch"
+  },
+  "DashboardNav": {
+    "dashboard": "Dashboard",
+    "quizzes": "My Quizzes",
+    "analytics": "Analytics",
+    "play": "Play",
+    "newQuiz": "New Quiz"
+  },
+  "Common": {
+    "start": "Start Game",
+    "score": "Score",
+    "time": "Time",
+    "next": "Next",
+    "finish": "Finish",
+    "correct": "Correct!",
+    "wrong": "Wrong Answer",
+    "gameOver": "Game Over",
+    "tryAgain": "Try Again",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "GamesList": {
+    "quizArena": {
+      "title": "Zukkoo",
+      "modalTitle": "Classic Quiz",
+      "modalSubtitle": "Rules 🏆",
+      "description": "Test your knowledge in a classic quiz format.",
+      "instructions": [
+        "Find the single correct answer out of 4 options.",
+        "Pay attention to time: the faster you answer, the more points you get!",
+        "Monitor the live leaderboard on the main screen after every question."
+      ],
+      "actionBtn": "Understood, let's go! 🚀"
+    },
+    "logicChain": {
+      "title": "Logic Chain",
+      "modalTitle": "Logic Chain:",
+      "modalSubtitle": "Restore the order! 🧱",
+      "description": "Arrange the items in the correct logical sequence.",
+      "instructions": [
+        "Drag the blocks and arrange them in the correct sequence from top to bottom.",
+        "The more accurate and faster your chain, the higher your score!",
+        "If you make a mistake, the system will show you the correct path."
+      ],
+      "actionBtn": "Start building the chain! ⚡"
+    },
+    "battleOfTerms": {
+      "title": "Battle of Terms",
+      "modalTitle": "Battle of Terms:",
+      "modalSubtitle": "Ignite the spark of knowledge! 🔥",
+      "description": "Match the correct terms with their definitions.",
+      "instructions": [
+        "Tap a term and its definition consecutively to match them.",
+        "Correct pairs disappear, while mistakes cost you precious time.",
+        "Aim for maximum accuracy to earn the 'Combo' bonus."
+      ],
+      "actionBtn": "Enter the battlefield! ⚔️"
+    },
+    "blitzWatch": {
+      "title": "Blitz-Watch",
+      "modalTitle": "Blitz-Watch:",
+      "modalSubtitle": "Are you ready for the knowledge race? ⚡",
+      "description": "Quickly decide if the statement is True or False.",
+      "instructions": [
+        "You have only 3-5 seconds for each question.",
+        "Only two choices: True (Green) or False (Red).",
+        "Don't make a mistake, or you'll lose your speed streak!"
+      ],
+      "actionBtn": "HIT THE GAS! 🏎️"
+    },
+    "hiddenCode": {
+      "title": "Hidden Code",
+      "modalTitle": "Hidden Code:",
+      "modalSubtitle": "Test your detective skills! 🔍",
+      "description": "Unscramble the letters to find the hidden scientific term.",
+      "instructions": [
+        "Assemble a meaningful IT term from scrambled letters.",
+        "Uncover the hidden code by placing each letter in its correct place.",
+        "If you struggle, use the 'Help' button (but it costs points!)."
+      ],
+      "actionBtn": "Let's start decoding! 🕵️‍♂️"
+    },
+    "teamRescue": {
+      "title": "Team Rescue",
+      "modalTitle": "Team Rescue:",
+      "modalSubtitle": "Unity is strength! 🤝",
+      "description": "Collaborate with your team to solve advanced challenges.",
+      "instructions": [
+        "You are part of a team, every answer matters for the group.",
+        "Correct answers bring the team closer to the finish line.",
+        "Don't make mistakes, otherwise your team's overall 'life' decreases."
+      ],
+      "actionBtn": "Ready to rescue the team! 🚀"
+    }
+  },
+  "Auth": {
+    "errors": {
+      "enterEmailPass": "Enter email and password",
+      "default": "An error occurred",
+      "network": "Network error",
+      "incompleteCode": "Enter the full 6-digit code",
+      "system": "System error"
+    },
+    "hero": {
+      "title": "The future of education is here",
+      "desc": "Take your students to the next level with Zukkoo"
+    },
+    "form": {
+      "loginTitle": "Log into Zukkoo",
+      "loginDesc": "Enter your email to sign in",
+      "otpTitle": "Verification Code",
+      "otpDesc": "A 6-digit code has been sent to your email",
+      "emailLabel": "Email Address",
+      "emailPlace": "name@gmail.com",
+      "passLabel": "Password",
+      "passPlace": "Enter password...",
+      "continue": "Continue",
+      "loginBtn": "Sign In",
+      "back": "Back",
+      "or": "or",
+      "google": "Sign in with Google"
+    }
+  },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Account preferences",
+    "nameTitle": "Change Name",
+    "nameInput": "Your Name",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "passTitle": "Change Password",
+    "passEmptyNote": "Google accounts don't have passwords. Set a new one below.",
+    "passUpdateNote": "Enter your old password and create a new one.",
+    "oldPass": "Old Password (if applicable)",
+    "newPass": "New Password (min 6 chars)",
+    "confirmPass": "Confirm New Password",
+    "updatePassBtn": "Update Password",
+    "logoutTitle": "Sign Out",
+    "logoutBtn": "Log Out",
+    "errors": {
+      "default": "An error occurred",
+      "network": "Network error",
+      "mismatch": "New passwords do not match",
+      "nameSuccess": "Name updated successfully!",
+      "passSuccess": "Password updated! Please log in again."
+    }
+  },
+  "LobbyStats": {
+    "style1": "Hologram Arena",
+    "style2": "Circuit — Microchip",
+    "style3": "Glassmorphism · Transparent UI",
+    "style4": "Speed Race · Timer",
+    "style5": "Detective Smoke · Mystic",
+    "style6": "Cosmic Gold · Dark Space",
+    "features1": [
+      "⚡ Real-time rating",
+      "⏱️ Time per question",
+      "🏆 Live leaderboard",
+      "🎯 MCQ questions"
+    ],
+    "features2": [
+      "🔗 Drag & Drop UX",
+      "🧩 Logic sequence",
+      "⚡ Fast rating system",
+      "💡 Multiple paths"
+    ],
+    "features3": [
+      "💎 Match pairs",
+      "🔍 Term database",
+      "✨ Glassmorphism design",
+      "📊 Accuracy stats"
+    ],
+    "features4": [
+      "⚡ 0.3s reaction",
+      "🏁 Two choices: ✅ / ❌",
+      "🔥 Combo streak system",
+      "🎯 Science-based Qs"
+    ],
+    "features5": [
+      "🔐 Letter anagram",
+      "🔍 Detective style",
+      "🧩 Variable difficulty",
+      "⌨️ Tap to type"
+    ],
+    "features6": [
+      "🏁 2–6 teams",
+      "❤️ Team lives system",
+      "🔥 Combo bonus +100 p",
+      "🛡️ Tactical shield (Pro)"
+    ]
+  },
+  "TeacherCreate": {
+    "TopBar": {
+      "author": "👤 Author",
+      "file": "📄 File",
+      "ai": "🤖 AI",
+      "lobby": "🚀 Lobby",
+      "newQuestions": "New questions",
+      "continue": "✅ Continue"
+    },
+    "Editor": {
+      "quizName": "Quiz name (optional)...",
+      "yourName": "Your name...",
+      "enterQuestion": "Enter your question...",
+      "format": "Question format:",
+      "mcq": "📋 Multiple choice",
+      "tf": "✅ True/False",
+      "order": "🔗 Logic Chain",
+      "match": "💎 Battle of Terms",
+      "blitz": "⚡ Blitz-Watch",
+      "anagram": "🔐 Hidden Code",
+      "timeLimit": "TIME LIMIT",
+      "imgUrl": "IMAGE URL",
+      "explanation": "💡 EXPLANATION (optional)",
+      "explanationPlaceholder": "E.g: Chlorophyll helps in the process of photosynthesis...",
+      "variant": "{index}-option...",
+      "questionNo": "QUESTION #{number}",
+      "addQuestion": "+ Add Question",
+      "proMax50": "👑 Pro → 50 questions"
+    },
+    "Modals": {
+      "aiTitle": "🤖 AI Question Generator",
+      "aiSubtitle": "Groq · LLaMA 3.3-70B",
+      "aiTopicPlaceholder": "Enter topic (e.g. Optics, Algebra...)",
+      "count": "COUNT",
+      "lang": "LANG",
+      "time": "TIME",
+      "generateBtn": "✨ Generate",
+      "generating": "Generating...",
+      "topicRequired": "Enter a topic",
+      "error": "Error",
+      "serverError": "Server error",
+      "qsReady": "{count} questions ready",
+      "addBtn": "✅ Add to Quiz",
+      "fileTitle": "📄 Create Questions via File",
+      "fileSubtitle": "PDF or DOCX → AI → Questions",
+      "selectFile": "Select a file",
+      "dropzoneText": "Drop PDF/DOCX file here",
+      "orClick": "or click",
+      "analyzing": "Analyzing...",
+      "analyzeBtn": "🤖 Analyze with AI",
+      "charsRead": "characters read",
+      "aiOson": "Zukkoo AI (Easy)",
+      "aiQiyin": "Zukkoo AI (Hard)"
+    }
+  },
+  "SocialProof": {
+    "subtitle": "Trusted by Uzbekistan teachers",
+    "teachers": "Teachers using",
+    "quizzes": "Quizzes hosted",
+    "games": "Game modes"
+  },
+  "HowItWorks": {
+    "subtitle": "Steps",
+    "title": "How it works?",
+    "desc": "Start an interactive lesson in 3 steps",
+    "steps": {
+      "step1": {
+        "title": "Create Quiz",
+        "desc": "Enter a topic - AI automatically prepares questions. Or type manually. 2 minutes is enough."
+      },
+      "step2": {
+        "title": "Connect students",
+        "desc": "Send the PIN or QR code to your students. No sign-up required."
+      },
+      "step3": {
+        "title": "Play and Learn",
+        "desc": "Real-time leaderboard, animations, and instant feedback. Fun lessons — visible results."
+      }
+    }
+  },
+  "Dashboard": {
+    "loading": "Loading...",
+    "platform": "Zukkoo Platform",
+    "totalQuizzes": "Total quizzes",
+    "publicQuizzes": "Public quizzes",
+    "gamesPlayed": "Games played",
+    "streakDays": "days in a row",
+    "recentQuizzes": "Recent quizzes",
+    "viewAll": "View all →",
+    "noQuizzes": "No quizzes yet",
+    "createFirst": "➕ Create first quiz",
+    "public": "Public",
+    "private": "Private",
+    "questions": "questions",
+    "createQuizAction": "Create new quiz",
+    "startGameAction": "Start game",
+    "analyticsAction": "View analytics"
+  },
+  "Quizzes": {
+    "breadcrumb": "Dashboard",
+    "title": "🧩 My Quizzes",
+    "newQuiz": "➕ New Quiz",
+    "searchPlaceholder": "Search by quiz name...",
+    "filterAll": "All",
+    "filterPublic": "Public",
+    "filterPrivate": "Private",
+    "loading": "Loading...",
+    "notFound": "Nothing found",
+    "clearSearch": "Clear search",
+    "colName": "Name",
+    "colQuestions": "Questions",
+    "colStatus": "Status",
+    "colCreated": "Created",
+    "colActions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "prev": "← Prev",
+    "next": "Next →",
+    "deleteTitle": "Delete quiz",
+    "deleteConfirm": "This action cannot be undone. Continue?",
+    "cancel": "Cancel",
+    "deleting": "Deleting..."
+  },
+  "Analytics": {
+    "breadcrumb": "Dashboard",
+    "title": "📈 Analytics",
+    "csvExport": "⬇️ Export CSV",
+    "loading": "Loading...",
+    "thisWeek": "Created this week",
+    "last7Days": "last 7 days",
+    "activeDays": "Active days",
+    "outOf7": "out of 7",
+    "weeklyActivity": "Weekly activity",
+    "noData": "No data",
+    "csvId": "ID",
+    "csvName": "Name",
+    "csvDesc": "Description",
+    "csvPublic": "Public/Private",
+    "csvQCount": "Question count",
+    "csvCreated": "Created date"
+  },
+  "Lobby": {
+    "creating": "Creating...",
+    "ready": "Ready",
+    "qrCode": "QR CODE",
+    "pinCode": "PIN CODE",
+    "copyLink": "🔗 Copy game link",
+    "copied": "✅ Copied!",
+    "starting": "⚡ Starting...",
+    "start": "🚀 Start",
+    "joinedPlayers": "Joined",
+    "teamBadge": "TEAMS",
+    "waitingPlayers": "Waiting for players...",
+    "waitingHint": "Join via PIN or QR code",
+    "noOneChosen": "— Nobody chose yet —",
+    "members": "member",
+    "unassigned": "Unassigned",
+    "autoAssign": "Will be auto-assigned to the smallest team when the game starts.",
+    "minOnePlayers": "Need at least 1 player!"
+  },
+  "Articles": {
+    "zamonaviy-talimda-gamifikatsiyaning-orni": {
+      "title": "The Role of Gamification in Modern Education",
+      "excerpt": "Scientific and practical insights on why games teach better than traditional lessons."
+    },
+    "suniy-intellekt-va-talim-texnologiyalari": {
+      "title": "Artificial Intelligence and EdTech: 2026 Trends",
+      "excerpt": "Analytical article on how AI can individualize the learning process."
+    },
+    "malumotlar-tahlili-va-monitoring": {
+      "title": "Data Analysis and Monitoring in Education",
+      "excerpt": "Connecting hydrological monitoring and data skills to educational analytics."
+    },
+    "kahoot-va-zukkoo-taqqoslash-2026": {
+      "title": "Kahoot vs Zukkoo: Which is Better for Teachers?",
+      "excerpt": "Want to know the difference? A full 2026 comparison by price, features, and localization."
+    },
+    "5-daqiqada-quiz-yaratish-oquvchilar-uchun": {
+      "title": "Create an Online Quiz in 5 Minutes: Teacher's Guide",
+      "excerpt": "Want to create a quiz fast? Step-by-step guide with Zukkoo — prepare, host, review."
+    },
+    "gamifikatsiya-nima-talimda-qollanish": {
+      "title": "What is Gamification and How it Changes Learning?",
+      "excerpt": "It's not just a game. Gamification increases motivation by 48%. Scientific facts and examples."
+    },
+    "ozbekistonda-raqamli-talim-2026": {
+      "title": "Digital Education in Uzbekistan 2026",
+      "excerpt": "Where does digital education stand in 2026? Main challenges and practical solutions."
+    },
+    "maktab-darsida-viktorina-10-maslahat": {
+      "title": "Hosting Quizzes in Class: 10 Practical Tips",
+      "excerpt": "10 practical tips for teachers — from writing questions to analyzing results."
+    },
+    "malumotlar-dinamikasini-monitoring-qilish": {
+      "title": "Monitoring Data Dynamics in Intelligent Education Systems",
+      "excerpt": "How the methodology of hydrological monitoring improves educational technology."
+    },
+    "ozbekistonda-interaktiv-talim-2026": {
+      "title": "Interactive Education: 5 Innovative Ways to Boost Efficiency",
+      "excerpt": "A practical guide for teachers: keeping students' attention and teaching via gamification."
+    },
+    "neyropedagogika-va-gamifikatsiya": {
+      "title": "Neuropedagogy and Gamification: Why games replace traditional tests",
+      "excerpt": "How the brain receives information and how the dopamine mechanism accelerates learning."
+    }
+  }
 }

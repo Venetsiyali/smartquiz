@@ -32,6 +32,15 @@ const GAME_STYLES = [
         pro: false,
     },
     {
+        id: 'bozor',
+        image: '/game/bozor.png',
+        gradient: 'linear-gradient(135deg, #78350f 0%, #d97706 60%, #fbbf24 100%)',
+        glowColor: 'rgba(251,191,36,0.5)',
+        badgeStyle: { background: 'rgba(251,191,36,0.22)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)' },
+        route: '/play/qishloq-bozori',
+        pro: false,
+    },
+    {
         id: 'order',
         image: '/images/games/2.webp',
         gradient: 'linear-gradient(135deg, #14532d 0%, #16a34a 60%, #22c55e 100%)',
