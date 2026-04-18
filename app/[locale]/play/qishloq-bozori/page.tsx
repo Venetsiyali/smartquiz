@@ -27,7 +27,7 @@ const CHARACTERS = [
 ];
 
 const TEAM_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b'];
-const TEAM_COLOR_NAMES = ['Qizil', 'Ko'k', 'Yashil', 'Sariq'];
+const TEAM_COLOR_NAMES = ["Qizil", "Ko'k", "Yashil", "Sariq"];
 
 const SUBJECTS = [
     'Barcha', 'Matematika', 'Fizika', 'Kimyo', 'Biologiya', 'Tarix',
