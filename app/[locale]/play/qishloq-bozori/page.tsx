@@ -63,7 +63,7 @@ export default function QishloqBozoriSetup() {
 
     // ── Bank tab state ───────────────────────────────────────────────────────
     const [bankLoading,  setBankLoading]  = useState(false);
-    const [bankAll,      setBankAll]      = useState<Question & { subject: string }[]>([]);
+    const [bankAll,      setBankAll]      = useState<(Question & { subject: string })[]>([]);
     const [bankSubjects, setBankSubjects] = useState<string[]>([]);
     const [bankFilter,   setBankFilter]   = useState('Barcha');
     const [bankSelected, setBankSelected] = useState<Set<number>>(new Set());
