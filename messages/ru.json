@@ -380,7 +380,9 @@
             "orClick": "или нажмите",
             "analyzing": "Анализ...",
             "analyzeBtn": "🤖 Анализ с ИИ",
-            "charsRead": "символов прочитано"
+            "charsRead": "символов прочитано",
+            "aiOson": "Zukkoo AI (Легкий)",
+            "aiQiyin": "Zukkoo AI (Сложный)"
         }
     },
     "SocialProof": {

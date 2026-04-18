@@ -54,6 +54,7 @@ export async function POST(req: Request) {
     const count = parseInt(formData.get('count') as string || '5', 10);
     const language = (formData.get('language') as string) || 'uz';
     const timeLimit = parseInt(formData.get('timeLimit') as string || '20', 10);
+    const provider = (formData.get('provider') as string) || 'groq';
 
     if (!file) {
         return NextResponse.json({ error: 'Fayl tanlanmagan' }, { status: 400 });
@@ -115,20 +116,53 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                 : "Sen matn asosida test savollari tuzuvchi AI yordamchisisiz. Faqat JSON formatda javob ber.";
 
     try {
-        const completion = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-                {
-                    role: 'system',
-                    content: systemPrompt,
-                },
-                { role: 'user', content: prompt },
-            ],
-            temperature: 0.6,
-            max_tokens: 4096,
-        });
+        let raw = '';
+        let currentProvider = provider;
 
-        const raw = completion.choices[0]?.message?.content || '';
+        const makeRequest = async () => {
+            if (currentProvider === 'gemini') {
+                const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}\n\nIMPORTANT: Return ONLY valid JSON format without any markdown code block wrappers (do not use \`\`\`json). I will parse the raw response with JSON.parse().` }] }],
+                        generationConfig: { temperature: 0.6, responseMimeType: "application/json" }
+                    })
+                });
+                if (!geminiRes.ok) {
+                    const errBody = await geminiRes.text();
+                    const errObj = new Error(`Gemini xatosi: ${geminiRes.status}`);
+                    (errObj as any).status = geminiRes.status;
+                    throw errObj;
+                }
+                const geminiData = await geminiRes.json();
+                return geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            } else {            
+                const completion = await groq.chat.completions.create({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: prompt },
+                    ],
+                    temperature: 0.6,
+                    max_tokens: 4096,
+                });
+                return completion.choices[0]?.message?.content || '';
+            }
+        };
+
+        try {
+            raw = await makeRequest();
+        } catch (err: any) {
+            if (currentProvider === 'groq') {
+                console.warn("Groq failed for upload, falling back to Gemini...", err?.message || err);
+                currentProvider = 'gemini';
+                raw = await makeRequest();
+            } else {
+                throw err;
+            }
+        }
+
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         if (!jsonMatch) return NextResponse.json({ error: "AI javob formati noto'g'ri" }, { status: 500 });
 

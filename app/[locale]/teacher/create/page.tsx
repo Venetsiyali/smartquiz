@@ -56,6 +56,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
     const [count, setCount] = useState(5);
     const locale = useLocale();
     const [lang, setLang] = useState(locale);
+    const [provider, setProvider] = useState<'groq'|'gemini'>('groq');
     const [timeLimit, setTimeLimit] = useState(20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -73,6 +74,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
         fd.append('count', String(count));
         fd.append('language', lang);
         fd.append('timeLimit', String(timeLimit));
+        fd.append('provider', provider);
 
         try {
             const res = await fetch('/api/ai/upload', { method: 'POST', body: fd });
@@ -106,6 +108,17 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                         <p className="text-white/40 text-xs font-bold">{t('fileSubtitle')}</p>
                     </div>
                     <button onClick={onClose} className="text-white/40 hover:text-white text-3xl">×</button>
+                </div>
+
+                <div className="flex bg-black/40 rounded-xl p-1">
+                    <button onClick={() => setProvider('groq')}
+                        className={`flex-1 py-2 text-xs sm:text-sm rounded-lg font-bold transition-all ${provider === 'groq' ? 'bg-[#0056b3] text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}>
+                        {t('aiOson')}
+                    </button>
+                    <button onClick={() => setProvider('gemini')}
+                        className={`flex-1 py-2 text-xs sm:text-sm rounded-lg font-bold transition-all ${provider === 'gemini' ? 'bg-[#d81b60] text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}>
+                        {t('aiQiyin')}
+                    </button>
                 </div>
 
                 {/* Drop zone */}
@@ -217,6 +230,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
     const [count, setCount] = useState(5);
     const locale = useLocale();
     const [lang, setLang] = useState(locale);
+    const [provider, setProvider] = useState<'groq'|'gemini'>('groq');
     const [timeLimit, setTimeLimit] = useState(gameType === 'blitz' ? 5 : gameType === 'anagram' ? 30 : 20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -303,7 +317,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
             const res = await fetch('/api/ai/generate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 // gameType va timeLimit ham yuboriladi
-                body: JSON.stringify({ topic, count, language: lang, gameType, timeLimit }),
+                body: JSON.stringify({ topic, count, language: lang, gameType, timeLimit, provider }),
             });
             const data = await res.json();
             if (res.status === 429 && data.rateLimited) {
@@ -336,6 +350,18 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
                     </div>
                     <button onClick={onClose} className="text-white/40 hover:text-white text-3xl">×</button>
                 </div>
+                
+                <div className="flex bg-black/40 rounded-xl p-1">
+                    <button onClick={() => setProvider('groq')}
+                        className={`flex-1 py-2 text-xs sm:text-sm rounded-lg font-bold transition-all ${provider === 'groq' ? 'bg-[#0056b3] text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}>
+                        {t('aiOson')}
+                    </button>
+                    <button onClick={() => setProvider('gemini')}
+                        className={`flex-1 py-2 text-xs sm:text-sm rounded-lg font-bold transition-all ${provider === 'gemini' ? 'bg-[#d81b60] text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}>
+                        {t('aiQiyin')}
+                    </button>
+                </div>
+
                 <input value={topic} onChange={e => setTopic(e.target.value)}
                     placeholder={t('aiTopicPlaceholder')}
                     className="input-game" onKeyDown={e => e.key === 'Enter' && generate()} />

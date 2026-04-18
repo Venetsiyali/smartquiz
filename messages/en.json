@@ -380,7 +380,9 @@
             "orClick": "or click",
             "analyzing": "Analyzing...",
             "analyzeBtn": "🤖 Analyze with AI",
-            "charsRead": "characters read"
+            "charsRead": "characters read",
+            "aiOson": "Zukkoo AI (Easy)",
+            "aiQiyin": "Zukkoo AI (Hard)"
         }
     },
     "SocialProof": {

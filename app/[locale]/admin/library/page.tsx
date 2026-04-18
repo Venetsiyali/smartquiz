@@ -89,6 +89,12 @@ const emptyForm = () => ({
     questions: [emptyQuestion()],
 });
 
+const SEL = "w-full border rounded-xl px-3 py-2.5 text-sm font-semibold outline-none cursor-pointer text-white";
+const SEL_STYLE = { background: '#0d1a2e', border: '1px solid rgba(255,255,255,0.12)', colorScheme: 'dark' as const };
+const SEL_PURPLE_STYLE = { background: '#0d1a2e', border: '1px solid rgba(139,92,246,0.25)', colorScheme: 'dark' as const };
+const INPUT = "w-full border rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 font-semibold outline-none focus:border-blue-500/50";
+const INPUT_STYLE = { background: '#0d1a2e', border: '1px solid rgba(255,255,255,0.12)' };
+
 // ─── Stat card ───────────────────────────────────────────────────────────────
 
 function StatCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color?: string }) {
@@ -122,11 +128,7 @@ function SelectOrType({
     return (
         <div>
             <label className="text-white/40 text-xs font-black uppercase tracking-wider block mb-1.5">{label}</label>
-            <select
-                value={value}
-                onChange={e => onSelect(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white font-semibold outline-none cursor-pointer"
-            >
+            <select value={value} onChange={e => onSelect(e.target.value)} className={SEL} style={SEL_STYLE}>
                 {options.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             {isCustom && (
@@ -134,7 +136,8 @@ function SelectOrType({
                     value={customValue}
                     onChange={e => onCustom(e.target.value)}
                     placeholder="O'zingiz yozing..."
-                    className="w-full mt-1.5 bg-white/5 border border-blue-500/30 rounded-xl px-3 py-2 text-sm text-white placeholder-white/25 font-semibold outline-none focus:border-blue-500/60"
+                    className="w-full mt-1.5 rounded-xl px-3 py-2 text-sm text-white placeholder-white/25 font-semibold outline-none"
+                    style={{ background: '#0d1a2e', border: '1px solid rgba(59,130,246,0.4)' }}
                     autoFocus
                 />
             )}

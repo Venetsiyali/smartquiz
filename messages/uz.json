@@ -380,7 +380,9 @@
             "orClick": "yoki bosing",
             "analyzing": "Tahlil qilinmoqda...",
             "analyzeBtn": "🤖 AI bilan Tahlil Qilish",
-            "charsRead": "belgi o'qildi"
+            "charsRead": "belgi o'qildi",
+            "aiOson": "Zukkoo AI (Oson)",
+            "aiQiyin": "Zukkoo AI (Qiyin)"
         }
     },
     "SocialProof": {

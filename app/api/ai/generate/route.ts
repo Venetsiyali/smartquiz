@@ -324,7 +324,7 @@ function parseRetryAfter(err: any): number | null {
 export async function POST(req: Request) {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const { topic, count = 5, language = 'uz', gameType = 'multiple', timeLimit = 20 } = await req.json();
+    const { topic, count = 5, language = 'uz', gameType = 'multiple', timeLimit = 20, provider = 'groq' } = await req.json();
 
     if (!topic || topic.trim().length < 2) {
         return NextResponse.json({ error: 'Mavzu kiriting (kamida 2 ta belgi)' }, { status: 400 });
@@ -341,21 +341,48 @@ export async function POST(req: Request) {
     const userPrompt = buildPrompt(enrichedTopic, gameType, count, language);
 
     let lastError = '';
+    let currentProvider = provider;
+    
     // Retry up to 2 times — 2-urinishda yangi niche tanlanadi
     for (let attempt = 0; attempt < 2; attempt++) {
         try {
-            const completion = await groq.chat.completions.create({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: attempt === 0 ? userPrompt : buildPrompt(pickTopicNiche(topic.trim()), gameType, count, language) },
-                ],
-                temperature: 0.85,   // Ijodiylikni oshirish (0.65 → 0.85)
-                top_p: 1,            // Barcha tokenlardan foydalanish
-                max_tokens: 4096,
-            });
+            const currentTopic = attempt === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
+            const currentUserPrompt = attempt === 0 ? userPrompt : buildPrompt(currentTopic, gameType, count, language);
+            
+            let raw = '';
+            
+            if (currentProvider === 'gemini') {
+                const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${currentUserPrompt}\n\nIMPORTANT: Return ONLY valid JSON format without any markdown code block wrappers (do not use \`\`\`json). I will parse the raw response with JSON.parse().` }] }],
+                        generationConfig: { temperature: 0.85, responseMimeType: "application/json" }
+                    })
+                });
+                if (!geminiRes.ok) {
+                    const errBody = await geminiRes.text();
+                    const errObj = new Error(`Gemini xatosi: ${geminiRes.status}`);
+                    (errObj as any).status = geminiRes.status;
+                    (errObj as any).details = errBody;
+                    throw errObj;
+                }
+                const geminiData = await geminiRes.json();
+                raw = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            } else {            
+                const completion = await groq.chat.completions.create({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: currentUserPrompt },
+                    ],
+                    temperature: 0.85,   // Ijodiylikni oshirish (0.65 → 0.85)
+                    top_p: 1,            // Barcha tokenlardan foydalanish
+                    max_tokens: 4096,
+                });
+                raw = completion.choices[0]?.message?.content || '';
+            }
 
-            const raw = completion.choices[0]?.message?.content || '';
             const parsed = extractJson(raw);
             let questions = normalizeQuestions(parsed, gameType, timeLimit);
 
@@ -374,14 +401,21 @@ export async function POST(req: Request) {
 
             return NextResponse.json({ questions: finalQuestions, gameType });
         } catch (err: any) {
-            if (err?.status === 429) {
+            if (currentProvider === 'groq') {
+                console.warn("Groq failed, falling back to Gemini...", err?.message || err);
+                currentProvider = 'gemini';
+                attempt--; // retry this attempt with Gemini
+                continue;
+            }
+            
+            if (err?.status === 429 || (err?.message && err.message.includes('429'))) {
                 return NextResponse.json(
                     { rateLimited: true, retryAfter: parseRetryAfter(err) },
                     { status: 429 }
                 );
             }
             lastError = err?.message || 'AI xatoligi';
-            console.error(`AI attempt ${attempt + 1} failed:`, err);
+            console.error(`AI attempt ${attempt + 1} failed with ${currentProvider}:`, err);
         }
     }
 
