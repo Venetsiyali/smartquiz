@@ -142,6 +142,46 @@ export default function DashboardPage() {
                 <StatCard icon="🔥" label="Streak" value={stats.streak} sub={t('streakDays')} color="#f97316" />
             </div>
 
+            {/* Games section */}
+            <div className="mb-8">
+                <h2 className="text-white font-black text-xl mb-4">🎮 O&apos;yinlar</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Zukkoo */}
+                    <Link
+                        href={`/${locale}/teacher/create`}
+                        className="relative rounded-2xl overflow-hidden flex flex-col justify-end transition-all hover:scale-[1.02] hover:shadow-2xl"
+                        style={{ minHeight: 180, background: 'linear-gradient(135deg, #0d1a2e 0%, #0a2a5e 100%)', border: '1px solid rgba(59,130,246,0.25)' }}
+                    >
+                        <div className="absolute inset-0 flex items-center justify-center opacity-10 text-[120px] select-none pointer-events-none">🎮</div>
+                        <div className="relative z-10 p-5">
+                            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-widest" style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa' }}>Klassik</span>
+                            <h3 className="text-white font-black text-2xl mb-1">Zukkoo</h3>
+                            <p className="text-white/40 text-sm font-semibold">Real-vaqt viktorina · PIN orqali</p>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                            <span className="text-3xl">⚡</span>
+                        </div>
+                    </Link>
+
+                    {/* Qishloq Bozori */}
+                    <Link
+                        href={`/${locale}/play/qishloq-bozori`}
+                        className="relative rounded-2xl overflow-hidden flex flex-col justify-end transition-all hover:scale-[1.02] hover:shadow-2xl"
+                        style={{ minHeight: 180, border: '1px solid rgba(251,191,36,0.25)' }}
+                    >
+                        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/game/bozor.png)', filter: 'brightness(0.45)' }} />
+                        <div className="relative z-10 p-5">
+                            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-widest" style={{ background: 'rgba(251,191,36,0.2)', color: '#fbbf24' }}>Monitor o&apos;yini</span>
+                            <h3 className="text-white font-black text-2xl mb-1">Qishloq Bozori</h3>
+                            <p className="text-white/40 text-sm font-semibold">Jamoaviy · Iqtisodiy strategiya</p>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                            <span className="text-3xl">🏪</span>
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
             {/* Recent quizzes */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
