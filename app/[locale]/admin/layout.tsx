@@ -18,8 +18,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <Link href="/admin" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
                         📊 Dashboard
                     </Link>
-                    <Link href="/admin/users" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-[inset_0_0_10px_rgba(234,179,8,0.1)]">
+                    <Link href="/admin/users" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
                         👥 Foydalanuvchilar
+                    </Link>
+                    <Link href="/admin/library" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
+                        📚 Kutubxona
                     </Link>
                     <Link href="/" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 mt-auto">
                         ← Saytga qaytish
