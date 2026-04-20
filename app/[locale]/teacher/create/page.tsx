@@ -437,6 +437,7 @@ function TeacherCreateInner() {
     const searchParams = useSearchParams();
     const lockedModeQuery = searchParams.get('mode');
     const continuePin = searchParams?.get('continuePin');
+    const preloadQuizId = searchParams?.get('quizId');
 
     const { isPro, plan } = useSubscription();
     const maxQ = isPro ? PLAN_LIMITS.pro.maxQuestions : PLAN_LIMITS.free.maxQuestions;
@@ -484,6 +485,35 @@ function TeacherCreateInner() {
         const saved = localStorage.getItem('zk_teacher_name') || '';
         setTeacherName(saved);
     }, []);
+
+    // Pre-load quiz copied from library
+    useEffect(() => {
+        if (!preloadQuizId) return;
+        fetch(`/api/quiz/${preloadQuizId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.quiz) return;
+                const qs = data.quiz.questions as any[];
+                if (!Array.isArray(qs) || qs.length === 0) return;
+                setTitle(data.quiz.title || '');
+                setQuestions(qs.map((q: any) => ({
+                    id: uuidv4(),
+                    type: (q.type as QuestionType) || 'multiple',
+                    text: q.text || '',
+                    options: (q.options || []).map((o: any) =>
+                        typeof o === 'string' ? { text: o, isCorrect: false } : o
+                    ),
+                    correctOptions: q.correctOptions,
+                    orderItems: q.orderItems,
+                    matchPairs: q.matchPairs,
+                    explanation: q.explanation || '',
+                    hint: q.hint || '',
+                    timeLimit: q.timeLimit || 20,
+                })));
+                setActive(0);
+            })
+            .catch(() => {});
+    }, [preloadQuizId]);
 
     const saveTeacherName = (name: string) => {
         setTeacherName(name);

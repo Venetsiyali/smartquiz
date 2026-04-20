@@ -102,6 +102,8 @@ export default function LandingPage() {
     const { isPro } = useSubscription();
     const [userName, setUserName] = useState('');
     const [greetingKey, setGreetingKey] = useState('morning');
+    const [libraryQuizzes, setLibraryQuizzes] = useState<any[]>([]);
+    const [copyingId, setCopyingId] = useState<string | null>(null);
     const t = useTranslations('Home');
     const tGames = useTranslations('Games');
     const tArticles = useTranslations('Articles');
@@ -113,6 +115,26 @@ export default function LandingPage() {
         setUserName(sessionName || storedName);
         setGreetingKey(getGreetingKey());
     }, [session]);
+
+    useEffect(() => {
+        fetch('/api/library/quizzes')
+            .then(r => r.json())
+            .then(d => setLibraryQuizzes(d.quizzes ?? []))
+            .catch(() => {});
+    }, []);
+
+    const handleLibraryPlay = async (quizId: string) => {
+        if (!session) { router.push(`/${locale}/login`); return; }
+        setCopyingId(quizId);
+        try {
+            const res = await fetch(`/api/library/quizzes/${quizId}/copy`, { method: 'POST' });
+            const data = await res.json();
+            if (data.quizId) {
+                router.push(`/${locale}/teacher/create?quizId=${data.quizId}`);
+            }
+        } catch {}
+        setCopyingId(null);
+    };
 
     return (
         <div className="bg-landing min-h-screen flex flex-col">
@@ -350,6 +372,54 @@ export default function LandingPage() {
                         {t('hero.goPro')}
                     </button>
                 </motion.div>
+
+                {/* ── Tayyor Testlar ──────────────────────────────────────── */}
+                {libraryQuizzes.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.6 }}
+                        className="w-full max-w-6xl mt-10"
+                    >
+                        <div className="flex items-center justify-between mb-5">
+                            <div>
+                                <p className="text-white/30 font-bold text-xs tracking-widest uppercase mb-1">📚 Tayyor Testlar</p>
+                                <h2 className="text-xl font-black text-white">O'qituvchilar uchun tayyor savollar</h2>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {libraryQuizzes.map((quiz: any) => (
+                                <div key={quiz.id}
+                                    className="rounded-2xl p-4 flex flex-col gap-3 border border-white/8"
+                                    style={{ background: 'rgba(10,14,30,0.75)', backdropFilter: 'blur(12px)' }}
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-white font-black text-sm leading-tight truncate">{quiz.title}</h3>
+                                            <p className="text-white/40 text-xs font-bold mt-0.5">{quiz.subject} · {quiz.grade}</p>
+                                        </div>
+                                        <span className="shrink-0 text-[10px] font-black px-2 py-0.5 rounded-lg"
+                                            style={{ background: 'rgba(0,230,118,0.15)', color: '#00E676', border: '1px solid rgba(0,230,118,0.3)' }}>
+                                            {quiz.badge_type || 'Yangi'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-xs text-white/40 font-bold">
+                                        <span>📝 {Array.isArray(quiz.questions) ? quiz.questions.length : 0} ta savol</span>
+                                        <span>▶ {quiz.play_count ?? 0} marta o'ynaldi</span>
+                                    </div>
+                                    <button
+                                        onClick={() => handleLibraryPlay(quiz.id)}
+                                        disabled={copyingId === quiz.id}
+                                        className="w-full py-2 rounded-xl text-sm font-black transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                        style={{ background: 'linear-gradient(135deg, #0056b3, #2563eb)', color: 'white' }}
+                                    >
+                                        {copyingId === quiz.id ? '⏳ Yuklanmoqda...' : '▶ Boshlash'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
 
                 <SocialProof />
                 <HowItWorks />
