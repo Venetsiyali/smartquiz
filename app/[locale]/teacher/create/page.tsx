@@ -60,6 +60,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
     const [timeLimit, setTimeLimit] = useState(20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [errorFunny, setErrorFunny] = useState(false);
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
     const [fileInfo, setFileInfo] = useState<{ name: string; chars: number } | null>(null);
     const [rateLimit, setRateLimit] = useState<{ retryAfter: number | null } | null>(null);
@@ -67,7 +68,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
 
     const handleUpload = async () => {
         if (!file) { setError(t('selectFile')); return; }
-        setError(''); setLoading(true); setPreview(null);
+        setError(''); setErrorFunny(false); setLoading(true); setPreview(null);
 
         const fd = new FormData();
         fd.append('file', file);
@@ -84,7 +85,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                 setLoading(false);
                 return;
             }
-            if (!res.ok) { setError(data.error || t('error')); setLoading(false); return; }
+            if (!res.ok) { setErrorFunny(!!data.funny); setError(data.error || t('error')); setLoading(false); return; }
 
             const mapped: QuizQuestion[] = data.questions.map((q: any) => ({
                 id: uuidv4(), type: 'multiple' as QuestionType, text: q.text,
@@ -183,7 +184,7 @@ function FileModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
                     </div>
                 </div>
 
-                {error && <p className="text-red-400 font-bold text-sm text-center bg-red-500/10 rounded-xl py-2">⚠️ {error}</p>}
+                {error && <p className={`font-bold text-sm text-center rounded-xl py-2 px-3 ${errorFunny ? 'text-amber-400 bg-amber-500/10' : 'text-red-400 bg-red-500/10'}`}>{errorFunny ? error : `⚠️ ${error}`}</p>}
 
                 <button onClick={handleUpload} disabled={loading || !file}
                     className="w-full btn-primary justify-center disabled:opacity-50 disabled:transform-none">
@@ -234,6 +235,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
     const [timeLimit, setTimeLimit] = useState(gameType === 'blitz' ? 5 : gameType === 'anagram' ? 30 : 20);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [errorFunny, setErrorFunny] = useState(false);
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
     const [rateLimit, setRateLimit] = useState<{ retryAfter: number | null } | null>(null);
 
@@ -312,7 +314,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
 
     const generate = async () => {
         if (!topic.trim()) { setError(t('topicRequired')); return; }
-        setError(''); setLoading(true); setPreview(null);
+        setError(''); setErrorFunny(false); setLoading(true); setPreview(null);
         try {
             const res = await fetch('/api/ai/generate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -325,7 +327,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
                 setLoading(false);
                 return;
             }
-            if (!res.ok) { setError(data.error || 'Xatolik'); setLoading(false); return; }
+            if (!res.ok) { setErrorFunny(!!data.funny); setError(data.error || 'Xatolik'); setLoading(false); return; }
             const mapped = mapAIResponse(data.questions || []);
             if (mapped.length === 0) { setError("AI savollarni to'g'ri formatlamadi"); setLoading(false); return; }
             setPreview(mapped);
@@ -385,7 +387,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
                             style={timeLimit === s ? { background: '#FF1744', color: 'white' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{s}s</button>
                     ))}
                 </div>
-                {error && <p className="text-red-400 text-sm font-bold bg-red-500/10 rounded-xl py-2 text-center">⚠️ {error}</p>}
+                {error && <p className={`text-sm font-bold rounded-xl py-2 text-center px-3 ${errorFunny ? 'text-amber-400 bg-amber-500/10' : 'text-red-400 bg-red-500/10'}`}>{errorFunny ? error : `⚠️ ${error}`}</p>}
                 <button onClick={generate} disabled={loading}
                     className="w-full btn-primary justify-center disabled:opacity-50 disabled:transform-none">
                     {loading ? <><span className="animate-spin">🤖</span> {t('generating')}</> : t('generateBtn')}

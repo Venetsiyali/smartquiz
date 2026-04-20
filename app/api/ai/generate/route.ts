@@ -326,8 +326,23 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return [];
 }
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
-const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
+const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+
+const FUNNY_MESSAGES = [
+    "🤖 AI bugun charchab qoldi... Ertaga qaytib keladi yoki bir oz kuting!",
+    "😴 Barcha AI'lar uxlab qoldi. Ularni uyg'otishga urinayapmiz...",
+    "☕ AI choy ichib o'tiribdi, biroz sabr qiling!",
+    "🐌 AI sekin yuradi, lekin albatta yetib keladi. Keyinroq urinib ko'ring!",
+    "🏖️ AI ta'tilda. Qaytib kelguncha savollarni o'zingiz yozing!",
+    "🔋 AI batareyasi tugadi. Quvvat olguncha kuting...",
+    "🤯 AI juda ko'p savol yaratib miya qizib ketdi. Biroz sovusin!",
+    "🎭 AI sahna ortida, tez orada chiqadi. Sabr qiling!",
+];
+
+function getFunnyMessage(): string {
+    return FUNNY_MESSAGES[Math.floor(Math.random() * FUNNY_MESSAGES.length)];
+}
 
 async function callGemini(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
     const res = await fetch(
@@ -444,5 +459,6 @@ export async function POST(req: Request) {
         }
     }
 
-    return NextResponse.json({ error: lastError }, { status: 500 });
+    console.warn('[AI Pool] All candidates exhausted. Last error:', lastError);
+    return NextResponse.json({ error: getFunnyMessage(), funny: true }, { status: 503 });
 }

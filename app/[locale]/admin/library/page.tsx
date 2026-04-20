@@ -349,7 +349,7 @@ export default function AdminLibraryPage() {
     const [aiLang, setAiLang] = useState<'uz' | 'ru' | 'en'>('uz');
     const [aiProvider, setAiProvider] = useState<'groq' | 'gemini'>('groq');
     const [aiLoading, setAiLoading] = useState(false);
-    const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+    const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err' | 'funny'; text: string } | null>(null);
 
     // Accordion tabs
     const [activeTab, setActiveTab] = useState<'manual' | 'ai-topic' | 'ai-file'>('ai-topic');
@@ -480,7 +480,7 @@ export default function AdminLibraryPage() {
             });
             const data = await res.json();
             if (!res.ok) {
-                setAiMsg({ type: 'err', text: data.rateLimited ? `⏱ Rate limit. Bir oz kuting.` : (data.error ?? 'AI xatoligi') });
+                setAiMsg({ type: data.funny ? 'funny' : 'err', text: data.rateLimited ? `⏱ Rate limit. Bir oz kuting.` : (data.error ?? 'AI xatoligi') });
                 return;
             }
             const converted: Question[] = (data.questions ?? []).map((q: any) => ({
@@ -756,7 +756,11 @@ export default function AdminLibraryPage() {
                                     </select>
                                 </div>
                             </div>
-                            {aiMsg && <div className="px-4 py-2.5 rounded-xl text-xs font-bold text-center" style={aiMsg.type === 'ok' ? { background: 'rgba(0,230,118,0.12)', color: '#00E676' } : { background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>{aiMsg.text}</div>}
+                            {aiMsg && <div className="px-4 py-2.5 rounded-xl text-xs font-bold text-center" style={
+                                aiMsg.type === 'ok' ? { background: 'rgba(0,230,118,0.12)', color: '#00E676' } :
+                                aiMsg.type === 'funny' ? { background: 'rgba(251,191,36,0.12)', color: '#fbbf24' } :
+                                { background: 'rgba(239,68,68,0.12)', color: '#f87171' }
+                            }>{aiMsg.text}</div>}
                             <button onClick={handleAiGenerate} disabled={aiLoading}
                                 className="w-full py-3 rounded-xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ background: aiLoading ? 'rgba(139,92,246,0.2)' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', color: 'white' }}>
