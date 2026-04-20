@@ -50,13 +50,13 @@ const INVEST_MULT = 2.5; // x2.5 return on correct
 
 const CHAR_IMGS: Record<string, string> = {
     polvon:  '/game/polvon.png',
-    nilufar: '/game/nilufar.png',
+    nargiza: '/game/nargiza.png',
     mirzo:   '/game/mirzo.png',
     kamola:  '/game/kamola.png',
 };
 const CHAR_NAMES: Record<string, string> = {
     polvon:  'Polvon Aka',
-    nilufar: 'Dr. Nilufar',
+    nargiza: 'Nargiza',
     mirzo:   'Bobur Mirzo',
     kamola:  'Kamola',
 };

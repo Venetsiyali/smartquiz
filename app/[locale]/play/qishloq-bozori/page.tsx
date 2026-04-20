@@ -23,7 +23,7 @@ type AddTab = 'bank' | 'ai' | 'manual';
 
 const CHARACTERS = [
     { id: 'polvon',  name: 'Polvon Aka',   desc: '1–4 sinf · Matematika, Ona tili',         img: '/game/polvon.png',  bg: '#fef3c7' },
-    { id: 'nilufar', name: 'Dr. Nilufar',   desc: '5–8 sinf · Biologiya, Fizika, Kimyo',      img: '/game/nilufar.png', bg: '#dbeafe' },
+    { id: 'nargiza', name: 'Nargiza',        desc: '5–11 sinf · Kimyo mutaxassisi',             img: '/game/nargiza.png', bg: '#dbeafe' },
     { id: 'mirzo',   name: 'Bobur Mirzo',   desc: '9–11 sinf · Tarix, Adabiyot',              img: '/game/mirzo.png',   bg: '#ede9fe' },
     { id: 'kamola',  name: 'Kamola',        desc: 'Barcha sinf · Ingliz tili, Geografiya',    img: '/game/kamola.png',  bg: '#dcfce7' },
 ];
