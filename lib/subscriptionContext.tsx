@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
 
 export type PlanType = 'free' | 'pro' | 'edu';
 
@@ -40,30 +41,61 @@ interface SubCtx {
     isPro: boolean;
     isEdu: boolean;
     isFree: boolean;
+    loading: boolean;
 }
 
 const SubscriptionContext = createContext<SubCtx | null>(null);
 
-export function SubscriptionProvider({ children }: { children: ReactNode }) {
-    const [plan, setPlanState] = useState<PlanType>('free');
+function normalize(raw: string | undefined | null): PlanType {
+    const p = (raw ?? '').toLowerCase();
+    if (p === 'pro') return 'pro';
+    if (p === 'edu') return 'edu';
+    return 'free';
+}
 
+export function SubscriptionProvider({ children }: { children: ReactNode }) {
+    const { data: session, status } = useSession();
+    const [plan, setPlanState] = useState<PlanType>('free');
+    const [loading, setLoading] = useState(true);
+
+    // On session load, fetch the real plan from DB (bypasses JWT cache)
     useEffect(() => {
-        const stored = localStorage.getItem('zk_plan') as PlanType | null;
-        if (stored && stored in PLAN_LIMITS) setPlanState(stored);
-    }, []);
+        if (status === 'loading') return;
+
+        if (status === 'unauthenticated') {
+            setPlanState('free');
+            setLoading(false);
+            return;
+        }
+
+        // Fetch from DB — so admin PRO grants are reflected immediately
+        fetch('/api/user/plan')
+            .then(r => r.json())
+            .then(d => {
+                setPlanState(normalize(d.plan));
+            })
+            .catch(() => {
+                // Fallback to session value if API fails
+                setPlanState(normalize(session?.user?.plan));
+            })
+            .finally(() => setLoading(false));
+    }, [status, session?.user?.id]);
 
     const setPlan = (p: PlanType) => {
         setPlanState(p);
-        localStorage.setItem('zk_plan', p);
+        // Also persist to localStorage as a quick-display cache (not source of truth)
+        try { localStorage.setItem('zk_plan', p); } catch (_) {}
     };
 
     return (
         <SubscriptionContext.Provider value={{
-            plan, setPlan,
+            plan,
+            setPlan,
             limits: PLAN_LIMITS[plan],
             isPro: plan === 'pro' || plan === 'edu',
             isEdu: plan === 'edu',
             isFree: plan === 'free',
+            loading,
         }}>
             {children}
         </SubscriptionContext.Provider>
@@ -87,7 +119,7 @@ export function ProLock({ tip = "Pro xususiyat" }: { tip?: string }) {
     );
 }
 
-/** Crown badge for pro teachers */
+/** Crown badge for pro users */
 export function CrownBadge() {
     return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black"

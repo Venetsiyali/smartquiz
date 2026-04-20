@@ -4,13 +4,14 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { CrownBadge } from "@/lib/subscriptionContext";
+import { CrownBadge, useSubscription } from "@/lib/subscriptionContext";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
     const t = useTranslations('Header');
     const { data: session } = useSession();
+    const { isPro } = useSubscription();
     const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -46,7 +47,7 @@ export default function Header() {
                 </span>
 
                 {/* Optional Plan Badge */}
-                {session?.user?.plan === 'PRO' && <CrownBadge />}
+                {isPro && <CrownBadge />}
             </div>
 
             {/* Right side controls */}
