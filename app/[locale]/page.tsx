@@ -127,75 +127,121 @@ export default function LandingPage() {
 
             <Header />
 
-            <main className="relative z-10 flex-1 flex flex-col items-center px-4 py-8 md:px-12">
+            <main className="relative z-10 flex-1 flex flex-col items-center px-3 py-6 sm:px-6 md:px-12">
                 <motion.div
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full max-w-6xl mb-12 relative"
+                    className="w-full max-w-6xl mb-8 sm:mb-12 relative"
                 >
-                    <div className="flex flex-row items-end justify-between bg-gradient-to-br from-blue-900/30 via-slate-900/50 to-purple-900/30 p-8 md:p-12 rounded-[2.5rem] border border-white/10 relative overflow-hidden shadow-2xl">
-                        
-                        {/* Chap Qahramon (O'g'il bola - transparent) */}
-                        <div className="flex flex-col justify-end transform transition-transform hover:scale-110 hover:-rotate-3 duration-300 z-10 relative translate-y-6 w-16 sm:w-28 lg:w-56">
-                            <div className="relative w-[64px] h-[104px] sm:w-[110px] sm:h-[180px] lg:w-[220px] lg:h-[360px]">
-                                <Image src="/bola.png" alt="Zukko Bola" fill className="object-contain drop-shadow-2xl" priority />
-                            </div>
-                        </div>
+                    <div className="bg-gradient-to-br from-blue-900/30 via-slate-900/50 to-purple-900/30 rounded-2xl sm:rounded-[2.5rem] border border-white/10 relative shadow-2xl overflow-hidden">
 
-                        {/* Markaziy Kontent */}
-                        <div className="flex-1 flex flex-col items-center text-center z-20 relative px-4">
-                            <p className="text-amber-400 font-bold text-xs tracking-widest mb-4 uppercase bg-amber-500/10 px-4 py-1.5 rounded-full border border-amber-500/20 shadow-inner inline-block">
+                        {/* ── MOBILE layout (< sm): stacked ─────────────────────── */}
+                        <div className="flex sm:hidden flex-col items-center text-center px-5 pt-6 pb-4 relative z-20">
+                            {/* Mini characters row */}
+                            <div className="flex justify-center gap-6 mb-3">
+                                <div className="relative w-[68px] h-[100px]">
+                                    <Image src="/bola.png" alt="Zukko Bola" fill className="object-contain drop-shadow-2xl" priority />
+                                </div>
+                                <div className="relative w-[68px] h-[100px]">
+                                    <Image src="/qiz.png" alt="Zukko Qiz" fill className="object-contain drop-shadow-2xl" priority />
+                                </div>
+                            </div>
+                            <p className="text-amber-400 font-bold text-[10px] tracking-widest mb-3 uppercase bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 inline-block">
                                 {t(`greeting.${greetingKey}`)}
                             </p>
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-4 drop-shadow-xl flex flex-col gap-2">
+                            <h1 className="text-3xl font-black text-white leading-tight mb-3 drop-shadow-xl">
                                 <span>{t('hero.hello')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">{userName || 'Zukko'}</span>! 👋</span>
-                                <span className="text-white/70 font-extrabold text-2xl md:text-3xl mt-2 drop-shadow-md">
+                                <span className="block text-white/70 font-extrabold text-lg mt-1">
                                     {t('hero.whatToPlay')}
                                 </span>
                             </h1>
-                            
-                            {/* Maqsad yozuvi */}
-                            <p className="text-base md:text-lg font-bold mt-2 text-emerald-400 mb-8 drop-shadow bg-emerald-500/10 px-6 py-2 rounded-2xl border border-emerald-500/20">
+                            <p className="text-sm font-bold text-emerald-400 mb-5 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 w-full">
                                 {t('hero.platformSlogan')}
                             </p>
-                            
-                            {/* Tugmalar */}
-                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                            <div className="flex flex-col gap-3 w-full">
                                 <button
                                     onClick={() => router.push(`/${locale}/teacher/create`)}
-                                    className="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-lg transition-transform hover:scale-105 shadow-[0_0_40px_rgba(0,230,118,0.4)] flex items-center justify-center gap-3 relative overflow-hidden group"
+                                    className="w-full py-3.5 rounded-2xl font-black text-base flex items-center justify-center gap-2 relative overflow-hidden group active:scale-95 transition-transform"
                                     style={{ background: 'linear-gradient(135deg, #00E676, #00b894)', color: '#0a0e1e' }}
                                 >
-                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-15deg] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-15deg] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
                                     {t('hero.startFree')}
                                 </button>
-
                                 <button onClick={() => router.push('/play')}
-                                    className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base transition-all hover:bg-white/10 flex items-center justify-center gap-3 text-white border border-white/20 bg-white/5 backdrop-blur-md">
-                                    {t('hero.enterGame')} <span className="text-white/40">{t('hero.pinHint')}</span> →
+                                    className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 text-white border border-white/20 bg-white/5 active:scale-95 transition-transform">
+                                    {t('hero.enterGame')} →
                                 </button>
                             </div>
-                            
-                            <div className="flex items-center gap-3 mt-8">
-                                <div className="flex -space-x-3">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-[#151e32] bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[10px]">🤓</div>
+                            <div className="flex items-center gap-2 mt-4 justify-center">
+                                <div className="flex -space-x-2">
+                                    {[1,2,3,4].map(i => (
+                                        <div key={i} className="w-7 h-7 rounded-full border-2 border-[#151e32] bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[9px]">🤓</div>
                                     ))}
                                 </div>
-                                <p className="text-white/40 text-xs font-semibold text-left leading-tight">
-                                    {t('hero.trustStats')} <br/><span className="text-white text-sm">{t('hero.trustStudents')}</span> {t('hero.trustSuffix')}
+                                <p className="text-white/40 text-[11px] font-semibold text-left leading-tight">
+                                    {t('hero.trustStats')}<br/><span className="text-white text-xs">{t('hero.trustStudents')}</span> {t('hero.trustSuffix')}
                                 </p>
                             </div>
                         </div>
 
-                        {/* O'ng Qahramon (Qiz bola - transparent) */}
-                        <div className="flex flex-col justify-end transform transition-transform hover:scale-110 hover:rotate-3 duration-300 z-10 relative translate-y-6 w-16 sm:w-28 lg:w-56">
-                            <div className="relative w-[64px] h-[104px] sm:w-[110px] sm:h-[180px] lg:w-[220px] lg:h-[360px]">
-                                <Image src="/qiz.png" alt="Zukko Qiz" fill className="object-contain drop-shadow-2xl" priority />
+                        {/* ── DESKTOP layout (sm+): side-by-side with characters ── */}
+                        <div className="hidden sm:flex flex-row items-end justify-between p-8 md:p-12 relative z-20">
+                            {/* Left character */}
+                            <div className="flex flex-col justify-end hover:scale-110 hover:-rotate-3 transition-transform duration-300 relative translate-y-6 w-28 lg:w-56 shrink-0">
+                                <div className="relative w-[110px] h-[180px] lg:w-[220px] lg:h-[360px]">
+                                    <Image src="/bola.png" alt="Zukko Bola" fill className="object-contain drop-shadow-2xl" priority />
+                                </div>
+                            </div>
+
+                            {/* Center content */}
+                            <div className="flex-1 flex flex-col items-center text-center z-20 relative px-4">
+                                <p className="text-amber-400 font-bold text-xs tracking-widest mb-4 uppercase bg-amber-500/10 px-4 py-1.5 rounded-full border border-amber-500/20 shadow-inner inline-block">
+                                    {t(`greeting.${greetingKey}`)}
+                                </p>
+                                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-4 drop-shadow-xl flex flex-col gap-2">
+                                    <span>{t('hero.hello')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">{userName || 'Zukko'}</span>! 👋</span>
+                                    <span className="text-white/70 font-extrabold text-2xl md:text-3xl mt-2">
+                                        {t('hero.whatToPlay')}
+                                    </span>
+                                </h1>
+                                <p className="text-base md:text-lg font-bold mt-2 text-emerald-400 mb-8 bg-emerald-500/10 px-6 py-2 rounded-2xl border border-emerald-500/20">
+                                    {t('hero.platformSlogan')}
+                                </p>
+                                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                                    <button
+                                        onClick={() => router.push(`/${locale}/teacher/create`)}
+                                        className="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-lg transition-transform hover:scale-105 shadow-[0_0_40px_rgba(0,230,118,0.4)] flex items-center justify-center gap-3 relative overflow-hidden group"
+                                        style={{ background: 'linear-gradient(135deg, #00E676, #00b894)', color: '#0a0e1e' }}
+                                    >
+                                        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-15deg] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+                                        {t('hero.startFree')}
+                                    </button>
+                                    <button onClick={() => router.push('/play')}
+                                        className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base transition-all hover:bg-white/10 flex items-center justify-center gap-3 text-white border border-white/20 bg-white/5 backdrop-blur-md">
+                                        {t('hero.enterGame')} <span className="text-white/40">{t('hero.pinHint')}</span> →
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-3 mt-8">
+                                    <div className="flex -space-x-3">
+                                        {[1,2,3,4].map(i => (
+                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-[#151e32] bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[10px]">🤓</div>
+                                        ))}
+                                    </div>
+                                    <p className="text-white/40 text-xs font-semibold text-left leading-tight">
+                                        {t('hero.trustStats')} <br/><span className="text-white text-sm">{t('hero.trustStudents')}</span> {t('hero.trustSuffix')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right character */}
+                            <div className="flex flex-col justify-end hover:scale-110 hover:rotate-3 transition-transform duration-300 relative translate-y-6 w-28 lg:w-56 shrink-0">
+                                <div className="relative w-[110px] h-[180px] lg:w-[220px] lg:h-[360px]">
+                                    <Image src="/qiz.png" alt="Zukko Qiz" fill className="object-contain drop-shadow-2xl" priority />
+                                </div>
                             </div>
                         </div>
-                        
+
                         {/* Orqa fon nur effektlari */}
                         <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-500/30 blur-[130px] rounded-full pointer-events-none"></div>
                         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-500/30 blur-[130px] rounded-full pointer-events-none"></div>
