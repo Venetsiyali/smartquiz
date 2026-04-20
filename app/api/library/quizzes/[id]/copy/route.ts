@@ -25,7 +25,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             },
         });
 
-        return NextResponse.json({ quizId: quiz.id });
+        return NextResponse.json({ quizId: quiz.id, title: libraryQuiz.title, questions: libraryQuiz.questions });
     } catch {
         return NextResponse.json({ error: 'Nusxa olishda xatolik' }, { status: 500 });
     }

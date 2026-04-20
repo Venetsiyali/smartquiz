@@ -130,6 +130,14 @@ export default function LandingPage() {
             const res = await fetch(`/api/library/quizzes/${quizId}/copy`, { method: 'POST' });
             const data = await res.json();
             if (data.quizId) {
+                // Pass quiz data via sessionStorage — avoids auth timing issues on the next page
+                try {
+                    sessionStorage.setItem('libraryPreload', JSON.stringify({
+                        quizId: data.quizId,
+                        title: data.title,
+                        questions: data.questions,
+                    }));
+                } catch {}
                 router.push(`/${locale}/teacher/create?quizId=${data.quizId}`);
             }
         } catch {}

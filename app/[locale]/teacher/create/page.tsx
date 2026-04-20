@@ -486,33 +486,36 @@ function TeacherCreateInner() {
         setTeacherName(saved);
     }, []);
 
-    // Pre-load quiz copied from library
+    // Pre-load quiz copied from library (data passed via sessionStorage)
     useEffect(() => {
         if (!preloadQuizId) return;
-        fetch(`/api/quiz/${preloadQuizId}`)
-            .then(r => r.json())
-            .then(data => {
-                if (!data.quiz) return;
-                const qs = data.quiz.questions as any[];
-                if (!Array.isArray(qs) || qs.length === 0) return;
-                setTitle(data.quiz.title || '');
-                setQuestions(qs.map((q: any) => ({
-                    id: uuidv4(),
-                    type: (q.type as QuestionType) || 'multiple',
-                    text: q.text || '',
-                    options: (q.options || []).map((o: any) =>
-                        typeof o === 'string' ? { text: o, isCorrect: false } : o
-                    ),
-                    correctOptions: q.correctOptions,
-                    orderItems: q.orderItems,
-                    matchPairs: q.matchPairs,
-                    explanation: q.explanation || '',
-                    hint: q.hint || '',
-                    timeLimit: q.timeLimit || 20,
-                })));
-                setActive(0);
-            })
-            .catch(() => {});
+        try {
+            const raw = sessionStorage.getItem('libraryPreload');
+            if (!raw) return;
+            const stored = JSON.parse(raw);
+            if (stored.quizId !== preloadQuizId) return;
+            sessionStorage.removeItem('libraryPreload');
+
+            const qs: any[] = Array.isArray(stored.questions) ? stored.questions : [];
+            if (qs.length === 0) return;
+
+            setTitle(stored.title || '');
+            setQuestions(qs.map((q: any) => ({
+                id: uuidv4(),
+                type: (q.type as QuestionType) || 'multiple',
+                text: q.text || '',
+                options: (q.options || []).map((o: any, i: number) =>
+                    typeof o === 'string'
+                        ? { text: o, isCorrect: (q.correctOptions || []).includes(i) }
+                        : { text: o.text || '', isCorrect: !!o.isCorrect }
+                ),
+                orderItems: q.orderItems,
+                matchPairs: q.matchPairs,
+                explanation: q.explanation || '',
+                timeLimit: q.timeLimit || 20,
+            })));
+            setActive(0);
+        } catch {}
     }, [preloadQuizId]);
 
     const saveTeacherName = (name: string) => {
