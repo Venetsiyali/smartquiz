@@ -323,6 +323,208 @@ function FileUploadSection({ onImport, aiProvider, setAiProvider }: {
     );
 }
 
+// ─── Paste Import Section ────────────────────────────────────────────────────
+// Parses multiple text formats produced by Gemini/ChatGPT into Question[]
+// Format 1 (JSON): [{"text":"...","options":[{"text":"...","isCorrect":true},...]}]
+// Format 2 (Compact numbered):
+//   1. Savol matni?
+//   a) To'g'ri javob*   (yulduzcha yoki ++ to'g'ri javobni bildiradi)
+//   b) Noto'g'ri 1
+//   c) Noto'g'ri 2
+//   d) Noto'g'ri 3
+//      Hint: ishora matni  (ixtiyoriy)
+function parsePastedText(raw: string): Question[] {
+    raw = raw.trim();
+
+    // ── Try JSON ────────────────────────────────────────────────────
+    if (raw.startsWith('[') || raw.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(raw);
+            const arr = Array.isArray(parsed) ? parsed : (parsed.questions ?? [parsed]);
+            return arr.map((q: any) => {
+                // new format
+                if (q.options && Array.isArray(q.options) && q.options[0]?.hasOwnProperty('isCorrect')) {
+                    return {
+                        id: uuidv4(), text: q.text || q.question || '',
+                        options: q.options.slice(0, 4),
+                        hint: q.hint || '', imageUrl: '', timeLimit: q.timeLimit || 20,
+                    } as Question;
+                }
+                // old format
+                const correct = q.correctAnswer || q.correct || '';
+                const wrongs = Array.isArray(q.wrongAnswers) ? q.wrongAnswers
+                    : Array.isArray(q.wrong) ? q.wrong : [];
+                return {
+                    id: uuidv4(), text: q.question || q.text || '',
+                    options: [
+                        { text: correct, isCorrect: true },
+                        ...wrongs.slice(0, 3).map((w: string) => ({ text: w, isCorrect: false })),
+                    ],
+                    hint: q.hint || '', imageUrl: '', timeLimit: 20,
+                } as Question;
+            }).filter((q: Question) => q.text);
+        } catch { /* fall through to text parser */ }
+    }
+
+    // ── Text parser (numbered questions + lettered options) ─────────
+    const questions: Question[] = [];
+    // Split on numbered question starts: "1.", "1)", "1-"
+    const blocks = raw.split(/\n(?=\d+[.)\-]\s)/g);
+
+    for (const block of blocks) {
+        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) continue;
+
+        // First line = question text (strip leading number)
+        const qText = lines[0].replace(/^\d+[.)\-]\s*/, '').trim();
+        if (!qText) continue;
+
+        const options: { text: string; isCorrect: boolean }[] = [];
+        let hint = '';
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            // Hint line
+            if (/^(hint|ishora|\ud83d\udca1)/i.test(line)) {
+                hint = line.replace(/^(hint|ishora|\ud83d\udca1)[:\-]?\s*/i, '').trim();
+                continue;
+            }
+            // Option line: a) / A. / - / * / 1.
+            const optMatch = line.match(/^[a-dA-D\-*•1-4][.)\-]?\s*(.+)/);
+            if (!optMatch) continue;
+            let text = optMatch[1].trim();
+            // Mark correct: trailing *, **, ++, or leading *
+            const isCorrect = /[*+]{1,2}\s*$/.test(text) || text.startsWith('*') || text.startsWith('+');
+            text = text.replace(/^[*+]+\s*/, '').replace(/\s*[*+]+$/, '').trim();
+            options.push({ text, isCorrect });
+        }
+
+        // If nothing marked correct, assume first option is correct
+        if (options.length > 0 && !options.some(o => o.isCorrect)) {
+            options[0].isCorrect = true;
+        }
+        if (options.length === 0) continue;
+
+        questions.push({
+            id: uuidv4(), text: qText,
+            options: options.slice(0, 4),
+            hint, imageUrl: '', timeLimit: 20,
+        });
+    }
+
+    return questions;
+}
+
+function PasteImportSection({ onImport }: { onImport: (qs: Question[]) => void }) {
+    const [raw, setRaw] = useState('');
+    const [preview, setPreview] = useState<Question[] | null>(null);
+    const [err, setErr] = useState('');
+    const [copied, setCopied] = useState(false);
+
+    const GEMINI_PROMPT = `Siz Zukkoo ta'lim platformasi uchun savollar generatori siz. Mening barcha so'rovlarimga FAQAT quyidagi JSON formatida javob bering, boshqa hech narsa yozmang:
+
+[
+  {
+    "text": "Savol matni?",
+    "options": [
+      {"text": "To'g'ri javob", "isCorrect": true},
+      {"text": "Noto'g'ri 1", "isCorrect": false},
+      {"text": "Noto'g'ri 2", "isCorrect": false},
+      {"text": "Noto'g'ri 3", "isCorrect": false}
+    ],
+    "hint": "Qisqa yo'naltiruvchi ishora (1 jumla)"
+  }
+]
+
+Qoidalar:
+- Har bir savolda faqat 1 ta to'g'ri javob bo'lsin
+- Noto'g'ri javoblar ishonchli va chalg'ituvchi bo'lsin
+- Faqat JSON yozing, hech qanday tushuntirish yoki markdown qo'shmang
+
+Endi menga ___ fani bo'yicha ___ ta savol yozing.`;
+
+    const handleParse = () => {
+        setErr('');
+        if (!raw.trim()) { setErr("Matn kiriting"); return; }
+        const qs = parsePastedText(raw);
+        if (qs.length === 0) { setErr("Hech qanday savol topilmadi. Format to'g'riligini tekshiring."); return; }
+        setPreview(qs);
+    };
+
+    const handleImport = () => {
+        if (preview) { onImport(preview); setRaw(''); setPreview(null); }
+    };
+
+    const copyPrompt = () => {
+        navigator.clipboard.writeText(GEMINI_PROMPT);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="rounded-2xl p-5 flex flex-col gap-4" style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.18)' }}>
+            <div className="flex items-center gap-2">
+                <span className="text-xl">📋</span>
+                <h3 className="text-white font-black text-sm">JSON Paste — AI savollarini nusxalab joylashtirish</h3>
+            </div>
+            <p className="text-white/35 text-xs font-semibold -mt-2">Gemini yoki ChatGPT dan olingan JSON yoki raqamlangan savollarni shu yerga yapishtirib import qiling. AI tokenlarini isrof etmang.</p>
+
+            {/* Gemini prompt copy */}
+            <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.12)' }}>
+                <div className="flex items-center justify-between">
+                    <span className="text-white/50 text-xs font-black uppercase tracking-wider">Gemini uchun tayyor prompt</span>
+                    <button onClick={copyPrompt}
+                        className="px-3 py-1 rounded-lg text-xs font-black transition-all hover:scale-105"
+                        style={{ background: copied ? 'rgba(0,230,118,0.2)' : 'rgba(255,255,255,0.08)', color: copied ? '#00E676' : 'rgba(255,255,255,0.6)' }}>
+                        {copied ? '✓ Nusxalandi!' : '📋 Nusxalash'}
+                    </button>
+                </div>
+                <p className="text-white/30 text-xs leading-relaxed line-clamp-2">{GEMINI_PROMPT.slice(0, 120)}...</p>
+                <p className="text-white/25 text-[10px]">👆 Nusxalab Gemini.google.com ga tashlang → Fan va savollar sonini yozing → JSON javob keladi → Pastga yapishtirib Import bosing</p>
+            </div>
+
+            {/* Textarea */}
+            <div>
+                <label className="text-white/40 text-xs font-black uppercase tracking-wider block mb-1.5">AI javobi (JSON yoki matn)</label>
+                <textarea value={raw} onChange={e => { setRaw(e.target.value); setPreview(null); setErr(''); }}
+                    placeholder={`Bu yerga JSON yoki raqamlangan savollarni yapishtirsangiz yetarli:\n\n[\n  {\"text\": \"Savol?\", \"options\": [{\"text\":\"To'g'ri\",\"isCorrect\":true}, ...], \"hint\": \"...\"}\n]\n\nYoki:\n1. Savol matni?\na) To'g'ri javob*\nb) Noto'g'ri 1\nc) Noto'g'ri 2\nd) Noto'g'ri 3`}
+                    rows={8}
+                    className="w-full rounded-xl px-4 py-3 text-xs text-white placeholder-white/15 font-mono outline-none resize-none"
+                    style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(16,185,129,0.2)' }} />
+            </div>
+
+            {err && <div className="px-3 py-2 rounded-xl text-xs font-bold text-center" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>⚠️ {err}</div>}
+
+            {!preview ? (
+                <button onClick={handleParse} disabled={!raw.trim()}
+                    className="w-full py-2.5 rounded-xl font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: 'linear-gradient(135deg, #059669, #047857)', color: 'white' }}>
+                    🔍 Savollarni aniqlash va ko&apos;rish
+                </button>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(0,230,118,0.08)', border: '1px solid rgba(0,230,118,0.15)' }}>
+                        <p className="text-green-400 font-black text-sm">✅ {preview.length} ta savol aniqlandi!</p>
+                        <div className="mt-2 flex flex-col gap-1.5 max-h-40 overflow-y-auto">
+                            {preview.map((q, i) => (
+                                <div key={q.id} className="text-xs">
+                                    <span className="text-white/60 font-bold">{i + 1}.</span>{' '}
+                                    <span className="text-white/80">{q.text.slice(0, 60)}{q.text.length > 60 ? '…' : ''}</span>
+                                    <span className="text-green-500 ml-1">[{q.options.filter(o => o.isCorrect).map(o => o.text.slice(0, 15)).join(', ')}]</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button onClick={() => setPreview(null)} className="flex-1 py-2 rounded-xl text-xs font-black transition-all" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>← Qayta</button>
+                        <button onClick={handleImport} className="flex-[2] py-2.5 rounded-xl font-black text-sm transition-all hover:scale-[1.02]" style={{ background: 'linear-gradient(135deg, #00E676, #009944)', color: '#000' }}>✅ Savollarni qo&apos;shish</button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminLibraryPage() {
@@ -352,7 +554,7 @@ export default function AdminLibraryPage() {
     const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err' | 'funny'; text: string } | null>(null);
 
     // Accordion tabs
-    const [activeTab, setActiveTab] = useState<'manual' | 'ai-topic' | 'ai-file'>('ai-topic');
+    const [activeTab, setActiveTab] = useState<'manual' | 'ai-topic' | 'ai-file' | 'paste'>('paste');
 
     // Auth guard
     useEffect(() => {
@@ -495,6 +697,12 @@ export default function AdminLibraryPage() {
             setTimeout(() => setAiMsg(null), 4000);
         } catch { setAiMsg({ type: 'err', text: "Server bilan aloqa yo'q" }); }
         finally { setAiLoading(false); }
+    };
+
+    // Paste import handler
+    const handlePasteImport = (qs: Question[]) => {
+        setForm(f => ({ ...f, questions: [...f.questions.filter((q: Question) => q.text), ...qs] }));
+        setActiveTab('manual');
     };
 
     // File import handler
@@ -713,10 +921,11 @@ export default function AdminLibraryPage() {
                     </div>
 
                     {/* Tab switcher */}
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-4 gap-1.5">
                         {([
-                            { k: 'ai-topic', label: '🤖 Mavzu bilan' },
-                            { k: 'ai-file', label: '📄 Fayl orqali' },
+                            { k: 'paste', label: '📋 Paste' },
+                            { k: 'ai-topic', label: '🤖 AI Mavzu' },
+                            { k: 'ai-file', label: '📄 Fayl' },
                             { k: 'manual', label: '✍️ Qo\'lda' },
                         ] as const).map(tab => (
                             <button key={tab.k} onClick={() => setActiveTab(tab.k)}
@@ -726,6 +935,11 @@ export default function AdminLibraryPage() {
                             </button>
                         ))}
                     </div>
+
+                    {/* Paste import tab */}
+                    {activeTab === 'paste' && (
+                        <PasteImportSection onImport={handlePasteImport} />
+                    )}
 
                     {/* AI Topic generate */}
                     {activeTab === 'ai-topic' && (
