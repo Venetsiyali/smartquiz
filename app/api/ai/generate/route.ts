@@ -320,10 +320,10 @@ function parseRetryAfter(err: any): number | null {
 
 // ─── API Key Pool helpers ─────────────────────────────────────────────────────
 function getKeys(envVar: string | undefined, fallback: string | undefined): string[] {
-    const multi = envVar?.split(',').map(k => k.trim()).filter(Boolean);
-    if (multi && multi.length > 0) return multi;
-    if (fallback) return [fallback];
-    return [];
+    const multi = envVar?.split(',').map(k => k.trim()).filter(Boolean) ?? [];
+    // Always include the single key too — so GROQ_API_KEY works even when GROQ_API_KEYS is set
+    if (fallback && !multi.includes(fallback)) multi.push(fallback);
+    return multi;
 }
 
 const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
