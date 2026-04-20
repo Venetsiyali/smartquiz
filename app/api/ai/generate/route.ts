@@ -326,9 +326,12 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return [];
 }
 
-async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<string> {
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
+
+async function callGemini(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
     const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -349,10 +352,10 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
-async function callGroq(key: string, systemPrompt: string, userPrompt: string): Promise<string> {
+async function callGroq(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
     const client = new Groq({ apiKey: key });
     const completion = await client.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model,
         messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
@@ -382,30 +385,35 @@ export async function POST(req: Request) {
     const systemPrompt = buildSystemPrompt(existingTexts);
     const userPrompt = buildPrompt(enrichedTopic, gameType, count, language);
 
-    // ─── Multi-Key Pool setup ───────────────────────────────────────────────
+    // ─── Multi-Key + Multi-Model Pool setup ────────────────────────────────
     const geminiKeys = getKeys(process.env.GEMINI_API_KEYS, process.env.GEMINI_API_KEY);
     const groqKeys   = getKeys(process.env.GROQ_API_KEYS,   process.env.GROQ_API_KEY);
 
-    // Build ordered list of (provider, key) pairs to try — chosen provider first
-    type ProviderKey = { provider: 'gemini' | 'groq'; key: string };
-    const primaryList:   ProviderKey[] = (provider === 'gemini' ? geminiKeys : groqKeys).map(k => ({ provider: provider as 'gemini'|'groq', k })).map(({provider, k}) => ({provider, key: k}));
-    const fallbackList:  ProviderKey[] = (provider === 'gemini' ? groqKeys   : geminiKeys).map(k => ({ provider: provider === 'gemini' ? 'groq' : 'gemini', key: k }));
-    const allCandidates: ProviderKey[] = [...primaryList, ...fallbackList];
+    type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
+
+    // Expand each key × models so every model per key is tried
+    const expandGemini = (keys: string[]): Candidate[] =>
+        keys.flatMap(k => GEMINI_MODELS.map(m => ({ provider: 'gemini' as const, key: k, model: m })));
+    const expandGroq = (keys: string[]): Candidate[] =>
+        keys.flatMap(k => GROQ_MODELS.map(m => ({ provider: 'groq' as const, key: k, model: m })));
+
+    const primaryList  = provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys);
+    const fallbackList = provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys);
+    const allCandidates: Candidate[] = [...primaryList, ...fallbackList];
 
     let lastError = '';
 
     for (let ci = 0; ci < allCandidates.length; ci++) {
-        const { provider: cur, key } = allCandidates[ci];
-        // On retry (ci > 0), pick a fresh niche for variety
+        const { provider: cur, key, model } = allCandidates[ci];
         const currentTopic      = ci === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
         const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, count, language);
 
         try {
             let raw = '';
             if (cur === 'gemini') {
-                raw = await callGemini(key, systemPrompt, currentUserPrompt);
+                raw = await callGemini(key, model, systemPrompt, currentUserPrompt);
             } else {
-                raw = await callGroq(key, systemPrompt, currentUserPrompt);
+                raw = await callGroq(key, model, systemPrompt, currentUserPrompt);
             }
 
             const parsed    = extractJson(raw);
@@ -422,18 +430,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ questions: finalQuestions, gameType });
         } catch (err: any) {
             const status = err?.status ?? 0;
-            const isRateLimit = status === 429 || (err?.message && err.message.includes('429'));
+            const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
+            const isUnavailable = status === 503 || status === 502 || status === 529;
 
-            if (isRateLimit) {
-                // Try next key / provider
-                console.warn(`[AI Pool] ${cur} key #${ci} rate-limited — trying next...`);
-                lastError = err?.message || 'Rate limited';
+            if (isRateLimit || isUnavailable) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} ${isRateLimit ? 'rate-limited' : 'unavailable'} — trying next...`);
+                lastError = err?.message || (isRateLimit ? 'Rate limited' : 'Service unavailable');
                 continue;
             }
 
-            // Non-rate-limit error — log and try next
             lastError = err?.message || 'AI xatoligi';
-            console.error(`[AI Pool] ${cur} key #${ci} failed:`, err?.message || err);
+            console.error(`[AI Pool] ${cur}/${model} #${ci} failed:`, err?.message || err);
         }
     }
 
