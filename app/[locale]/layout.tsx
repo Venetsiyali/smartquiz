@@ -4,6 +4,7 @@ import '../globals.css';
 import { SubscriptionProvider } from '@/lib/subscriptionContext';
 import { Providers } from '@/components/Providers';
 import { NextIntlClientProvider } from 'next-intl';
+import { Analytics } from '@vercel/analytics/next';
 
 const nunito = Nunito({
     subsets: ['latin', 'cyrillic'],
@@ -231,6 +232,7 @@ export default async function RootLayout({
                         </SubscriptionProvider>
                     </Providers>
                 </NextIntlClientProvider>
+                <Analytics />
             </body>
         </html>
     );

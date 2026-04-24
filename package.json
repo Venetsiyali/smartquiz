@@ -24,6 +24,7 @@
     "@types/react-dom": "^18.0.0",
     "@types/uuid": "^9.0.0",
     "@upstash/redis": "^1.36.2",
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "dotenv": "^17.3.1",
