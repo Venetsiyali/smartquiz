@@ -5,24 +5,38 @@ import Header from '@/components/Header';
 import Image from 'next/image';
 import Link from 'next/link';
 
+const BASE = 'https://www.zukkoo.uz';
+
 export async function generateMetadata({ params }: { params: { locale: string } }) {
-    const locale = params.locale;
+    const locale = params.locale ?? 'uz';
     return {
         title: "Maqolalar va Ilmiy Yangiliklar | Zukkoo.uz",
         description: "Ta'lim texnologiyalari, gamifikatsiya, neyropedagogika va interaktiv o'qitish haqida ilmiy maqolalar. PhD tadqiqotchi Nasridinov Rustamjon tomonidan.",
         keywords: ["ta'lim maqolalari", "gamifikatsiya", "neyropedagogika", "interaktiv ta'lim", "Zukkoo", "Nasridinov Rustamjon"],
-        authors: [{ name: 'Nasridinov Rustamjon', url: 'https://www.zukkoo.uz' }],
+        authors: [{ name: 'Nasridinov Rustamjon', url: BASE }],
         alternates: {
-            canonical: `https://www.zukkoo.uz/${locale}/blog`,
+            canonical: `${BASE}/${locale}/blog`,
+            languages: {
+                'uz': `${BASE}/uz/blog`,
+                'ru': `${BASE}/ru/blog`,
+                'en': `${BASE}/en/blog`,
+                'x-default': `${BASE}/uz/blog`,
+            },
         },
         openGraph: {
             title: "Maqolalar va Ilmiy Yangiliklar | Zukkoo.uz",
             description: "Ta'lim texnologiyalari, gamifikatsiya va interaktiv o'qitish haqida ilmiy maqolalar.",
-            url: `https://www.zukkoo.uz/${locale}/blog`,
+            url: `${BASE}/${locale}/blog`,
             type: 'website',
-            images: [{ url: '/og-image.jpg', width: 1200, height: 630 }],
+            images: [{ url: `${BASE}/og-image.jpg`, width: 1200, height: 630, alt: 'Zukkoo Blog' }],
+            siteName: 'Zukkoo.uz',
         },
+        robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
     };
+}
+
+export async function generateStaticParams() {
+    return [{ locale: 'uz' }, { locale: 'ru' }, { locale: 'en' }];
 }
 
 export default function BlogIndexPage({ params }: { params: { locale: string } }) {

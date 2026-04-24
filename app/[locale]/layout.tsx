@@ -25,7 +25,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             "o'zbek ta'lim platformasi", "o'zbekiston", 'real-vaqt reyting', 'quiz yaratish',
             'interaktiv ta\'lim', 'TATU', 'TUIT', 'Rustamjon Nasridinov'
         ],
-        authors: [{ name: 'Rustamjon Nasridinov', url: 'https://zukkoo.uz' }],
+        authors: [{ name: 'Rustamjon Nasridinov', url: 'https://www.zukkoo.uz' }],
         creator: 'Rustamjon Nasridinov',
         publisher: 'Zukkoo.uz',
         metadataBase: new URL('https://www.zukkoo.uz'),
@@ -58,6 +58,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
                 'uz': 'https://www.zukkoo.uz/uz',
                 'ru': 'https://www.zukkoo.uz/ru',
                 'en': 'https://www.zukkoo.uz/en',
+                'x-default': 'https://www.zukkoo.uz/uz',
             },
         },
         robots: {
@@ -100,14 +101,8 @@ export default async function RootLayout({
     params: any;
 }) {
     const locale = params?.locale;
-    console.log("==== ROOT LAYOUT PARAMS ====", params, "LOCALE:", locale);
-
     const safeLocale = (typeof locale === 'string' && ['uz', 'ru', 'en'].includes(locale)) ? locale : 'uz';
 
-    if (!locale || !['uz', 'ru', 'en'].includes(locale)) {
-        console.log("NOT FOUND TRIGGERED FOR LOCALE IN LAYOUT:", locale);
-        // notFound();
-    }
 
     const messages = (await import(`../../messages/${safeLocale}.json`)).default;
 

@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 
+const BASE = 'https://www.zukkoo.uz';
+
 const GAME_CONFIG: Record<string, { name: string; sub: string; image: string; desc: string }> = {
     '1': { name: 'Zukkoo', sub: 'Klassik viktorina', image: '/images/games/1.webp', desc: "Ko'p tanlov va To'g'ri/Noto'g'ri savollar asosidagi klassik real-vaqt viktorina. Eng tez javob bergan — eng ko'p ball yig'adi!" },
     '2': { name: 'Mantiqiy zanjir', sub: 'Sorting Game', image: '/images/games/2.webp', desc: "Elementlarni to'g'ri mantiqiy tartibda qayta joylashtiring. Algoritmik fikrlash va tezkorlikni birlashtirgan noyob format!" },
@@ -11,18 +13,21 @@ const GAME_CONFIG: Record<string, { name: string; sub: string; image: string; de
 
 export async function generateMetadata({ params }: { params: { gameId: string } }): Promise<Metadata> {
     const game = GAME_CONFIG[params.gameId];
-    if (!game) return { title: 'O\'yin topilmadi | Zukkoo.uz' };
+    // Game session sahifalari dinamik va shaxsiy — noindex
+    if (!game) return { title: "O'yin topilmadi | Zukkoo.uz", robots: { index: false, follow: false } };
 
     return {
         title: `${game.name} — ${game.sub}`,
         description: game.desc,
+        // O'yin session sahifalari indekslanmasin (har bir o'yin unique)
+        robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
         openGraph: {
             title: `${game.name} — ${game.sub} | Zukkoo.uz`,
             description: game.desc,
-            url: `https://zukkoo.uz/play/${params.gameId}`,
+            url: `${BASE}/uz/play`,  // O'yin sessiyasi emas, asosiy play sahifasiga
             images: [
                 {
-                    url: `https://zukkoo.uz${game.image}`,
+                    url: `${BASE}${game.image}`,
                     width: 1200,
                     height: 630,
                     alt: game.name,
@@ -36,7 +41,7 @@ export async function generateMetadata({ params }: { params: { gameId: string } 
             card: 'summary_large_image',
             title: `${game.name} | Zukkoo.uz`,
             description: game.desc,
-            images: [`https://zukkoo.uz${game.image}`],
+            images: [`${BASE}${game.image}`],
         }
     };
 }

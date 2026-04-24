@@ -1,7 +1,27 @@
 User-agent: *
 Allow: /
 
-# Favicon va rasmlarni indexlash uchun ruxsat
+# Ochiq sahifalar — indekslash uchun ruxsat
+Allow: /uz/
+Allow: /ru/
+Allow: /en/
+Allow: /uz/play
+Allow: /ru/play
+Allow: /en/play
+Allow: /uz/pricing
+Allow: /ru/pricing
+Allow: /en/pricing
+Allow: /uz/muallif
+Allow: /ru/muallif
+Allow: /en/muallif
+Allow: /uz/about
+Allow: /ru/about
+Allow: /en/about
+Allow: /uz/blog
+Allow: /ru/blog
+Allow: /en/blog
+
+# Statik fayllar — ruxsat
 Allow: /favicon.ico
 Allow: /favicon-32x32.png
 Allow: /favicon-48x48.png
@@ -12,9 +32,31 @@ Allow: /icon-512x512.png
 Allow: /og-image.jpg
 Allow: /images/
 
-# API endpoints va ichki yo'llarni bloklash
+# Shaxsiy sahifalar — bloklash
+Disallow: /uz/admin
+Disallow: /ru/admin
+Disallow: /en/admin
+Disallow: /uz/teacher
+Disallow: /ru/teacher
+Disallow: /en/teacher
+Disallow: /uz/settings
+Disallow: /ru/settings
+Disallow: /en/settings
+Disallow: /uz/login
+Disallow: /ru/login
+Disallow: /en/login
+Disallow: /uz/dashboard
+Disallow: /ru/dashboard
+Disallow: /en/dashboard
+Disallow: /uz/play/game
+Disallow: /uz/play/waiting
+Disallow: /uz/play/result
+
+# Texnik endpointlar — bloklash
 Disallow: /api/
 Disallow: /_next/
+Disallow: /mascot-test
+Disallow: /test
 
 # Sitemap
 Sitemap: https://www.zukkoo.uz/sitemap.xml

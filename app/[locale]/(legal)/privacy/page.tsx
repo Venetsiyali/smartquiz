@@ -2,15 +2,34 @@ import { Metadata } from 'next';
 import Header from '@/components/Header';
 import Link from 'next/link';
 
+const BASE = 'https://www.zukkoo.uz';
+
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+    const locale = params.locale ?? 'uz';
     return {
         title: "Maxfiylik Siyosati | Zukkoo.uz",
         description: "Zukkoo.uz platformasi foydalanuvchilarning shaxsiy ma'lumotlarini qanday to'plashi, saqlashi va himoya qilishi haqida to'liq ma'lumot.",
         alternates: {
-            canonical: `https://www.zukkoo.uz/${params.locale}/privacy`,
+            canonical: `${BASE}/${locale}/privacy`,
+            languages: {
+                'uz': `${BASE}/uz/privacy`,
+                'ru': `${BASE}/ru/privacy`,
+                'en': `${BASE}/en/privacy`,
+                'x-default': `${BASE}/uz/privacy`,
+            },
         },
-        robots: { index: true, follow: true },
+        openGraph: {
+            title: "Maxfiylik Siyosati | Zukkoo.uz",
+            url: `${BASE}/${locale}/privacy`,
+            siteName: 'Zukkoo.uz',
+            images: [{ url: `${BASE}/og-image.jpg`, width: 1200, height: 630 }],
+        },
+        robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
     };
+}
+
+export async function generateStaticParams() {
+    return [{ locale: 'uz' }, { locale: 'ru' }, { locale: 'en' }];
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

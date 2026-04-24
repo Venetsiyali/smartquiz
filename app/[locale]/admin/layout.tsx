@@ -1,5 +1,16 @@
 import { ReactNode } from "react";
 import Link from "next/link";
+import { Metadata } from "next";
+
+// Admin panel — NOINDEX (faqat admin uchun, Google indekslamasin)
+export const metadata: Metadata = {
+    title: 'Admin Panel | Zukkoo.uz',
+    robots: {
+        index: false,
+        follow: false,
+        googleBot: { index: false, follow: false },
+    },
+};
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     return (

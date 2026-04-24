@@ -6,6 +6,9 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
+// Login sahifasi indekslanmasin
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
     const { data: session, status } = useSession();
     const router = useRouter();

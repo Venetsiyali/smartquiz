@@ -1,58 +1,39 @@
 import { MetadataRoute } from 'next';
 import { articles } from '@/lib/articles';
 
+const BASE = 'https://www.zukkoo.uz';
+const LOCALES = ['uz', 'ru', 'en'];
+const now = new Date();
+
 export default function sitemap(): MetadataRoute.Sitemap {
-    // KANONIKALURL: har doim www bilan (Google Search Console canonical)
-    const baseUrl = 'https://www.zukkoo.uz';
-    const locales = ['uz', 'ru', 'en'];
-    const now = new Date();
 
-    // Asosiy sahifalar — barcha tillarda
-    const mainRoutes = ['', '/pricing', '/play', '/muallif', '/about', '/privacy', '/terms'].flatMap(route =>
-        locales.map(locale => ({
-            url: `${baseUrl}/${locale}${route}`,
+    // 1️⃣ Main public pages — barcha tillarda
+    const mainRoutes = ['', '/pricing', '/play', '/muallif', '/about', '/privacy', '/terms', '/blog'].flatMap(route =>
+        LOCALES.map(locale => ({
+            url: `${BASE}/${locale}${route}`,
             lastModified: now,
-            changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
-            priority: route === '' ? 1.0 : route === '/play' ? 0.9 : ['/about', '/privacy', '/terms', '/muallif'].includes(route) ? 0.6 : 0.8,
+            changeFrequency: route === '' ? 'daily' as const : route === '/blog' ? 'weekly' as const : 'monthly' as const,
+            priority: route === '' ? 1.0
+                : route === '/play' ? 0.9
+                : route === '/blog' ? 0.85
+                : route === '/pricing' ? 0.8
+                : route === '/muallif' ? 0.75
+                : 0.6,
         }))
     );
 
-    // Login / register sahifalari
-    const authRoutes = ['/login', '/register', '/forgot-password'].flatMap(route =>
-        locales.map(locale => ({
-            url: `${baseUrl}/${locale}${route}`,
-            lastModified: now,
-            changeFrequency: 'monthly' as const,
-            priority: 0.5,
-        }))
-    );
-
-    // O'yin sahifalari — barcha tillar bilan to'g'ri URL
-    const gameRoutes = locales.map(locale => ({
-        url: `${baseUrl}/${locale}/play`,
-        lastModified: now,
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-    }));
-
-
-    // Blog index sahifalari — barcha tillarda
-    const blogIndexRoutes = locales.map(locale => ({
-        url: `${baseUrl}/${locale}/blog`,
-        lastModified: now,
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-    }));
-
-    // Maqolalar sahifalari — barcha tillarda
+    // 2️⃣ Blog articles — barcha tillarda
     const articleRoutes = articles.flatMap(article =>
-        locales.map(locale => ({
-            url: `${baseUrl}/${locale}/blog/${article.slug}`,
+        LOCALES.map(locale => ({
+            url: `${BASE}/${locale}/blog/${article.slug}`,
             lastModified: new Date(article.date),
             changeFrequency: 'monthly' as const,
             priority: 0.9,
         }))
     );
 
-    return [...mainRoutes, ...authRoutes, ...gameRoutes, ...blogIndexRoutes, ...articleRoutes];
+    // ⛔ Login, settings, admin, teacher, play/[gameId] — INDEKSLASH SHART EMAS
+    // Bu sahifalar robots noindex bilan boshqariladi
+
+    return [...mainRoutes, ...articleRoutes];
 }

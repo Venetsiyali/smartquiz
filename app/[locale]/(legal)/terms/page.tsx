@@ -2,15 +2,34 @@ import { Metadata } from 'next';
 import Header from '@/components/Header';
 import Link from 'next/link';
 
+const BASE = 'https://www.zukkoo.uz';
+
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+    const locale = params.locale ?? 'uz';
     return {
         title: "Foydalanish Shartlari | Zukkoo.uz",
         description: "Zukkoo.uz platformasidan foydalanish shartlari va qoidalari. O'zbekiston qonunchiligiga mos huquqiy hujjat.",
         alternates: {
-            canonical: `https://www.zukkoo.uz/${params.locale}/terms`,
+            canonical: `${BASE}/${locale}/terms`,
+            languages: {
+                'uz': `${BASE}/uz/terms`,
+                'ru': `${BASE}/ru/terms`,
+                'en': `${BASE}/en/terms`,
+                'x-default': `${BASE}/uz/terms`,
+            },
         },
-        robots: { index: true, follow: true },
+        openGraph: {
+            title: "Foydalanish Shartlari | Zukkoo.uz",
+            url: `${BASE}/${locale}/terms`,
+            siteName: 'Zukkoo.uz',
+            images: [{ url: `${BASE}/og-image.jpg`, width: 1200, height: 630 }],
+        },
+        robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
     };
+}
+
+export async function generateStaticParams() {
+    return [{ locale: 'uz' }, { locale: 'ru' }, { locale: 'en' }];
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
