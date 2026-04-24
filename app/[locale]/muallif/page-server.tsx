@@ -1,6 +1,4 @@
-// SERVER COMPONENT — metadata & generateStaticParams shu yerda
 import { Metadata } from 'next';
-import AuthorPageClient from './page-client';
 
 const BASE = 'https://www.zukkoo.uz';
 
@@ -51,12 +49,9 @@ export async function generateMetadata({ params }: { params: { locale: string } 
     };
 }
 
-// Static build — har uch tilda oldindan render qilinsin
+// Static generation — server redirect bo'lmasin, sahifa oldindan qurilsin
 export async function generateStaticParams() {
     return [{ locale: 'uz' }, { locale: 'ru' }, { locale: 'en' }];
 }
 
-// Server component client componentni render qiladi
-export default function AuthorPage() {
-    return <AuthorPageClient />;
-}
+export { default } from './page-client';

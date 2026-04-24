@@ -541,5 +541,60 @@
       "title": "Neyropedagogika va Gamifikatsiya: Nega an'anaviy testlar o'rnini o'yinlar egallamoqda?",
       "excerpt": "Miya ma'lumotni qanday qabul qiladi va dopamin mexanizmi ta'limni qanday tezlashtiradi."
     }
+  },
+  "Author": {
+    "meta": {
+      "title": "Muallif haqida | Rustamjon Nasridinov",
+      "description": "TATU tayanch doktoranti va PhD tadqiqotchisi Rustamjon Nasridinovning ilmiy faoliyati, ORCID, Web of Science, ResearchGate va LinkedIn profillari."
+    },
+    "backBtn": "Asosiy sahifaga",
+    "subtitle": "TATU Tayanch Doktoranti | PhD Researcher | Full-Stack Dasturchi",
+    "bio": "Toshkent axborot texnologiyalari universiteti (TATU) {phd} va {dept}. Alpen-Adria University Klagenfurt (Avstriya) va TATU o'rtasidagi {doubleDegree} (ICT yo'nalishi). Ilmiy yo'nalish: gidrologik monitoring, gibrid modellar, sun'iy intellekt va raqamli ta'lim texnologiyalari.",
+    "bioParts": {
+      "phd": "1-bosqich tayanch doktoranti",
+      "dept": "\"Axborot ta'lim texnologiyalari\" kafedrasi stajyor-o'qituvchisi",
+      "doubleDegree": "Double Degree magistratura dasturi bitiruvchisi"
+    },
+    "academicJourney": "Akademik Yo'l",
+    "tatu": {
+      "title": "TATU — Tayanch Doktoranti (PhD)",
+      "desc": "1-bosqich tayanch doktoranti. \"Axborot ta'lim texnologiyalari\" kafedrasi stajyor-o'qituvchisi."
+    },
+    "doubleDegree": {
+      "title": "Double Degree — AAU Klagenfurt × TATU",
+      "desc": "Alpen-Adria University Klagenfurt (Avstriya) va TATU o'rtasidagi Double Degree magistratura dasturi bitiruvchisi. ICT (Information and Communication Technologies) yo'nalishi."
+    },
+    "researchFocus": "Ilmiy Tadqiqot Yo'nalishi",
+    "phdThesisLabel": "PhD Dissertatsiyasi",
+    "phdThesis": "\"Vaqtli qatorlarda gidrologik ko'rsatkichlar dinamikasini monitoring qilishning gibrid modellari va intellektual axborot tizimi\"",
+    "mainAreasLabel": "Asosiy yo'nalishlar",
+    "areas": [
+      "Gidrologik monitoring va gibrid modellar",
+      "Sun'iy intellekt (AI/ML)",
+      "Raqamli ta'lim texnologiyalari",
+      "Intellektual axborot tizimlari"
+    ],
+    "scienceSection": "Ilmiy faoliyat va identifikatorlar",
+    "scienceDesc": "Xalqaro va milliy ilmiy bazalarda tasdiqlangan profillar. Har bir identifikator mualliflik va ilmiy mansubiyatni tasdiqlaydi.",
+    "verifiedNote": "Barcha havolalar rel=\"me author\" bilan tasdiqlangan",
+    "achievementsSection": "Yutuqlar va Loyihalar",
+    "achievements": [
+      {
+        "icon": "🏆",
+        "title": "Agrobank AI500!",
+        "desc": "Hackathon 2025 finalchisi va maxsus sertifikat sohibi."
+      },
+      {
+        "icon": "💻",
+        "title": "Platformalar Muallifi",
+        "desc": "Zukkoo.uz, Eco-Balance Edu XR va S-STUDY loyihalari asoschisi va dasturchisi."
+      },
+      {
+        "icon": "📚",
+        "title": "Ilmiy Nashrlar",
+        "desc": "Raqamli texnologiyalar va pedagogika sohasidagi o'quv qo'llanmalar va ilmiy maqolalar muallifi."
+      }
+    ],
+    "footer": "Zukkoo.uz — Barcha huquqlar himoyalangan."
   }
 }

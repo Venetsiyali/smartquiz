@@ -541,5 +541,60 @@
       "title": "Neuropedagogy and Gamification: Why games replace traditional tests",
       "excerpt": "How the brain receives information and how the dopamine mechanism accelerates learning."
     }
+  },
+  "Author": {
+    "meta": {
+      "title": "About the Author | Rustamjon Nasridinov",
+      "description": "PhD researcher at TUIT. Scientific activity, ORCID, Web of Science (POS-8883-2026), ResearchGate and LinkedIn profiles of Rustamjon Nasridinov."
+    },
+    "backBtn": "Back to Home",
+    "subtitle": "TUIT PhD Researcher | Full-Stack Developer | EdTech Innovator",
+    "bio": "Tashkent University of Information Technologies (TUIT) — {phd} and {dept}. Graduate of the {doubleDegree} between Alpen-Adria University Klagenfurt (Austria) and TUIT (ICT track). Research focus: hydrological monitoring, hybrid models, artificial intelligence, and digital educational technologies.",
+    "bioParts": {
+      "phd": "1st-year PhD candidate",
+      "dept": "assistant lecturer at the \"Information Educational Technologies\" department",
+      "doubleDegree": "Double Degree Master's programme"
+    },
+    "academicJourney": "Academic Journey",
+    "tatu": {
+      "title": "TUIT — PhD Candidate",
+      "desc": "1st-year PhD candidate. Assistant lecturer at the \"Information Educational Technologies\" department."
+    },
+    "doubleDegree": {
+      "title": "Double Degree — AAU Klagenfurt × TUIT",
+      "desc": "Graduate of the Double Degree programme between Alpen-Adria University Klagenfurt (Austria) and TUIT. Track: ICT (Information and Communication Technologies)."
+    },
+    "researchFocus": "Research Focus",
+    "phdThesisLabel": "PhD Dissertation",
+    "phdThesis": "\"Hybrid Models and Intelligent Information System for Monitoring Hydrological Indicator Dynamics in Time Series\"",
+    "mainAreasLabel": "Key areas",
+    "areas": [
+      "Hydrological monitoring and hybrid models",
+      "Artificial Intelligence (AI/ML)",
+      "Digital educational technologies",
+      "Intelligent information systems"
+    ],
+    "scienceSection": "Scientific Activity & Identifiers",
+    "scienceDesc": "Verified profiles in international and national scientific databases. Each identifier confirms authorship and academic affiliation.",
+    "verifiedNote": "All links are verified with rel=\"me author\" attribute",
+    "achievementsSection": "Achievements & Projects",
+    "achievements": [
+      {
+        "icon": "🏆",
+        "title": "Agrobank AI500!",
+        "desc": "Finalist of Hackathon 2025 and holder of a special certificate."
+      },
+      {
+        "icon": "💻",
+        "title": "Platform Author",
+        "desc": "Founder and developer of Zukkoo.uz, Eco-Balance Edu XR and S-STUDY platforms."
+      },
+      {
+        "icon": "📚",
+        "title": "Scientific Publications",
+        "desc": "Author of textbooks and research papers in digital technology and pedagogy."
+      }
+    ],
+    "footer": "Zukkoo.uz — All rights reserved."
   }
 }
