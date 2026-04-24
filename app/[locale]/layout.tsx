@@ -5,6 +5,7 @@ import { SubscriptionProvider } from '@/lib/subscriptionContext';
 import { Providers } from '@/components/Providers';
 import { NextIntlClientProvider } from 'next-intl';
 import { Analytics } from '@vercel/analytics/next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const nunito = Nunito({
     subsets: ['latin', 'cyrillic'],
@@ -233,6 +234,7 @@ export default async function RootLayout({
                     </Providers>
                 </NextIntlClientProvider>
                 <Analytics />
+                <GoogleAnalytics gaId="G-1194P6TG83" />
             </body>
         </html>
     );
