@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { CrownBadge, useSubscription } from "@/lib/subscriptionContext";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
@@ -13,6 +13,7 @@ export default function Header() {
     const { data: session } = useSession();
     const { isPro } = useSubscription();
     const router = useRouter();
+    const locale = useLocale();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -63,7 +64,7 @@ export default function Header() {
                 </a>
 
                 <button
-                    onClick={() => router.push('/muallif')}
+                    onClick={() => router.push(`/${locale}/muallif`)}
                     className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10"
                 >
                     👤 {t('author')}
@@ -101,14 +102,14 @@ export default function Header() {
                                     <p className="text-xs text-white/50 truncate">{session.user.email}</p>
                                 </div>
                                 <button
-                                    onClick={() => router.push('/settings')}
+                                    onClick={() => router.push(`/${locale}/settings`)}
                                     className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
                                 >
                                     ⚙️ {t('settings')}
                                 </button>
                                 {session.user.role === "ADMIN" && (
                                     <button
-                                        onClick={() => router.push('/admin')}
+                                        onClick={() => router.push(`/${locale}/admin`)}
                                         className="w-full text-left px-4 py-2 text-sm text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors flex items-center gap-2"
                                     >
                                         🛠️ {t('adminPanel')}

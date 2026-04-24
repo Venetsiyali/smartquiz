@@ -34,21 +34,13 @@ const nextConfig = {
             },
         ],
     },
-    // 301 Redirect: http → https va non-www → www (Google uchun yagona kanonikalURL)
+    // 301 Redirect: non-www → www (Vercel HTTPS ni o'zi hal qiladi)
     async redirects() {
         return [
-            // http://zukkoo.uz → https://www.zukkoo.uz
+            // zukkoo.uz → www.zukkoo.uz (301 Permanent)
             {
                 source: '/:path*',
                 has: [{ type: 'host', value: 'zukkoo.uz' }],
-                destination: 'https://www.zukkoo.uz/:path*',
-                permanent: true,  // 301
-            },
-            // http://www.zukkoo.uz → https://www.zukkoo.uz
-            {
-                source: '/:path*',
-                has: [{ type: 'host', value: 'www.zukkoo.uz' }],
-                missing: [{ type: 'header', key: 'x-forwarded-proto', value: 'https' }],
                 destination: 'https://www.zukkoo.uz/:path*',
                 permanent: true,
             },

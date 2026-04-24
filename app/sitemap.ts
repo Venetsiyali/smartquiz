@@ -27,13 +27,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
         }))
     );
 
-    // O'yin turi sahifalari
-    const gameRoutes = [1, 2, 3, 4, 5, 6].map(id => ({
-        url: `${baseUrl}/play/${id}`,
+    // O'yin sahifalari — barcha tillar bilan to'g'ri URL
+    const gameRoutes = locales.map(locale => ({
+        url: `${baseUrl}/${locale}/play`,
         lastModified: now,
         changeFrequency: 'weekly' as const,
-        priority: 0.7,
+        priority: 0.8,
     }));
+
 
     // Blog index sahifalari — barcha tillarda
     const blogIndexRoutes = locales.map(locale => ({

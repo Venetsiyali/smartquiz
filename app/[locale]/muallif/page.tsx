@@ -4,19 +4,38 @@ import Link from 'next/link';
 
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
     const locale = params.locale ?? 'uz';
+    const baseUrl = 'https://www.zukkoo.uz';
     return {
         title: 'Muallif haqida | Rustamjon Nasridinov',
         description: 'TATU tayanch doktoranti va PhD tadqiqotchisi Rustamjon Nasridinovning ilmiy faoliyati, ORCID, Web of Science (POS-8883-2026), ResearchGate va LinkedIn profillari, Zukkoo.uz loyihasi haqida.',
         alternates: {
-            canonical: `https://www.zukkoo.uz/${locale}/muallif`,
+            canonical: `${baseUrl}/${locale}/muallif`,
+            // hreflang — Google qaysi locale qaysi URL ekanini aniq biladi
+            languages: {
+                'uz': `${baseUrl}/uz/muallif`,
+                'ru': `${baseUrl}/ru/muallif`,
+                'en': `${baseUrl}/en/muallif`,
+                'x-default': `${baseUrl}/uz/muallif`,
+            },
         },
         openGraph: {
             title: 'Loyiha muallifi: Rustamjon Nasridinov — PhD Researcher at TUIT',
             description: 'TATU tayanch doktoranti, Alpen-Adria University Klagenfurt Double Degree bitiruvchisi. Ilmiy yo\'nalish: gidrologik monitoring, gibrid modellar, AI va raqamli ta\'lim.',
-            images: ['/images/author.jpg'],
+            images: [{ url: `${baseUrl}/images/author.jpg`, width: 800, height: 800, alt: 'Rustamjon Nasridinov' }],
             type: 'profile',
+            url: `${baseUrl}/${locale}/muallif`,
+        },
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: { index: true, follow: true },
         },
     };
+}
+
+// Static generation — server redirect bo'lmasin, sahifa oldindan qurilsin
+export async function generateStaticParams() {
+    return [{ locale: 'uz' }, { locale: 'ru' }, { locale: 'en' }];
 }
 
 // Ilmiy identifikatorlar — Google sameAs uchun ham ishlatiladi
