@@ -52,7 +52,7 @@ const nextConfig = {
                 source: "/api/:path*",
                 headers: [
                     { key: "Access-Control-Allow-Credentials", value: "true" },
-                    { key: "Access-Control-Allow-Origin", value: "*" },
+                    { key: "Access-Control-Allow-Origin", value: "https://www.zukkoo.uz" },
                     { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
                     { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" },
                 ]
@@ -64,6 +64,9 @@ const nextConfig = {
                     { key: "X-Content-Type-Options", value: "nosniff" },
                     { key: "X-Frame-Options", value: "SAMEORIGIN" },
                     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+                    { key: "X-XSS-Protection", value: "1; mode=block" },
+                    { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
+                    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" }
                 ]
             },
             // Static assets (images, fonts, icons) — long-lived cache

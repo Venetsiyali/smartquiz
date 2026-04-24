@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
+
+const uploadLimiter = rateLimit({ windowMs: 60 * 60_000, max: 20 }); // Soatiga 20 ta so'rov qat'iy cheklov
 
 // Fisher-Yates shuffle
 function shuffle<T>(arr: T[]): T[] {
@@ -47,6 +50,11 @@ function parseRetryAfter(err: any): number | null {
 }
 
 export async function POST(req: Request) {
+    const ip = getClientIp(req);
+    const limitCheck = uploadLimiter(ip);
+    if (!limitCheck.success) {
+        return NextResponse.json({ error: `Juda ko'p so'rov. ${Math.ceil(limitCheck.retryAfter / 60)} daqiqadan so'ng urinib ko'ring.` }, { status: 429 });
+    }
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -57,6 +65,19 @@ export async function POST(req: Request) {
 
     if (!file) {
         return NextResponse.json({ error: 'Fayl tanlanmagan' }, { status: 400 });
+    }
+
+    // Security: Fayl o'lchamini tekshirish (Masalan: 5MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json({ error: 'Fayl hajmi 5MB dan oshmasligi kerak' }, { status: 400 });
+    }
+
+    // Security: File extension qat'iy tekshiruvi (Directory Traversal himoyasi)
+    const allowedExtensions = ['.pdf', '.docx'];
+    const fileName = file.name.toLowerCase();
+    if (!allowedExtensions.some(ext => fileName.endsWith(ext))) {
+        return NextResponse.json({ error: 'Faqat PDF yoki DOCX fayllarga ruxsat berilgan' }, { status: 400 });
     }
 
     // Extract text from file

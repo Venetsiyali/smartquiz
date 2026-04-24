@@ -3,8 +3,17 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
+
+const settingsLimiter = rateLimit({ windowMs: 15 * 60_000, max: 10 }); // 15 daqiqada max 10 marta (Brute force himoyasi)
 
 export async function PATCH(req: Request) {
+    const ip = getClientIp(req);
+    const limitCheck = settingsLimiter(ip);
+    if (!limitCheck.success) {
+        return NextResponse.json({ error: `Juda ko'p so'rov. ${Math.ceil(limitCheck.retryAfter / 60)} daqiqadan so'ng urinib ko'ring.` }, { status: 429 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Ruxsat etilmagan" }, { status: 401 });
@@ -26,7 +35,10 @@ export async function PATCH(req: Request) {
 
         // Update name if provided
         if (name && name.trim().length > 0) {
-            updateData.name = name.trim();
+            let cleanName = name.trim();
+            if (cleanName.length > 50) cleanName = cleanName.substring(0, 50); // Maksimal uzunlik himoyasi
+            cleanName = cleanName.replace(/[<>]/g, ""); // XSS himoyasi (HTML teglarni olib tashlash)
+            updateData.name = cleanName;
         }
 
         // Handle password change
