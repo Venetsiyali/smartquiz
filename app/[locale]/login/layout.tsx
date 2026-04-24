@@ -1,5 +1,4 @@
-// Login, settings, teacher, admin sahifalari — NOINDEX
-// Bu sahifalar saytning ichki qismiga kiradi, Google indekslamasin
+// Login sahifasi — NOINDEX (Google indekslamasin)
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,3 +9,7 @@ export const metadata: Metadata = {
         googleBot: { index: false, follow: false },
     },
 };
+
+export default function LoginLayout({ children }: { children: React.ReactNode }) {
+    return <>{children}</>;
+}
