@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
+export const revalidate = 60; // 60 soniyada bir kesh yangilanadi
+export const fetchCache = 'default-cache';
+
 const ALLOWED_ROLES = ['MODERATOR', 'ADMIN'];
 
 export async function GET(req: Request) {
@@ -101,7 +104,11 @@ export async function GET(req: Request) {
         selected.push(...fill);
     }
 
-    return NextResponse.json({ quizzes: selected.filter(Boolean) });
+    return NextResponse.json({ quizzes: selected.filter(Boolean) }, {
+        headers: {
+            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+        }
+    });
 }
 
 export async function POST(req: Request) {

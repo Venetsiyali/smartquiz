@@ -10,10 +10,12 @@ import Header from '@/components/Header';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import { articles } from '@/lib/articles';
-import SocialProof from '@/components/home/SocialProof';
-import HowItWorks from '@/components/home/HowItWorks';
-import Leaderboard from '@/components/gamification/Leaderboard';
-import InstallBanner from '@/components/pwa/InstallBanner';
+import dynamic from 'next/dynamic';
+
+const SocialProof = dynamic(() => import('@/components/home/SocialProof'));
+const HowItWorks = dynamic(() => import('@/components/home/HowItWorks'));
+const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard'));
+const InstallBanner = dynamic(() => import('@/components/pwa/InstallBanner'), { ssr: false });
 import { MascotSprite } from '@/components/gamification/MascotSprite';
 
 
