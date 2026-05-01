@@ -320,54 +320,64 @@ export default function TezkorGamePage() {
                         if (progressPct < 0) progressPct = 0;
 
                         return (
-                            <div key={player.id} className="relative w-full h-24 flex items-center bg-black/20 rounded-full border border-white/5 py-2">
-                                {/* Lily pads distributed evenly */}
-                                <div className="absolute inset-y-0 left-10 right-10 flex justify-between items-center opacity-60">
-                                    {Array.from({ length: totalQ + 1 }).map((_, i) => (
-                                        <div key={i} className="w-12 h-12 relative flex-shrink-0">
-                                            <div className="w-full h-full bg-[url('/game/tezkor/lilypad.webp')] bg-contain bg-center bg-no-repeat drop-shadow-lg" />
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                {/* The Frog */}
-                                <div className="absolute inset-y-0 left-10 right-10 pointer-events-none px-6">
-                                    <div className="relative w-full h-full">
-                                        <div 
-                                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center z-20 transition-all duration-[700ms]"
-                                            style={{ 
-                                                left: `${progressPct}%`,
-                                                transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-                                            }}
-                                        >
-                                            <span className="bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-md mb-1 whitespace-nowrap">
-                                                {player.nickname}
-                                            </span>
-                                            <div className="relative flex justify-center w-16 h-16 mb-1">
-                                                {/* Dinamik Soya */}
-                                                <div 
-                                                    className="absolute bottom-[-5px] w-14 h-4 bg-black/60 rounded-full blur-[3px] transition-all duration-[600ms] z-0"
-                                                    style={{
-                                                        transform: player.isJumping ? 'scale(0.6)' : 'scale(1)',
-                                                        opacity: player.isJumping ? 0.2 : 0.8
-                                                    }}
-                                                />
-                                                {/* Qurbaqa */}
-                                                <div 
-                                                    className="absolute inset-0 bg-contain bg-bottom bg-no-repeat transition-all duration-[600ms] z-10"
-                                                    style={{ 
-                                                        transformOrigin: 'bottom center',
-                                                        backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')`,
-                                                        transform: player.isJumping 
-                                                            ? 'translateY(-40px) scale(1.2) perspective(500px) rotateX(10deg) rotate(5deg)' 
-                                                            : 'translateY(0) scale(1) perspective(500px) rotateX(10deg) rotate(0deg)'
-                                                    }}
-                                                />
+                            <div key={player.id} className="relative w-full h-28 bg-black/20 rounded-full border border-white/5">
+                                {/* ── Lily pads + Frog share ONE coordinate space ── */}
+                                <div className="absolute inset-y-0 left-10 right-10">
+                                    {/* Lily pads: pad i is at exactly i/totalQ * 100% */}
+                                    {Array.from({ length: totalQ + 1 }).map((_, i) => {
+                                        const padPct = totalQ === 0 ? 0 : (i / totalQ) * 100;
+                                        return (
+                                            <div
+                                                key={i}
+                                                className="absolute w-12 h-12 -translate-x-1/2"
+                                                style={{ left: `${padPct}%`, bottom: '8px' }}
+                                            >
+                                                <div className="w-full h-full bg-[url('/game/tezkor/lilypad.webp')] bg-contain bg-center bg-no-repeat drop-shadow-lg opacity-75" />
                                             </div>
-                                            <span className="text-emerald-400 font-black text-sm mt-1 drop-shadow-md">
-                                                {player.score.toLocaleString()}
-                                            </span>
+                                        );
+                                    })}
+
+                                    {/* Frog: same left % as corresponding lily pad */}
+                                    <div
+                                        className="absolute -translate-x-1/2 z-20 flex flex-col items-end transition-[left] duration-[700ms]"
+                                        style={{
+                                            left: `${progressPct}%`,
+                                            bottom: '8px',
+                                            transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                        }}
+                                    >
+                                        {/* Nickname above frog */}
+                                        <span className="self-center bg-black/70 text-white text-[11px] font-bold px-2 py-0.5 rounded-md mb-0.5 whitespace-nowrap shadow">
+                                            {player.nickname}
+                                        </span>
+
+                                        {/* Frog + shadow — w-12 h-12 matches lily pad size */}
+                                        <div className="relative w-12 h-12">
+                                            {/* Soya */}
+                                            <div
+                                                className="absolute bottom-0 left-1/2 w-10 h-2.5 bg-black/70 rounded-full blur-sm transition-all duration-[600ms]"
+                                                style={{
+                                                    transform: `translateX(-50%) ${player.isJumping ? 'scaleX(0.4) scaleY(0.3)' : 'scaleX(1) scaleY(1)'}`,
+                                                    opacity: player.isJumping ? 0.1 : 0.6,
+                                                }}
+                                            />
+                                            {/* Qurbaqa rasmi */}
+                                            <div
+                                                className="absolute inset-0 bg-contain bg-bottom bg-no-repeat transition-all duration-[600ms]"
+                                                style={{
+                                                    transformOrigin: 'bottom center',
+                                                    backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')`,
+                                                    transform: player.isJumping
+                                                        ? 'translateY(-36px) scaleX(1.1) scaleY(1.18) rotate(7deg)'
+                                                        : 'translateY(0) scale(1) rotate(0deg)',
+                                                }}
+                                            />
                                         </div>
+
+                                        {/* Score */}
+                                        <span className="self-center text-emerald-300 font-black text-[11px] mt-0.5 drop-shadow">
+                                            {player.score.toLocaleString()}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
