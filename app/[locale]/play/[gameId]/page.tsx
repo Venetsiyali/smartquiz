@@ -176,6 +176,30 @@ const GAME_CONFIG: Record<string, {
         timerColor: '#38bdf8',
         scoreColor: '#7dd3fc',
     },
+    '7': {
+        name: 'Zukkoo Tezkor',
+        sub: 'Frog Race Mode',
+        image: '/game/tezkor/tezkor.webp',
+        emoji: '🐸',
+        pro: false,
+        theme: {
+            badge: 'YANGI',
+            badgeBg: 'rgba(52,211,153,0.2)',
+            badgeColor: '#34d399',
+            accent: '#10b981',
+            glow: 'rgba(16,185,129,0.6)',
+            overlay: 'linear-gradient(135deg, rgba(2,44,34,0.9) 0%, rgba(4,120,87,0.8) 100%)',
+            cardBg: 'rgba(2,44,34,0.75)',
+            border: 'rgba(16,185,129,0.4)',
+            btnGradient: 'linear-gradient(135deg,#059669,#10b981)',
+            statBg: 'rgba(16,185,129,0.12)',
+        },
+        style: 'Lake Race',
+        desc: "Ko'l ustida qurbaqalar poygasi! To'g'ri javob bering va marraga birinchi bo'lib yetib boring.",
+        features: ["🐸 Interaktiv poyga", "⚡ Tezkor javoblar", "🏆 Birinchi o'rin g'olib"],
+        timerColor: '#34d399',
+        scoreColor: '#6ee7b7',
+    },
 };
 
 // ─── Animated stat card ────────────────────────────────────────────────────────
@@ -206,14 +230,14 @@ export default function GameDetailPage({
     const cfg = GAME_CONFIG[gameId];
 
     // Determine specific JSON Key mapped to this GameID
-    const gKey = gameId === '1' ? 'quizArena' : gameId === '2' ? 'logicChain' : gameId === '3' ? 'battleOfTerms' : gameId === '4' ? 'blitzWatch' : gameId === '5' ? 'hiddenCode' : 'teamRescue';
+    const gKey = gameId === '1' ? 'quizArena' : gameId === '2' ? 'logicChain' : gameId === '3' ? 'battleOfTerms' : gameId === '4' ? 'blitzWatch' : gameId === '5' ? 'hiddenCode' : gameId === '6' ? 'teamRescue' : 'tezkor';
 
     // Instruction modal state
     const [showInstructions, setShowInstructions] = useState(false);
 
     useEffect(() => {
         // Automatically show instruction modal for all games
-        if (['1', '2', '3', '4', '5', '6'].includes(gameId as string)) {
+        if (['1', '2', '3', '4', '5', '6', '7'].includes(gameId as string)) {
             setShowInstructions(true);
         }
     }, [gameId]);
@@ -348,7 +372,7 @@ export default function GameDetailPage({
                                 <>
                                     <button
                                         onClick={() => {
-                                            const m = gameId === '1' ? 'classic' : gameId === '2' ? 'order' : gameId === '3' ? 'match' : gameId === '4' ? 'blitz' : gameId === '5' ? 'anagram' : 'team';
+                                            const m = gameId === '1' ? 'classic' : gameId === '2' ? 'order' : gameId === '3' ? 'match' : gameId === '4' ? 'blitz' : gameId === '5' ? 'anagram' : gameId === '6' ? 'team' : 'tezkor';
                                             router.push(`/teacher/create?mode=${m}`);
                                         }}
                                         className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-base transition-all hover:scale-105 hover:brightness-110"
@@ -471,7 +495,7 @@ export default function GameDetailPage({
 
             {/* ── Instruction Modal ── */}
             <AnimatePresence>
-                {showInstructions && ['1', '2', '3', '4', '5', '6'].includes(gameId as string) && (
+                {showInstructions && ['1', '2', '3', '4', '5', '6', '7'].includes(gameId as string) && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -1101,6 +1125,77 @@ export default function GameDetailPage({
                                         >
                                             {tGamesList('teamRescue.actionBtn')}
                                         </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {gameId === '7' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                className="w-full max-w-md rounded-3xl overflow-hidden relative shadow-2xl"
+                                style={{
+                                    background: 'rgba(2,44,34,0.85)',
+                                    border: '1px solid rgba(16,185,129,0.3)',
+                                    boxShadow: '0 0 50px rgba(16,185,129,0.2)'
+                                }}
+                            >
+                                <div className="h-2 w-full relative z-10" style={{ background: 'linear-gradient(90deg, #059669, #10b981, #34d399)' }} />
+
+                                <div className="p-6 md:p-8 space-y-6 relative z-10">
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-white text-center drop-shadow-lg">
+                                            {tGamesList('tezkor.modalTitle')}<br />
+                                            <span style={{ color: '#34d399' }}>{tGamesList('tezkor.modalSubtitle')}</span>
+                                        </h2>
+                                    </div>
+
+                                    <div className="flex flex-col items-center justify-center py-4 relative pointer-events-none select-none text-6xl">
+                                        🐸
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(16,185,129,0.15)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">🏁</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                {tGamesList('tezkor.instructions.0')}
+                                            </p>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ x: -20, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="flex gap-4 items-start p-3 rounded-2xl"
+                                            style={{ background: 'rgba(16,185,129,0.15)' }}
+                                        >
+                                            <div className="text-2xl mt-0.5">⚡</div>
+                                            <p className="text-[13px] md:text-sm font-bold text-white/90 leading-snug">
+                                                {tGamesList('tezkor.instructions.1')}
+                                            </p>
+                                        </motion.div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <button
+                                            onClick={() => setShowInstructions(false)}
+                                            className="w-full py-4 rounded-2xl font-black text-[15px] md:text-lg text-white transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #059669, #10b981)',
+                                                border: '2px solid #34d399'
+                                            }}
+                                        >
+                                            {tGamesList('tezkor.actionBtn')}
+                                        </button>
                                     </div>
                                 </div>
                             </motion.div>
