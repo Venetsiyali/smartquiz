@@ -20,6 +20,7 @@ export default function TeacherLobbyPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(true);
+    const [gameMode, setGameMode] = useState<'classic' | 'tezkor'>('classic');
     const channelRef = useRef<any>(null);
     const [copied, setCopied] = useState(false);
     const joinUrl = typeof window !== 'undefined' && pin ? `${window.location.origin}/play?pin=${pin}` : '';
@@ -43,6 +44,9 @@ export default function TeacherLobbyPage() {
                 if (data?.teamMode && data?.teams) {
                     setTeamMode(true);
                     setTeams(data.teams);
+                }
+                if (data?.gameMode) {
+                    setGameMode(data.gameMode);
                 }
             })
             .catch(err => console.error("Holatni olishda xatolik:", err));
@@ -68,7 +72,11 @@ export default function TeacherLobbyPage() {
         if (!pin) return;
         if (players.length === 0) { setError(t('minOnePlayers')); setTimeout(() => setError(''), 3000); return; }
         setLoading(true);
-        router.push('/teacher/game');
+        if (gameMode === 'tezkor') {
+            router.push('/teacher/tezkor');
+        } else {
+            router.push('/teacher/game');
+        }
     };
 
     return (

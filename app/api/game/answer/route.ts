@@ -180,6 +180,13 @@ export async function POST(req: Request) {
                 });
             }
         }
+        
+        await pusherServer.trigger(`game-${pin}`, 'player-answered', {
+            playerId,
+            isCorrect,
+            currentCorrectCount: player.correctCount,
+            score: player.score,
+        });
 
         await pusherServer.trigger(`player-${playerId}`, 'answer-result', {
             correct: isCorrect,

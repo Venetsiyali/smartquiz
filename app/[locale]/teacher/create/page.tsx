@@ -449,6 +449,8 @@ function TeacherCreateInner() {
         let initialType: QuestionType = 'multiple';
         if (lockedModeQuery === 'order' || lockedModeQuery === 'match' || lockedModeQuery === 'blitz' || lockedModeQuery === 'anagram') {
             initialType = lockedModeQuery as QuestionType;
+        } else if (lockedModeQuery === 'tezkor') {
+            initialType = 'multiple';
         }
 
         let opts = MULTI_DEFAULTS();
@@ -566,6 +568,8 @@ function TeacherCreateInner() {
         let initialType: QuestionType = 'multiple';
         if (lockedMode === 'order' || lockedMode === 'match' || lockedMode === 'blitz' || lockedMode === 'anagram') {
             initialType = lockedMode as QuestionType;
+        } else if (lockedMode === 'tezkor') {
+            initialType = 'multiple';
         }
 
         let opts = MULTI_DEFAULTS();
@@ -632,6 +636,7 @@ function TeacherCreateInner() {
             title,
             teamMode,
             teamCount: teamMode ? teamCount : undefined,
+            gameMode: lockedMode === 'tezkor' ? 'tezkor' : 'classic',
             questions: questions.map(q => {
                 if (q.type === 'order') {
                     const items = (q.orderItems || []).filter(it => it.text.trim());

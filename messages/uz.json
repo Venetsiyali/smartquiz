@@ -94,6 +94,12 @@
       "sub": "Monitor o'yini",
       "badge": "BEPUL",
       "desc": "Jamoalar raqobat qiladi! Savollarga javob berib tanga top, do'kon ochish!"
+    },
+    "tezkor": {
+      "name": "Zukkoo Tezkor",
+      "sub": "Frog Race Mode",
+      "badge": "YANGI",
+      "desc": "Ko'l ustida qurbaqalar poygasi! To'g'ri javob bering va marraga birinchi bo'lib yetib boring."
     }
   },
   "GamePlay": {
@@ -238,6 +244,18 @@
         "Xato qilmang, aks holda jamoangizning umumiy 'joni' kamayadi."
       ],
       "actionBtn": "Jamoani qutqarishga tayyorman! 🚀"
+    },
+    "tezkor": {
+      "title": "Zukkoo Tezkor",
+      "modalTitle": "Zukkoo Tezkor:",
+      "modalSubtitle": "Katta poyga! 🐸",
+      "description": "Ko'l ustida poyga! Har to'g'ri javobingiz qahramoningizni oldinga siljitadi.",
+      "instructions": [
+        "Asosiy monitorda katta poyga maydoni bo'ladi.",
+        "To'g'ri javoblar sizni oldinga sakrashga yordam beradi.",
+        "Tezlik juda muhim, birinchi o'rin g'olib bo'ladi!"
+      ],
+      "actionBtn": "Poygaga tayyorman! 🏁"
     }
   },
   "Auth": {
@@ -334,6 +352,12 @@
       "❤️ Jamoaviy jonlar tizimi",
       "🔥 Combo bonus +100 ball",
       "🛡️ Taktik qalqon (Pro)"
+    ],
+    "style7": "Lake Race",
+    "features7": [
+      "🐸 Interaktiv poyga",
+      "⚡ Tezkor javoblar",
+      "🏆 Birinchi o'rin g'olib"
     ]
   },
   "TeacherCreate": {

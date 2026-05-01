@@ -73,6 +73,7 @@ export interface GameRoom {
     teamCount?: number;
     teams?: Team[];
     customTeamNames?: string[]; // Pro: teacher-set names
+    gameMode?: 'classic' | 'tezkor';
 }
 
 export async function getRoom(pin: string): Promise<GameRoom | null> {

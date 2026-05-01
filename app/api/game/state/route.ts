@@ -22,6 +22,7 @@ export async function GET(req: Request) {
             teamId: p.teamId,
         })),
         teamMode: !!room.teamMode,
+        gameMode: room.gameMode || 'classic',
         teams: room.teams?.map(t => ({
             id: t.id,
             name: t.name,
