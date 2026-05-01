@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { prisma } from '@/lib/prisma';
 
+export const maxDuration = 60;
+
 // ─── Fisher-Yates shuffle ────────────────────────────────────────────────────
 function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
@@ -349,30 +351,39 @@ function getFunnyMessage(): string {
 }
 
 async function callGemini(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
-    const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-        {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
-                generationConfig: { temperature: 0.85, responseMimeType: 'application/json', maxOutputTokens: 8192 },
-            }),
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 15000);
+    try {
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
+                    generationConfig: { temperature: 0.85, responseMimeType: 'application/json', maxOutputTokens: 8192 },
+                }),
+                signal: controller.signal
+            }
+        );
+        clearTimeout(id);
+        if (!res.ok) {
+            const body = await res.text();
+            const err: any = new Error(`Gemini xatosi: ${res.status}`);
+            err.status = res.status;
+            err.details = body;
+            throw err;
         }
-    );
-    if (!res.ok) {
-        const body = await res.text();
-        const err: any = new Error(`Gemini xatosi: ${res.status}`);
-        err.status = res.status;
-        err.details = body;
-        throw err;
+        const data = await res.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    } catch (error) {
+        clearTimeout(id);
+        throw error;
     }
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
 async function callGroq(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
-    const client = new Groq({ apiKey: key });
+    const client = new Groq({ apiKey: key, timeout: 15000, maxRetries: 0 });
     const completion = await client.chat.completions.create({
         model,
         messages: [
@@ -418,7 +429,7 @@ export async function POST(req: Request) {
 
     const primaryList  = provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys);
     const fallbackList = provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys);
-    const allCandidates: Candidate[] = [...primaryList, ...fallbackList];
+    const allCandidates: Candidate[] = [...primaryList, ...fallbackList].slice(0, 4);
 
     let lastError = '';
 
