@@ -19,6 +19,8 @@ export async function GET(req: Request) {
             nickname: p.nickname,
             avatar: p.avatar,
             streak: p.streak,
+            score: p.score,
+            correctCount: p.correctCount,
             teamId: p.teamId,
         })),
         teamMode: !!room.teamMode,

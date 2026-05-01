@@ -310,44 +310,51 @@ export default function TezkorGamePage() {
             )}
 
             {/* Race Track */}
-            <div className="relative z-10 flex-1 flex flex-col justify-center px-10 py-10 overflow-hidden">
+            <div className="relative z-10 flex-1 flex flex-col justify-center px-6 md:px-10 py-10 overflow-hidden">
                 <div className="w-full max-w-7xl mx-auto space-y-8">
                     {players.map((player, index) => {
-                        // Calculate progress based on correctCount
-                        // Wait, we don't have correctCount in classic game state by default...
-                        // If correctCount is missing, we can fake progress based on score for demo purposes!
-                        // Max possible score per question is roughly 1000.
-                        const maxScore = totalQ * 1000;
-                        let progressPct = (player.score / maxScore) * 100;
+                        // Progress based on exact correct answers
+                        const correct = player.correctCount || 0;
+                        let progressPct = (correct / totalQ) * 100;
                         if (progressPct > 100) progressPct = 100;
                         if (progressPct < 0) progressPct = 0;
 
                         return (
-                            <div key={player.id} className="relative w-full h-24 flex items-center bg-black/20 rounded-full border border-white/5 p-2">
+                            <div key={player.id} className="relative w-full h-24 flex items-center bg-black/20 rounded-full border border-white/5 py-2">
                                 {/* Lily pads distributed evenly */}
-                                <div className="absolute inset-0 flex justify-between items-center px-10 opacity-60">
+                                <div className="absolute inset-y-0 left-10 right-10 flex justify-between items-center opacity-60">
                                     {Array.from({ length: totalQ + 1 }).map((_, i) => (
-                                        <div key={i} className="w-12 h-12 relative -ml-6">
+                                        <div key={i} className="w-12 h-12 relative flex-shrink-0">
                                             <div className="w-full h-full bg-[url('/game/tezkor/lilypad.webp')] bg-contain bg-center bg-no-repeat drop-shadow-lg" />
                                         </div>
                                     ))}
                                 </div>
                                 
                                 {/* The Frog */}
-                                <div 
-                                    className="absolute left-10 flex flex-col items-center z-20 transition-all ease-[cubic-bezier(0.175,0.885,0.32,1.275)] duration-700"
-                                    style={{ transform: `translateX(calc(${progressPct}vw * 0.8))`, marginLeft: '-24px' }}
-                                >
-                                    <span className="bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-md mb-1 whitespace-nowrap">
-                                        {player.nickname}
-                                    </span>
-                                    <div 
-                                        className={`w-16 h-16 bg-contain bg-center bg-no-repeat drop-shadow-2xl ${player.isJumping ? '-translate-y-8 scale-110' : 'translate-y-0 scale-100'} transition-transform duration-300`}
-                                        style={{ backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')` }}
-                                    />
-                                    <span className="text-emerald-400 font-black text-sm mt-1 drop-shadow-md">
-                                        {player.score.toLocaleString()}
-                                    </span>
+                                <div className="absolute inset-y-0 left-10 right-10 pointer-events-none px-6">
+                                    <div className="relative w-full h-full">
+                                        <div 
+                                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center z-20 transition-all duration-[700ms]"
+                                            style={{ 
+                                                left: `${progressPct}%`,
+                                                transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+                                            }}
+                                        >
+                                            <span className="bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-md mb-1 whitespace-nowrap">
+                                                {player.nickname}
+                                            </span>
+                                            <div 
+                                                className="w-16 h-16 bg-contain bg-center bg-no-repeat drop-shadow-2xl transition-transform duration-[600ms]"
+                                                style={{ 
+                                                    backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')`,
+                                                    transform: player.isJumping ? 'translateY(-35px) scale(1.15) rotate(5deg)' : 'translateY(0) scale(1) rotate(0deg)'
+                                                }}
+                                            />
+                                            <span className="text-emerald-400 font-black text-sm mt-1 drop-shadow-md">
+                                                {player.score.toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         );
