@@ -16,19 +16,20 @@ export interface PlanLimits {
     icon: string;
 }
 
+// ── VAQTINCHALIK: Hamma foydalanuvchiga Pro imkoniyatlari berilgan ──────────
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     free: {
-        maxQuestions: 10, maxPlayers: 20,
-        aiUpload: false, customThemes: false, certificates: false, legendaryAvatars: false,
+        maxQuestions: 100, maxPlayers: 1000,
+        aiUpload: true, customThemes: true, certificates: true, legendaryAvatars: true,
         label: 'Bepul', icon: '🎮',
     },
     pro: {
-        maxQuestions: 50, maxPlayers: 200,
+        maxQuestions: 100, maxPlayers: 1000,
         aiUpload: true, customThemes: true, certificates: true, legendaryAvatars: true,
         label: 'Pro', icon: '👑',
     },
     edu: {
-        maxQuestions: 50, maxPlayers: 500,
+        maxQuestions: 100, maxPlayers: 1000,
         aiUpload: true, customThemes: true, certificates: true, legendaryAvatars: true,
         label: 'EDU', icon: '🏫',
     },
@@ -92,9 +93,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             plan,
             setPlan,
             limits: PLAN_LIMITS[plan],
-            isPro: plan === 'pro' || plan === 'edu',
+            isPro: true, // VAQTINCHALIK: hamma Pro sifatida ishlaydi
             isEdu: plan === 'edu',
-            isFree: plan === 'free',
+            isFree: false, // VAQTINCHALIK: hech kim Free emas
             loading,
         }}>
             {children}

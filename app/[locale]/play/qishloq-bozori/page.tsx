@@ -175,10 +175,7 @@ export default function QishloqBozoriSetup() {
 
     // ── Start game ───────────────────────────────────────────────────────────
     const handleStart = async () => {
-        if (status !== 'authenticated') {
-            setCreateErr("Siz ro'yxatdan o'tmagansiz. Iltimos, avval tizimga kiring.");
-            return;
-        }
+        
         if (questions.length === 0) { setCreateErr("Kamida 1 ta savol bo'lishi shart"); return; }
         setCreating(true); setCreateErr('');
         try {
@@ -187,7 +184,6 @@ export default function QishloqBozoriSetup() {
                 body: JSON.stringify({ character, teamCount, teams: teams.slice(0, teamCount), timePerQ, economyOn, questions }),
             });
             const data = await res.json();
-            if (res.status === 401) { setCreateErr("Siz ro'yxatdan o'tmagansiz. Iltimos, avval tizimga kiring."); return; }
             if (!res.ok) { setCreateErr(data.error ?? 'Xatolik'); return; }
             router.push(`/${locale}/play/qishloq-bozori/${data.id}`);
         } catch { setCreateErr("Server bilan aloqa yo'q"); }
@@ -550,25 +546,7 @@ export default function QishloqBozoriSetup() {
                     </Section>
                 )}
 
-                {/* ── Auth warning banner ───────────────────────────────────── */}
-                {status === 'unauthenticated' && (
-                    <div className="rounded-2xl px-5 py-4 flex flex-col sm:flex-row items-center gap-4"
-                        style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)' }}>
-                        <div className="flex-1 text-center sm:text-left">
-                            <p className="font-black text-base" style={{ color: '#f87171' }}>
-                                🔒 Siz ro&apos;yxatdan o&apos;tmagansiz
-                            </p>
-                            <p className="text-white/50 text-sm font-semibold mt-0.5">
-                                O&apos;yinni boshlash uchun iltimos tizimga kiring yoki ro&apos;yxatdan o&apos;ting.
-                            </p>
-                        </div>
-                        <Link href={`/${locale}/login`}
-                            className="px-6 py-2.5 rounded-xl font-black text-sm whitespace-nowrap transition-all hover:scale-105"
-                            style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white' }}>
-                            Kirish / Ro&apos;yxatdan o&apos;tish →
-                        </Link>
-                    </div>
-                )}
+
 
                 {/* ── Start Button ─────────────────────────────────────────── */}
                 <div className="pb-8">
@@ -576,27 +554,19 @@ export default function QishloqBozoriSetup() {
                         <div className="mb-3 px-4 py-4 rounded-xl text-sm font-bold text-center flex flex-col items-center gap-2"
                             style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}>
                             <span>{createErr}</span>
-                            {createErr.includes("ro'yxatdan") && (
-                                <Link href={`/${locale}/login`}
-                                    className="px-5 py-2 rounded-xl font-black text-sm"
-                                    style={{ background: 'rgba(239,68,68,0.2)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
-                                    Kirish sahifasiga o&apos;tish →
-                                </Link>
-                            )}
                         </div>
                     )}
-                    <button onClick={handleStart} disabled={creating || questions.length === 0 || status === 'unauthenticated'}
+                    <button onClick={handleStart} disabled={creating || questions.length === 0}
                         className="w-full py-5 rounded-2xl font-black text-xl transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                         style={{
-                            background: questions.length > 0 && status === 'authenticated' ? 'linear-gradient(135deg, #f59e0b, #dc2626)' : 'rgba(255,255,255,0.06)',
+                            background: questions.length > 0 ? 'linear-gradient(135deg, #f59e0b, #dc2626)' : 'rgba(255,255,255,0.06)',
                             color: 'white',
-                            boxShadow: questions.length > 0 && status === 'authenticated' ? '0 0 40px rgba(245,158,11,0.3)' : 'none',
+                            boxShadow: questions.length > 0 ? '0 0 40px rgba(245,158,11,0.3)' : 'none',
                         }}>
                         {creating ? "⏳ O'yin yaratilmoqda..."
-                            : status === 'unauthenticated' ? "🔒 Kirish kerak"
                             : `🏪 O'yinni Boshlash (${questions.length} savol)`}
                     </button>
-                    {questions.length === 0 && status !== 'unauthenticated' && (
+                    {questions.length === 0 && (
                         <p className="text-center text-white/30 text-sm font-semibold mt-2">
                             Ombor, AI yoki qo&apos;lda savollar qo&apos;shing
                         </p>
@@ -618,3 +588,5 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         </div>
     );
 }
+
+
