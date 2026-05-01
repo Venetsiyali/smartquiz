@@ -131,6 +131,9 @@ const BASE_SYSTEM_PROMPT = `# ROLE: ELITE EDUCATIONAL ARCHITECT
 Siz Zukkoo.uz platformasining bosh pedagogik muhandisisiz. Vazifangiz — o'quvchilarning tanqidiy fikrlashini o'stiradigan, akademik jihatdan aniq va metodik jihatdan to'g'ri bo'lgan kontent yaratish.
 Faqat JSON formatida javob bering. Hech qanday kirish so'zi, markdown yoki qo'shimcha matn yozmang.
 
+# MUHIM QOIDA (SONI)
+Foydalanuvchi so'rovida qancha savol yoki topshiriq so'ralsa (masalan 20 ta), JSON massivida AYNAN shuncha obyekt bo'lishi SHART! Hech qachon so'ralgan miqdordan kam yoki ko'p yaratmang. Bunga qat'iy amal qiling!
+
 # PEDAGOGICAL GUIDELINES
 1. Accuracy First: Savollar ilmiy manbalarga va darsliklarga asoslangan bo'lishi shart. Noaniq yoki munozarali faktlardan qoching.
 2. Growth Mindset: Savollar o'quvchini qidirishga, tahlil qilishga undashi kerak.
@@ -170,48 +173,49 @@ ${sample}`;
 // ─── Per-game-type user prompt builder ──────────────────────────────────────
 function buildPrompt(topic: string, gameType: string, count: number, language: string): string {
     const lang = language === 'uz' ? "O'zbek tilida" : language === 'ru' ? 'na russkom yazyke' : 'in English';
+    const countReq = `DIQQAT: Qat'iy ravishda AYNAN ${count} ta savol/topshiriq yarating! Massiv uzunligi aniq ${count} ga teng bo'lishi SHART!`;
 
     switch (gameType) {
         case 'multiple':
         case 'classic':
         case 'team':
-            return `${lang}. Mavzu: "${topic}". ${count} ta klassik test savoli tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq}
 Qoidalar: to'g'ri javob 1 ta, qolgan 3 variant ishonchli ammo noto'g'ri bo'lsin. Trivial savollardan qoching. Sabab-oqibat, tahlil ko'nikmalarini sinang.
 JSON sxemasi:
 {"questions":[{"text":"Savol?","options":["Variant A","Variant B","Variant C","Variant D"],"correctOptions":[2],"hint":"Bir jumla ishora"}]}`;
 
         case 'truefalse':
-            return `${lang}. Mavzu: "${topic}". ${count} ta Ha/Yo'q (True/False) savol tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq} (True/False formatida).
 Qoidalar: (1) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin. (3) Savollar biroz o'ylantirsin.
 JSON sxemasi:
 {"questions":[{"text":"Aniq tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora"}]}`;
 
         case 'blitz':
-            return `${lang}. Mavzu: "${topic}". ${count} ta BLITZ uslubida To'g'ri/Noto'g'ri savol tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq} BLITZ uslubida (To'g'ri/Noto'g'ri formatda).
 Qoidalar: (1) Har bir tasdiq qisqa va aniq bo'lsin. (2) FALSE tasdiqlar bir asosiy faktni noto'g'ri ko'rsatsin. (3) Tasdiqlarning yarmi TRUE, yarmi FALSE bo'lsin.
 JSON sxemasi:
 {"questions":[{"text":"Qisqa tasdiq gap.","isTrue":true,"hint":"Bir jumla ishora"}]}`;
 
         case 'order':
-            return `${lang}. Mavzu: "${topic}". ${count} ta mantiqiy tartib (Sorting) topshirig'i tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq} mantiqiy tartib (Sorting) topshirig'i.
 Qoidalar: (1) Har biri uchun 4-5 element bering. (2) Elementlar items massivida TO'G'RI tartibda bo'lishi shart. (3) Xronologik yoki sabab-oqibat zanjirlarini ishlating.
 JSON sxemasi:
 {"questions":[{"text":"Quyidagi jarayonni to'g'ri tartibga soling:","items":["1-bosqich","2-bosqich","3-bosqich","4-bosqich"],"hint":"Bir jumla yo'naltiruvchi ishora"}]}`;
 
         case 'match':
-            return `${lang}. Mavzu: "${topic}". ${count} ta moslik (Matching) to'plami tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq} moslik (Matching) to'plami.
 Qoidalar: (1) Har to'plamda 6 ta juft bo'lsin. (2) term — qisqa atama yoki nom (max 3 so'z). (3) definition — 5-10 so'zli aniq ta'rif. (4) Juftlar o'zaro aralashib ketmasin.
 JSON sxemasi:
 {"questions":[{"text":"Ushbu atamalarni ta'riflari bilan moslang:","pairs":[{"term":"Atama 1","definition":"Aniq ta'rif 1"},{"term":"Atama 2","definition":"Aniq ta'rif 2"},{"term":"Atama 3","definition":"Aniq ta'rif 3"},{"term":"Atama 4","definition":"Aniq ta'rif 4"},{"term":"Atama 5","definition":"Aniq ta'rif 5"},{"term":"Atama 6","definition":"Aniq ta'rif 6"}],"hint":"Bir jumla ishora"}]}`;
 
         case 'anagram':
-            return `${lang}. Mavzu: "${topic}". ${count} ta yashirin so'z (Anagram) topshirig'i tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq} yashirin so'z (Anagram) topshirig'i.
 Qoidalar: (1) FAQAT texnik/ilmiy terminlar. (2) So'z uzunligi 5–10 harf. (3) hint — so'zning sohasi yoki funksiyasini bildiruvchi ishora. (4) So'z katta harfda, faqat lotin harflari.
 JSON sxemasi:
 {"questions":[{"word":"ALGORITM","hint":"Muammoni hal qilish uchun qadamba-qadam yo'riqnoma"},{"word":"KOMPILER","hint":"Dastur kodini mashina tiliga o'giruvchi dastur"}]}`;
 
         default:
-            return `${lang}. Mavzu: "${topic}". ${count} ta klassik test savoli tuz.
+            return `${lang}. Mavzu: "${topic}". ${countReq} klassik test savoli.
 {"questions":[{"text":"Savol?","options":["A","B","C","D"],"correctOptions":[2],"hint":""}]}`;
     }
 }
@@ -352,7 +356,7 @@ async function callGemini(key: string, model: string, systemPrompt: string, user
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
-                generationConfig: { temperature: 0.85, responseMimeType: 'application/json' },
+                generationConfig: { temperature: 0.85, responseMimeType: 'application/json', maxOutputTokens: 8192 },
             }),
         }
     );
@@ -377,7 +381,7 @@ async function callGroq(key: string, model: string, systemPrompt: string, userPr
         ],
         temperature: 0.85,
         top_p: 1,
-        max_tokens: 4096,
+        max_tokens: 8000,
     });
     return completion.choices[0]?.message?.content || '';
 }
