@@ -427,13 +427,18 @@ export async function POST(req: Request) {
     const expandGroq = (keys: string[]): Candidate[] =>
         keys.flatMap(k => GROQ_MODELS.map(m => ({ provider: 'groq' as const, key: k, model: m })));
 
-    const primaryList  = provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys);
-    const fallbackList = provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys);
-    const allCandidates: Candidate[] = [...primaryList, ...fallbackList].slice(0, 4);
+    const primaryList  = shuffle(provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys));
+    const fallbackList = shuffle(provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys));
+    const allCandidates: Candidate[] = [...primaryList, ...fallbackList];
 
     let lastError = '';
+    const startTime = Date.now();
 
     for (let ci = 0; ci < allCandidates.length; ci++) {
+        if (Date.now() - startTime > 45000) {
+            console.warn('[AI Pool] 45s time limit reached, aborting pool to prevent server timeout');
+            break;
+        }
         const { provider: cur, key, model } = allCandidates[ci];
         const currentTopic      = ci === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
         const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, count, language);
@@ -462,10 +467,11 @@ export async function POST(req: Request) {
             const status = err?.status ?? 0;
             const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
             const isUnavailable = status === 503 || status === 502 || status === 529;
+            const isTimeout     = err?.name === 'AbortError' || err?.message?.includes('timeout') || err?.message?.includes('aborted');
 
-            if (isRateLimit || isUnavailable) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} ${isRateLimit ? 'rate-limited' : 'unavailable'} — trying next...`);
-                lastError = err?.message || (isRateLimit ? 'Rate limited' : 'Service unavailable');
+            if (isRateLimit || isUnavailable || isTimeout) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} ${isRateLimit ? 'rate-limited' : (isTimeout ? 'timed out' : 'unavailable')} — trying next...`);
+                lastError = err?.message || (isRateLimit ? 'Rate limited' : (isTimeout ? 'Timeout' : 'Service unavailable'));
                 continue;
             }
 
