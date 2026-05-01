@@ -87,6 +87,15 @@ const GAME_STYLES = [
         route: '/play/6',
         pro: true,
     },
+    {
+        id: 'tezkor',
+        image: '/game/tezkor/tezkor.webp',
+        gradient: 'linear-gradient(135deg, #022c22 0%, #047857 60%, #10b981 100%)',
+        glowColor: 'rgba(16,185,129,0.5)',
+        badgeStyle: { background: 'rgba(52,211,153,0.2)', color: '#34d399', border: '1px solid rgba(52,211,153,0.5)' },
+        route: '/play/7',
+        pro: false,
+    },
 ];
 
 function getGreetingKey() {
