@@ -343,13 +343,27 @@ export default function TezkorGamePage() {
                                             <span className="bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-md mb-1 whitespace-nowrap">
                                                 {player.nickname}
                                             </span>
-                                            <div 
-                                                className="w-16 h-16 bg-contain bg-center bg-no-repeat drop-shadow-2xl transition-transform duration-[600ms]"
-                                                style={{ 
-                                                    backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')`,
-                                                    transform: player.isJumping ? 'translateY(-35px) scale(1.15) rotate(5deg)' : 'translateY(0) scale(1) rotate(0deg)'
-                                                }}
-                                            />
+                                            <div className="relative flex justify-center w-16 h-16 mb-1">
+                                                {/* Dinamik Soya */}
+                                                <div 
+                                                    className="absolute bottom-[-5px] w-14 h-4 bg-black/60 rounded-full blur-[3px] transition-all duration-[600ms] z-0"
+                                                    style={{
+                                                        transform: player.isJumping ? 'scale(0.6)' : 'scale(1)',
+                                                        opacity: player.isJumping ? 0.2 : 0.8
+                                                    }}
+                                                />
+                                                {/* Qurbaqa */}
+                                                <div 
+                                                    className="absolute inset-0 bg-contain bg-bottom bg-no-repeat transition-all duration-[600ms] z-10"
+                                                    style={{ 
+                                                        transformOrigin: 'bottom center',
+                                                        backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')`,
+                                                        transform: player.isJumping 
+                                                            ? 'translateY(-40px) scale(1.2) perspective(500px) rotateX(10deg) rotate(5deg)' 
+                                                            : 'translateY(0) scale(1) perspective(500px) rotateX(10deg) rotate(0deg)'
+                                                    }}
+                                                />
+                                            </div>
                                             <span className="text-emerald-400 font-black text-sm mt-1 drop-shadow-md">
                                                 {player.score.toLocaleString()}
                                             </span>
