@@ -41,6 +41,19 @@ export default function TezkorGamePage() {
 
     const [autoNextTime, setAutoNextTime] = useState<number | null>(null);
 
+    // Audio setup
+    useEffect(() => {
+        const audio = new Audio('/music/Puddle_Hop_Waltz.mp3');
+        audio.loop = true;
+        audio.volume = 0.4;
+        audio.play().catch(err => console.log('Audio autoplay prevented:', err));
+
+        return () => {
+            audio.pause();
+            audio.currentTime = 0;
+        };
+    }, []);
+
     const clearTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
 
     const startTimer = useCallback((seconds: number, pin: string) => {
