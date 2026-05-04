@@ -137,10 +137,13 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
 
     try {
         // Build key pools
-        const geminiKeys = (process.env.GEMINI_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
-        if (process.env.GEMINI_API_KEY && !geminiKeys.includes(process.env.GEMINI_API_KEY)) geminiKeys.unshift(process.env.GEMINI_API_KEY);
-        const groqKeys = (process.env.GROQ_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
-        if (process.env.GROQ_API_KEY && !groqKeys.includes(process.env.GROQ_API_KEY)) groqKeys.unshift(process.env.GROQ_API_KEY);
+        const geminiMulti1 = (process.env.GEMINI_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+        const geminiMulti2 = (process.env.GEMINI_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+        const geminiKeys = Array.from(new Set([...geminiMulti1, ...geminiMulti2]));
+
+        const groqMulti1 = (process.env.GROQ_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+        const groqMulti2 = (process.env.GROQ_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+        const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
 
         const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
         const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192'];
