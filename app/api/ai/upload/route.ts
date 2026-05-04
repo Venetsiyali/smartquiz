@@ -142,26 +142,45 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const groqKeys = (process.env.GROQ_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
         if (process.env.GROQ_API_KEY && !groqKeys.includes(process.env.GROQ_API_KEY)) groqKeys.unshift(process.env.GROQ_API_KEY);
 
-        type ProviderKey = { provider: 'gemini' | 'groq'; key: string };
-        const primaryList: ProviderKey[] = (provider === 'gemini' ? geminiKeys : groqKeys).map((k: string) => ({ provider: provider as 'gemini' | 'groq', key: k }));
-        const fallbackList: ProviderKey[] = (provider === 'gemini' ? groqKeys : geminiKeys).map((k: string) => ({ provider: (provider === 'gemini' ? 'groq' : 'gemini') as 'gemini' | 'groq', key: k }));
-        const allCandidates: ProviderKey[] = [...primaryList, ...fallbackList];
+        const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
+        const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192'];
+
+        type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
+
+        const expandGemini = (keys: string[]): Candidate[] =>
+            keys.flatMap(k => GEMINI_MODELS.map(m => ({ provider: 'gemini' as const, key: k, model: m })));
+        const expandGroq = (keys: string[]): Candidate[] =>
+            keys.flatMap(k => GROQ_MODELS.map(m => ({ provider: 'groq' as const, key: k, model: m })));
+
+        const primaryList  = shuffle(provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys));
+        const fallbackList = shuffle(provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys));
+        const allCandidates: Candidate[] = [...primaryList, ...fallbackList];
 
         let raw = '';
         let lastKeyErr = '';
+        const startTime = Date.now();
 
         for (let ci = 0; ci < allCandidates.length; ci++) {
-            const { provider: cur, key } = allCandidates[ci];
+            if (Date.now() - startTime > 45000) {
+                console.warn('[Upload AI Pool] 45s time limit reached, aborting pool');
+                break;
+            }
+            const { provider: cur, key, model } = allCandidates[ci];
+            
             try {
                 if (cur === 'gemini') {
-                    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 10000);
+                    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
                             generationConfig: { temperature: 0.6, responseMimeType: 'application/json' },
-                        })
+                        }),
+                        signal: controller.signal
                     });
+                    clearTimeout(id);
                     if (!geminiRes.ok) {
                         const errObj: any = new Error(`Gemini xatosi: ${geminiRes.status}`);
                         errObj.status = geminiRes.status;
@@ -170,9 +189,9 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                     const data = await geminiRes.json();
                     raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
                 } else {
-                    const groq = new Groq({ apiKey: key });
+                    const groq = new Groq({ apiKey: key, timeout: 10000, maxRetries: 0 });
                     const completion = await groq.chat.completions.create({
-                        model: 'llama-3.3-70b-versatile',
+                        model: model,
                         messages: [
                             { role: 'system', content: systemPrompt },
                             { role: 'user', content: prompt },
@@ -182,10 +201,22 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                     });
                     raw = completion.choices[0]?.message?.content || '';
                 }
-                break; // success — exit key loop
-            } catch (keyErr: any) {
-                lastKeyErr = keyErr?.message || 'xatolik';
-                console.warn(`[Upload AI Pool] ${cur} key #${ci} failed:`, lastKeyErr);
+                
+                if (raw) break; // success — exit key loop
+            } catch (err: any) {
+                const status = err?.status ?? 0;
+                const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
+                const isUnavailable = status === 503 || status === 502 || status === 529;
+                const isTimeout     = err?.name === 'AbortError' || err?.message?.includes('timeout') || err?.message?.includes('aborted');
+
+                lastKeyErr = err?.message || 'xatolik';
+                
+                if (isRateLimit || isUnavailable || isTimeout) {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} ${isRateLimit ? 'rate-limited' : (isTimeout ? 'timed out' : 'unavailable')} — trying next...`);
+                    continue;
+                }
+                
+                console.error(`[Upload AI Pool] ${cur}/${model} #${ci} failed:`, lastKeyErr);
                 if (ci === allCandidates.length - 1) throw new Error(lastKeyErr);
             }
         }

@@ -15,7 +15,7 @@ export async function GET() {
     const results: Record<string, { ok: boolean; status?: number; error?: string }> = {};
 
     // ── Groq models ──────────────────────────────────────────────────────────
-    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192'];
     for (const model of groqModels) {
         if (!groqKey) { results[`groq/${model}`] = { ok: false, error: 'GROQ_API_KEY topilmadi' }; continue; }
         try {
@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     // ── Gemini models ────────────────────────────────────────────────────────
-    const geminiModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+    const geminiModels = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
     for (const model of geminiModels) {
         if (!geminiKey) { results[`gemini/${model}`] = { ok: false, error: 'GEMINI_API_KEY topilmadi' }; continue; }
         try {

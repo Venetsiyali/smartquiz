@@ -332,8 +332,8 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return multi;
 }
 
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
-const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
+const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192'];
 
 const FUNNY_MESSAGES = [
     "🤖 AI bugun charchab qoldi... Ertaga qaytib keladi yoki bir oz kuting!",
@@ -352,7 +352,7 @@ function getFunnyMessage(): string {
 
 async function callGemini(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 15000);
+    const id = setTimeout(() => controller.abort(), 10000);
     try {
         const res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
@@ -383,7 +383,7 @@ async function callGemini(key: string, model: string, systemPrompt: string, user
 }
 
 async function callGroq(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
-    const client = new Groq({ apiKey: key, timeout: 15000, maxRetries: 0 });
+    const client = new Groq({ apiKey: key, timeout: 10000, maxRetries: 0 });
     const completion = await client.chat.completions.create({
         model,
         messages: [
