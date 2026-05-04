@@ -146,7 +146,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
 
         const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
-        const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192'];
+        const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
 
         type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
 
@@ -164,8 +164,8 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const startTime = Date.now();
 
         for (let ci = 0; ci < allCandidates.length; ci++) {
-            if (Date.now() - startTime > 45000) {
-                console.warn('[Upload AI Pool] 45s time limit reached, aborting pool');
+            if (Date.now() - startTime > 55000) {
+                console.warn('[Upload AI Pool] 55s time limit reached, aborting pool');
                 break;
             }
             const { provider: cur, key, model } = allCandidates[ci];
@@ -173,7 +173,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
             try {
                 if (cur === 'gemini') {
                     const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 10000);
+                    const id = setTimeout(() => controller.abort(), 40000);
                     const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -192,7 +192,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                     const data = await geminiRes.json();
                     raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
                 } else {
-                    const groq = new Groq({ apiKey: key, timeout: 10000, maxRetries: 0 });
+                    const groq = new Groq({ apiKey: key, timeout: 40000, maxRetries: 0 });
                     const completion = await groq.chat.completions.create({
                         model: model,
                         messages: [
