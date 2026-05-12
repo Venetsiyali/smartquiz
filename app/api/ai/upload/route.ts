@@ -147,8 +147,8 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const groqMulti2 = (process.env.GROQ_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
         const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
 
-        const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
-        const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+        const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+        const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
 
         type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
 
@@ -215,16 +215,25 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                 const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
                 const isUnavailable = status === 503 || status === 502 || status === 529;
                 const isTimeout     = err?.name === 'AbortError' || err?.message?.includes('timeout') || err?.message?.includes('aborted');
+                const isBlocked     = status === 403 || status === 401;
+                const isNotFound    = status === 404;
 
                 lastKeyErr = err?.message || 'xatolik';
-                
-                if (isRateLimit || isUnavailable || isTimeout) {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} ${isRateLimit ? 'rate-limited' : (isTimeout ? 'timed out' : 'unavailable')} — trying next...`);
-                    continue;
+
+                if (isRateLimit) {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} RATE LIMITED — trying next...`);
+                } else if (isTimeout) {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} TIMED OUT — trying next...`);
+                } else if (isUnavailable) {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} UNAVAILABLE (${status}) — trying next...`);
+                } else if (isBlocked) {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} KEY BLOCKED (${status}) — trying next...`);
+                } else if (isNotFound) {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} MODEL NOT FOUND (404) — trying next...`);
+                } else {
+                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} ERROR (${status}): ${lastKeyErr?.slice(0,120)} — trying next...`);
                 }
-                
-                console.error(`[Upload AI Pool] ${cur}/${model} #${ci} failed:`, lastKeyErr);
-                if (ci === allCandidates.length - 1) throw new Error(lastKeyErr);
+                continue; // ALWAYS try next candidate
             }
         }
 

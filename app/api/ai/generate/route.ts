@@ -331,8 +331,8 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return Array.from(new Set([...multi1, ...multi2]));
 }
 
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
-const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
 
 const FUNNY_MESSAGES = [
     "🤖 AI bugun charchab qoldi... Ertaga qaytib keladi yoki bir oz kuting!",
@@ -469,15 +469,25 @@ export async function POST(req: Request) {
             const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
             const isUnavailable = status === 503 || status === 502 || status === 529;
             const isTimeout     = err?.name === 'AbortError' || err?.message?.includes('timeout') || err?.message?.includes('aborted');
-
-            if (isRateLimit || isUnavailable || isTimeout) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} ${isRateLimit ? 'rate-limited' : (isTimeout ? 'timed out' : 'unavailable')} — trying next...`);
-                lastError = err?.message || (isRateLimit ? 'Rate limited' : (isTimeout ? 'Timeout' : 'Service unavailable'));
-                continue;
-            }
+            const isBlocked     = status === 403 || status === 401; // leaked/invalid key
+            const isNotFound    = status === 404; // model not available
 
             lastError = err?.message || 'AI xatoligi';
-            console.error(`[AI Pool] ${cur}/${model} #${ci} failed:`, err?.message || err);
+
+            if (isRateLimit) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} RATE LIMITED — trying next...`);
+            } else if (isTimeout) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} TIMED OUT — trying next...`);
+            } else if (isUnavailable) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} UNAVAILABLE (${status}) — trying next...`);
+            } else if (isBlocked) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} KEY BLOCKED (${status}) — trying next...`);
+            } else if (isNotFound) {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} MODEL NOT FOUND (404) — trying next...`);
+            } else {
+                console.warn(`[AI Pool] ${cur}/${model} #${ci} ERROR (${status}): ${lastError?.slice(0,120)} — trying next...`);
+            }
+            continue; // ALWAYS try next candidate
         }
     }
 
