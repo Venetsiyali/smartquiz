@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     // ── Gemini models ────────────────────────────────────────────────────────
-    const geminiModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+    const geminiModels = ['gemini-2.5-flash', 'gemini-flash-latest'];
     for (const model of geminiModels) {
         if (!geminiKey) { results[`gemini/${model}`] = { ok: false, error: 'GEMINI_API_KEY topilmadi' }; continue; }
         try {

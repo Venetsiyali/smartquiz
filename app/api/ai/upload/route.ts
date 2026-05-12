@@ -147,7 +147,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const groqMulti2 = (process.env.GROQ_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
         const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
 
-        const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+        const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-flash-latest'];
         const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
 
         type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };

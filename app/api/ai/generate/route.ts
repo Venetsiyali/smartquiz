@@ -331,7 +331,7 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return Array.from(new Set([...multi1, ...multi2]));
 }
 
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-flash-latest'];
 const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
 
 const FUNNY_MESSAGES = [
