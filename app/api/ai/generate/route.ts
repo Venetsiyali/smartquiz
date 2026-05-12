@@ -331,7 +331,7 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return Array.from(new Set([...multi1, ...multi2]));
 }
 
-const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
+const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
 
 const FUNNY_MESSAGES = [
@@ -351,7 +351,7 @@ function getFunnyMessage(): string {
 
 async function callGemini(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 40000);
+    const id = setTimeout(() => controller.abort(), 25000); // 25s per-model timeout
     try {
         const res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
@@ -382,7 +382,7 @@ async function callGemini(key: string, model: string, systemPrompt: string, user
 }
 
 async function callGroq(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
-    const client = new Groq({ apiKey: key, timeout: 40000, maxRetries: 0 });
+    const client = new Groq({ apiKey: key, timeout: 25000, maxRetries: 0 }); // 25s per-model timeout
     const completion = await client.chat.completions.create({
         model,
         messages: [
@@ -432,13 +432,15 @@ export async function POST(req: Request) {
 
     let lastError = '';
     const startTime = Date.now();
+    console.log(`[AI Pool] Starting: provider=${provider}, topic="${enrichedTopic}", gameType=${gameType}, candidates=${allCandidates.length}, geminiKeys=${geminiKeys.length}, groqKeys=${groqKeys.length}`);
 
     for (let ci = 0; ci < allCandidates.length; ci++) {
-        if (Date.now() - startTime > 55000) {
-            console.warn('[AI Pool] 55s time limit reached, aborting pool to prevent server timeout');
+        if (Date.now() - startTime > 50000) {
+            console.warn('[AI Pool] 50s time limit reached, aborting pool to prevent server timeout');
             break;
         }
         const { provider: cur, key, model } = allCandidates[ci];
+        console.log(`[AI Pool] Trying ${cur}/${model} (${ci + 1}/${allCandidates.length}), elapsed=${Date.now() - startTime}ms`);
         const currentTopic      = ci === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
         const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, count, language);
 

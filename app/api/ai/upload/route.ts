@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
+export const maxDuration = 60; // Vercel serverless timeout: 60 soniya
+
 const uploadLimiter = rateLimit({ windowMs: 60 * 60_000, max: 20 }); // Soatiga 20 ta so'rov qat'iy cheklov
 
 // Fisher-Yates shuffle
@@ -145,7 +147,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const groqMulti2 = (process.env.GROQ_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
         const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
 
-        const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash-exp'];
+        const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
         const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
 
         type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
@@ -162,18 +164,20 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         let raw = '';
         let lastKeyErr = '';
         const startTime = Date.now();
+        console.log(`[Upload AI Pool] Starting with provider=${provider}, candidates=${allCandidates.length}, geminiKeys=${geminiKeys.length}, groqKeys=${groqKeys.length}`);
 
         for (let ci = 0; ci < allCandidates.length; ci++) {
-            if (Date.now() - startTime > 55000) {
-                console.warn('[Upload AI Pool] 55s time limit reached, aborting pool');
+            if (Date.now() - startTime > 50000) {
+                console.warn('[Upload AI Pool] 50s time limit reached, aborting pool');
                 break;
             }
             const { provider: cur, key, model } = allCandidates[ci];
             
             try {
+                console.log(`[Upload AI Pool] Trying ${cur}/${model} (${ci + 1}/${allCandidates.length}), elapsed=${Date.now() - startTime}ms`);
                 if (cur === 'gemini') {
                     const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 40000);
+                    const id = setTimeout(() => controller.abort(), 25000);
                     const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -192,7 +196,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                     const data = await geminiRes.json();
                     raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
                 } else {
-                    const groq = new Groq({ apiKey: key, timeout: 40000, maxRetries: 0 });
+                    const groq = new Groq({ apiKey: key, timeout: 25000, maxRetries: 0 });
                     const completion = await groq.chat.completions.create({
                         model: model,
                         messages: [
