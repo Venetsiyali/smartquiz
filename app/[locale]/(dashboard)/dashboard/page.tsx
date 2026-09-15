@@ -163,6 +163,23 @@ export default function DashboardPage() {
                         </div>
                     </Link>
 
+                    {/* Bilimlar G'ildiragi */}
+                    <Link
+                        href={`/${locale}/teacher/wheel`}
+                        className="relative rounded-2xl overflow-hidden flex flex-col justify-end transition-all hover:scale-[1.02] hover:shadow-2xl"
+                        style={{ minHeight: 180, background: 'linear-gradient(135deg, #2e0d2a 0%, #5e0a4a 100%)', border: '1px solid rgba(236,72,153,0.25)' }}
+                    >
+                        <div className="absolute inset-0 flex items-center justify-center opacity-10 text-[120px] select-none pointer-events-none">🎡</div>
+                        <div className="relative z-10 p-5">
+                            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-widest" style={{ background: 'rgba(236,72,153,0.2)', color: '#f472b6' }}>Sinfxona o&apos;yini</span>
+                            <h3 className="text-white font-black text-2xl mb-1">Bilimlar G&apos;ildiragi</h3>
+                            <p className="text-white/40 text-sm font-semibold">Baraban · Bitta ekranda o&apos;ynaladi</p>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                            <span className="text-3xl">🎡</span>
+                        </div>
+                    </Link>
+
                     {/* Qishloq Bozori */}
                     <Link
                         href={`/${locale}/play/qishloq-bozori`}

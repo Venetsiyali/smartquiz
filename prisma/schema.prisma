@@ -47,6 +47,7 @@ model User {
   sessions      Session[]
   quizzes       Quiz[]
   badges        UserBadge[]
+  wheelSessions WheelSession[]
 }
 
 // ==========================================
@@ -181,5 +182,78 @@ model Quiz {
   updatedAt   DateTime @updatedAt
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// BILIMLAR G'ILDIRAGI (WHEEL) O'YINI
+// ==========================================
+
+enum WheelQuestionSource {
+  AI
+  FILE
+  MANUAL
+}
+
+model WheelSession {
+  id        String   @id @default(cuid())
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  title     String   @default("Bilimlar g'ildiragi")
+  status    String   @default("active") // active | ended
+  createdAt DateTime @default(now())
+  endedAt   DateTime?
+
+  players   WheelPlayer[]
+  questions WheelQuestion[]
+  rounds    WheelRound[]
+
+  @@map("wheel_sessions")
+}
+
+model WheelPlayer {
+  id           String   @id @default(cuid())
+  sessionId    String
+  session      WheelSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name         String
+  score        Int      @default(0)
+  correctCount Int      @default(0)
+  wrongCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  rounds       WheelRound[]
+
+  @@map("wheel_players")
+}
+
+model WheelQuestion {
+  id           String              @id @default(cuid())
+  sessionId    String
+  session      WheelSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question     String
+  options      Json                // string[4]
+  correctIndex Int
+  explanation  String?
+  source       WheelQuestionSource @default(MANUAL)
+  used         Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+
+  rounds       WheelRound[]
+
+  @@map("wheel_questions")
+}
+
+model WheelRound {
+  id            String   @id @default(cuid())
+  sessionId     String
+  session       WheelSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  playerId      String
+  player        WheelPlayer   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  questionId    String
+  question      WheelQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedIndex Int
+  isCorrect     Boolean
+  createdAt     DateTime @default(now())
+
+  @@map("wheel_rounds")
 }
 
