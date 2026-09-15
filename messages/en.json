@@ -94,6 +94,12 @@
       "sub": "Monitor Game",
       "badge": "FREE",
       "desc": "Teams compete! Answer questions, earn coins, upgrade your shop!"
+    },
+    "wheel": {
+      "name": "Knowledge Wheel",
+      "sub": "Classroom Game",
+      "badge": "NEW",
+      "desc": "Spin the wheel to pick a student, then answer a question. One screen, whole class!"
     }
   },
   "GamePlay": {

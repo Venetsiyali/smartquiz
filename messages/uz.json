@@ -100,6 +100,12 @@
       "sub": "Frog Race Mode",
       "badge": "YANGI",
       "desc": "Ko'l ustida qurbaqalar poygasi! To'g'ri javob bering va marraga birinchi bo'lib yetib boring."
+    },
+    "wheel": {
+      "name": "Bilimlar G'ildiragi",
+      "sub": "Sinfxona o'yini",
+      "badge": "YANGI",
+      "desc": "Baraban o'quvchi tanlaydi, savolga javob beradi. Bitta ekranda, butun sinf bilan!"
     }
   },
   "GamePlay": {

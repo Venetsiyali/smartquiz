@@ -96,6 +96,15 @@ const GAME_STYLES = [
         route: '/play/7',
         pro: false,
     },
+    {
+        id: 'wheel',
+        image: '/images/games/wheel.webp',
+        gradient: 'linear-gradient(135deg, #2e0d2a 0%, #831843 60%, #ec4899 100%)',
+        glowColor: 'rgba(236,72,153,0.5)',
+        badgeStyle: { background: 'rgba(236,72,153,0.2)', color: '#f472b6', border: '1px solid rgba(236,72,153,0.5)' },
+        route: '/teacher/wheel',
+        pro: false,
+    },
 ];
 
 function getGreetingKey() {
