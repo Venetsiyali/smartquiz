@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Header from '@/components/Header';
 import Link from 'next/link';
+import { SHOW_AUTHOR_PAGE } from '@/lib/featureFlags';
 
 const BASE = 'https://www.zukkoo.uz';
 
@@ -265,13 +266,15 @@ export default function AboutPage({ params }: { params: { locale: string } }) {
                             >
                                 🚀 Hozir Boshlang — Bepul
                             </Link>
-                            <Link
-                                href={`/${params.locale}/muallif`}
-                                className="flex-1 text-center py-3 rounded-xl font-black text-sm transition-all hover:scale-105"
-                                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
-                            >
-                                👨‍🏫 Muallif haqida
-                            </Link>
+                            {SHOW_AUTHOR_PAGE && (
+                                <Link
+                                    href={`/${params.locale}/muallif`}
+                                    className="flex-1 text-center py-3 rounded-xl font-black text-sm transition-all hover:scale-105"
+                                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+                                >
+                                    👨‍🏫 Muallif haqida
+                                </Link>
+                            )}
                         </div>
 
                         {/* Footer note */}

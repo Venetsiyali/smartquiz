@@ -1,6 +1,8 @@
 // SERVER COMPONENT — metadata & generateStaticParams shu yerda
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import AuthorPageClient from './page-client';
+import { SHOW_AUTHOR_PAGE } from '@/lib/featureFlags';
 
 const BASE = 'https://www.zukkoo.uz';
 
@@ -57,6 +59,9 @@ export async function generateStaticParams() {
 }
 
 // Server component client componentni render qiladi
-export default function AuthorPage() {
+export default function AuthorPage({ params }: { params: { locale: string } }) {
+    if (!SHOW_AUTHOR_PAGE) {
+        redirect(`/${params.locale ?? 'uz'}`);
+    }
     return <AuthorPageClient />;
 }

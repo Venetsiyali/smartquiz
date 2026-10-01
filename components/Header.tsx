@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { CrownBadge, useSubscription } from "@/lib/subscriptionContext";
 import { useTranslations, useLocale } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { SHOW_AUTHOR_PAGE } from "@/lib/featureFlags";
 
 export default function Header() {
     const t = useTranslations('Header');
@@ -63,12 +64,14 @@ export default function Header() {
                     📱 Mobil Ilova
                 </a>
 
-                <button
-                    onClick={() => router.push(`/${locale}/muallif`)}
-                    className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10"
-                >
-                    👤 {t('author')}
-                </button>
+                {SHOW_AUTHOR_PAGE && (
+                    <button
+                        onClick={() => router.push(`/${locale}/muallif`)}
+                        className="hidden sm:inline-flex px-4 py-2 rounded-xl font-bold text-sm text-white/70 hover:text-white transition-all bg-white/5 hover:bg-white/10"
+                    >
+                        👤 {t('author')}
+                    </button>
+                )}
 
                 {session ? (
                     <div className="relative" ref={menuRef}>

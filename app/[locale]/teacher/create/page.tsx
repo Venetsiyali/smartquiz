@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { v4 as uuidv4 } from 'uuid';
 import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscriptionContext';
 import RateLimitModal from '@/components/ai/RateLimitModal';
+import { SHOW_AUTHOR_PAGE } from '@/lib/featureFlags';
 
 type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
 
@@ -850,10 +851,12 @@ function TeacherCreateInner() {
                         className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-1">
                         📚 Savollarim
                     </button>
-                    <button onClick={() => router.push('/muallif')}
-                        className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-2">
-                        {t('TopBar.author')}
-                    </button>
+                    {SHOW_AUTHOR_PAGE && (
+                        <button onClick={() => router.push('/muallif')}
+                            className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-2">
+                            {t('TopBar.author')}
+                        </button>
+                    )}
                     {/* File upload — Pro only */}
                     {isPro ? (
                         <button onClick={() => setModal('file')}

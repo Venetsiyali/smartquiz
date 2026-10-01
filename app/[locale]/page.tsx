@@ -11,6 +11,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import { articles } from '@/lib/articles';
 import dynamic from 'next/dynamic';
+import { SHOW_AUTHOR_PAGE } from '@/lib/featureFlags';
 
 const SocialProof = dynamic(() => import('@/components/home/SocialProof'));
 const HowItWorks = dynamic(() => import('@/components/home/HowItWorks'));
@@ -520,7 +521,7 @@ export default function LandingPage() {
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-white/40 font-semibold text-sm">
                         <Link href={`/${locale}/blog`} className="hover:text-white/70 transition-colors">{t('footerLinks.blog')}</Link>
                         <Link href={`/${locale}/pricing`} className="hover:text-white/70 transition-colors">{t('footerLinks.pricing')}</Link>
-                        <Link href={`/${locale}/muallif`} className="hover:text-white/70 transition-colors">{t('footerLinks.author')}</Link>
+                        {SHOW_AUTHOR_PAGE && <Link href={`/${locale}/muallif`} className="hover:text-white/70 transition-colors">{t('footerLinks.author')}</Link>}
                         <a href="https://t.me/zukkoo_uz" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">{t('footerLinks.support')}</a>
                         <Link href={`/${locale}/about`} className="hover:text-white/70 transition-colors">{t('footerLinks.about')}</Link>
                         <Link href={`/${locale}/privacy`} className="hover:text-white/70 transition-colors">{t('footerLinks.privacy')}</Link>
