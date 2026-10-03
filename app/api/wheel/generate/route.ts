@@ -3,6 +3,7 @@ import { requireTeacherId } from '@/lib/wheel/authz';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { callAIPool, extractJsonArray, shuffle } from '@/lib/wheel/aiPool';
 import { WheelGenerateBodySchema, WheelAIQuestionListSchema } from '@/lib/wheel/schema';
+import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
 
 export const maxDuration = 60;
 
@@ -17,6 +18,8 @@ QOIDALAR:
 3. Noto'g'ri variantlar ishonchli, ammo aniq noto'g'ri bo'lsin. "Hech biri" kabi qochish variantlaridan foydalanmang.
 4. Har bir savol uchun "explanation" — nega bu javob to'g'ri ekanini 1-2 jumlada tushuntiring.
 5. O'zbek tili grammatikasiga 100% amal qiling, agar boshqa til so'ralsa o'sha til qoidalariga rioya qiling.
+
+${OPTION_BALANCE_RULES}
 
 JSON sxemasi (massiv):
 [{"question":"Savol matni?","options":["Variant A","Variant B","Variant C","Variant D"],"correctIndex":2,"explanation":"To'g'ri javob izohi."}]`;
@@ -40,8 +43,9 @@ export async function POST(req: Request) {
     const { topic, grade, count, difficulty, provider } = parsedBody.data;
 
     const gradeLine = grade ? `Sinf/daraja: ${grade}.` : '';
+    const requestCount = withBalanceBuffer(count);
     const userPrompt = `Mavzu: "${topic}". ${gradeLine} Qiyinlik darajasi: ${difficulty}.
-DIQQAT: Qat'iy ravishda AYNAN ${count} ta savol yarating! Massiv uzunligi aniq ${count} ga teng bo'lishi SHART!`;
+DIQQAT: Qat'iy ravishda AYNAN ${requestCount} ta savol yarating! Massiv uzunligi aniq ${requestCount} ga teng bo'lishi SHART!`;
 
     try {
         const raw = await callAIPool(SYSTEM_PROMPT, userPrompt, provider);
@@ -66,7 +70,7 @@ DIQQAT: Qat'iy ravishda AYNAN ${count} ta savol yarating! Massiv uzunligi aniq $
             return NextResponse.json({ error: "AI savollarni to'g'ri formatlamadi, qayta urinib ko'ring" }, { status: 502 });
         }
 
-        return NextResponse.json({ questions: validated.data });
+        return NextResponse.json({ questions: pickBalanced(validated.data, count, q => q) });
     } catch (err: any) {
         console.error('[Wheel Generate] xatolik:', err?.message);
         return NextResponse.json({ error: "AI hozircha javob bermayapti. Birozdan so'ng qayta urinib ko'ring." }, { status: 503 });

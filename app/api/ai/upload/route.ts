@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { GROQ_MODELS, GEMINI_MODELS, GROQ_MAX_TOKENS } from '@/lib/aiModels';
+import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
 
 export const maxDuration = 60; // Vercel serverless timeout: 60 soniya
 
@@ -106,7 +108,7 @@ export async function POST(req: Request) {
 
     const prompt = `${langInstruction}
 
-Quyidagi matn asosida ${count} ta test savoli tuz. Savollar faqat matndan kelib chiqsin.
+Quyidagi matn asosida ${withBalanceBuffer(count)} ta test savoli tuz. Savollar faqat matndan kelib chiqsin.
 
 MATN:
 """
@@ -117,6 +119,8 @@ QAT'IY QOIDALAR:
 1. Har bir savolda TO'G'RI javobni HAR XIL pozitsiyaga qo'y (0,1,2,3 rotatsiya bilan).
 2. Noto'g'ri javoblar ishonchli va chalg'ituvchi bo'lsin.
 3. Har bir savol uchun qisqa "hint" (1 jumla yo'naltiruvchi ishora) yoz.
+
+${OPTION_BALANCE_RULES}
 
 Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
 {
@@ -146,9 +150,6 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         const groqMulti1 = (process.env.GROQ_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
         const groqMulti2 = (process.env.GROQ_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
         const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
-
-        const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-flash-latest'];
-        const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
 
         type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
 
@@ -204,7 +205,7 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                             { role: 'user', content: prompt },
                         ],
                         temperature: 0.6,
-                        max_tokens: 4096,
+                        max_tokens: GROQ_MAX_TOKENS,
                     });
                     raw = completion.choices[0]?.message?.content || '';
                 }
@@ -246,7 +247,11 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         }
 
         // Shuffle + normalize + add timeLimit
-        const questions = parsed.questions.map((q: any) => {
+        const balanced = pickBalanced(parsed.questions as any[], count, (q: any) => ({
+            options: q.options || [],
+            correctIndex: (q.correctOptions || [0])[0],
+        }));
+        const questions = balanced.map((q: any) => {
             const opts: string[] = q.options || [];
             const correctIdxs: number[] = q.correctOptions || [0];
             const correctTexts = new Set(correctIdxs.map((i: number) => opts[i]));

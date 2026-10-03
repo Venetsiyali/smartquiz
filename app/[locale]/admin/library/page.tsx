@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import { OPTION_BALANCE_RULES } from '@/lib/questionQuality';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -427,10 +428,10 @@ function PasteImportSection({ onImport }: { onImport: (qs: Question[]) => void }
   {
     "text": "Savol matni?",
     "options": [
-      {"text": "To'g'ri javob", "isCorrect": true},
-      {"text": "Noto'g'ri 1", "isCorrect": false},
-      {"text": "Noto'g'ri 2", "isCorrect": false},
-      {"text": "Noto'g'ri 3", "isCorrect": false}
+      {"text": "Variant A", "isCorrect": false},
+      {"text": "Variant B", "isCorrect": false},
+      {"text": "Variant C", "isCorrect": true},
+      {"text": "Variant D", "isCorrect": false}
     ],
     "hint": "Qisqa yo'naltiruvchi ishora (1 jumla)"
   }
@@ -438,8 +439,11 @@ function PasteImportSection({ onImport }: { onImport: (qs: Question[]) => void }
 
 Qoidalar:
 - Har bir savolda faqat 1 ta to'g'ri javob bo'lsin
+- To'g'ri javob o'rnini har savolda almashtirib turing (1-, 2-, 3- yoki 4-o'rin)
 - Noto'g'ri javoblar ishonchli va chalg'ituvchi bo'lsin
 - Faqat JSON yozing, hech qanday tushuntirish yoki markdown qo'shmang
+
+${OPTION_BALANCE_RULES}
 
 Endi menga ___ fani bo'yicha ___ ta savol yozing.`;
 

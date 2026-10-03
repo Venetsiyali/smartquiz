@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk';
+import { GROQ_MODELS, GEMINI_MODELS, GROQ_MAX_TOKENS } from '@/lib/aiModels';
 
 // Fisher-Yates shuffle
 export function shuffle<T>(arr: T[]): T[] {
@@ -15,9 +16,6 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     const multi2 = fallback?.split(',').map(k => k.trim()).filter(Boolean) ?? [];
     return Array.from(new Set([...multi1, ...multi2]));
 }
-
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-flash-latest'];
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
 
 type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
 
@@ -63,7 +61,7 @@ async function callGroq(key: string, model: string, systemPrompt: string, userPr
         ],
         temperature: 0.8,
         top_p: 1,
-        max_tokens: 8000,
+        max_tokens: GROQ_MAX_TOKENS,
     });
     return completion.choices[0]?.message?.content || '';
 }

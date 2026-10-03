@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { prisma } from '@/lib/prisma';
+import { GROQ_MODELS, GEMINI_MODELS, GROQ_MAX_TOKENS } from '@/lib/aiModels';
+import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
 
 export const maxDuration = 60;
 
@@ -147,6 +149,8 @@ Foydalanuvchi so'rovida qancha savol yoki topshiriq so'ralsa (masalan 20 ta), JS
 - Savollarda "Hech biri", "Hamma javob to'g'ri" kabi oson qochish yo'llarini ishlatmang.
 - Variantlarni boshida "A)", "B)" kabi harflar bilan boshlamang.
 
+${OPTION_BALANCE_RULES}
+
 # GAME TYPE RULES (qat'iy bajarish shart)
 1. classic/multiple/team → Savol + 4 variant, 1 to'g'ri javob. correctOptions: [indeks]. hint majburiy.
 2. truefalse → "isTrue": true/false. Biroz o'ylantiradigan tasdiqlar. hint majburiy.
@@ -183,6 +187,7 @@ function buildPrompt(topic: string, gameType: string, count: number, language: s
         case 'team':
             return `${lang}. Mavzu: "${topic}". ${countReq}
 Qoidalar: to'g'ri javob 1 ta, qolgan 3 variant ishonchli ammo noto'g'ri bo'lsin. Trivial savollardan qoching. Sabab-oqibat, tahlil ko'nikmalarini sinang.
+MUHIM: 4 ta variant uzunligi deyarli teng bo'lsin — to'g'ri javob hech qachon eng uzun variant bo'lmasin.
 JSON sxemasi:
 {"questions":[{"text":"Savol?","options":["Variant A","Variant B","Variant C","Variant D"],"correctOptions":[2],"hint":"Bir jumla ishora"}]}`;
 
@@ -331,9 +336,6 @@ function getKeys(envVar: string | undefined, fallback: string | undefined): stri
     return Array.from(new Set([...multi1, ...multi2]));
 }
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-flash-latest'];
-const GROQ_MODELS   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
-
 const FUNNY_MESSAGES = [
     "🤖 AI bugun charchab qoldi... Ertaga qaytib keladi yoki bir oz kuting!",
     "😴 Barcha AI'lar uxlab qoldi. Ularni uyg'otishga urinayapmiz...",
@@ -391,7 +393,7 @@ async function callGroq(key: string, model: string, systemPrompt: string, userPr
         ],
         temperature: 0.85,
         top_p: 1,
-        max_tokens: 8000,
+        max_tokens: GROQ_MAX_TOKENS,
     });
     return completion.choices[0]?.message?.content || '';
 }
@@ -412,7 +414,10 @@ export async function POST(req: Request) {
 
     // 3. Dynamic system prompt — excluded context bilan
     const systemPrompt = buildSystemPrompt(existingTexts);
-    const userPrompt = buildPrompt(enrichedTopic, gameType, count, language);
+    // Ko'p tanlovli savollar uchun zaxira bilan so'raymiz — keyin uzunlik bo'yicha "shpargalka" bermaydiganlari tanlanadi
+    const isMcq = !['truefalse', 'blitz', 'order', 'match', 'anagram'].includes(gameType);
+    const requestCount = isMcq ? withBalanceBuffer(count) : count;
+    const userPrompt = buildPrompt(enrichedTopic, gameType, requestCount, language);
 
     // ─── Multi-Key + Multi-Model Pool setup ────────────────────────────────
     const geminiKeys = getKeys(process.env.GEMINI_API_KEYS, process.env.GEMINI_API_KEY);
@@ -442,7 +447,7 @@ export async function POST(req: Request) {
         const { provider: cur, key, model } = allCandidates[ci];
         console.log(`[AI Pool] Trying ${cur}/${model} (${ci + 1}/${allCandidates.length}), elapsed=${Date.now() - startTime}ms`);
         const currentTopic      = ci === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
-        const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, count, language);
+        const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, requestCount, language);
 
         try {
             let raw = '';
@@ -461,7 +466,10 @@ export async function POST(req: Request) {
             }
 
             const filtered       = filterDuplicates(questions, existingTexts);
-            const finalQuestions = filtered.length >= Math.ceil(questions.length / 2) ? filtered : questions;
+            const deduped        = filtered.length >= Math.ceil(questions.length / 2) ? filtered : questions;
+            const finalQuestions = isMcq
+                ? pickBalanced(deduped, count, q => ({ options: q.options, correctIndex: q.correctOptions[0] }))
+                : deduped;
 
             return NextResponse.json({ questions: finalQuestions, gameType });
         } catch (err: any) {

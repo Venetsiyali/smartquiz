@@ -4,6 +4,7 @@ import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { callAIPool, extractJsonArray, shuffle } from '@/lib/wheel/aiPool';
 import { parseStructuredTest } from '@/lib/wheel/regexParser';
 import { WheelAIQuestionListSchema } from '@/lib/wheel/schema';
+import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
 
 export const maxDuration = 60;
 
@@ -31,6 +32,9 @@ async function extractText(file: File): Promise<string> {
 
 const AI_SYSTEM_PROMPT = `Siz matn asosida test savollari tuzuvchi AI yordamchisisiz. Faqat JSON massiv qaytaring, boshqa hech narsa yozmang.
 Har bir savolda 4 variant va faqat 1 to'g'ri javob bo'lsin. "explanation" maydonida to'g'ri javob nega to'g'ri ekanini qisqa tushuntiring.
+
+${OPTION_BALANCE_RULES}
+
 JSON sxemasi: [{"question":"Savol?","options":["A","B","C","D"],"correctIndex":2,"explanation":"Izoh."}]`;
 
 export async function POST(req: Request) {
@@ -89,14 +93,15 @@ export async function POST(req: Request) {
 
     // 2) Format aniqlanmadi — matnni AI'ga beramiz
     const truncated = extractedText.slice(0, 8000);
-    const userPrompt = `Quyidagi matn asosida ${count} ta test savoli tuz. Savollar faqat matndan kelib chiqsin.
+    const requestCount = withBalanceBuffer(count);
+    const userPrompt = `Quyidagi matn asosida ${requestCount} ta test savoli tuz. Savollar faqat matndan kelib chiqsin.
 
 MATN:
 """
 ${truncated}
 """
 
-DIQQAT: AYNAN ${count} ta savol yarat, massiv uzunligi aniq shunga teng bo'lishi shart.`;
+DIQQAT: AYNAN ${requestCount} ta savol yarat, massiv uzunligi aniq shunga teng bo'lishi shart.`;
 
     try {
         const raw = await callAIPool(AI_SYSTEM_PROMPT, userPrompt, 'groq');
@@ -121,7 +126,7 @@ DIQQAT: AYNAN ${count} ta savol yarat, massiv uzunligi aniq shunga teng bo'lishi
             return NextResponse.json({ error: "AI matndan savol yaratolmadi, qayta urinib ko'ring" }, { status: 502 });
         }
 
-        return NextResponse.json({ questions: validated.data, method: 'ai', fileInfo: { name: file.name, chars: truncated.length } });
+        return NextResponse.json({ questions: pickBalanced(validated.data, count, q => q), method: 'ai', fileInfo: { name: file.name, chars: truncated.length } });
     } catch (err: any) {
         console.error('[Wheel Parse] AI xatoligi:', err?.message);
         return NextResponse.json({ error: 'AI hozircha javob bermayapti. Birozdan so\'ng qayta urinib ko\'ring.' }, { status: 503 });

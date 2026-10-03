@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { GROQ_MODELS, GEMINI_MODELS } from '@/lib/aiModels';
 
 export async function GET() {
     // Temporarily removed auth check for debugging
@@ -9,15 +10,14 @@ export async function GET() {
     const results: Record<string, { ok: boolean; status?: number; error?: string }> = {};
 
     // ── Groq models ──────────────────────────────────────────────────────────
-    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
-    for (const model of groqModels) {
+    for (const model of GROQ_MODELS) {
         if (!groqKey) { results[`groq/${model}`] = { ok: false, error: 'GROQ_API_KEY topilmadi' }; continue; }
         try {
             const client = new Groq({ apiKey: groqKey });
             await client.chat.completions.create({
                 model,
                 messages: [{ role: 'user', content: 'Reply with single word: OK' }],
-                max_tokens: 5,
+                max_tokens: 200,
             });
             results[`groq/${model}`] = { ok: true };
         } catch (e: any) {
@@ -26,8 +26,7 @@ export async function GET() {
     }
 
     // ── Gemini models ────────────────────────────────────────────────────────
-    const geminiModels = ['gemini-2.5-flash', 'gemini-flash-latest'];
-    for (const model of geminiModels) {
+    for (const model of GEMINI_MODELS) {
         if (!geminiKey) { results[`gemini/${model}`] = { ok: false, error: 'GEMINI_API_KEY topilmadi' }; continue; }
         try {
             const res = await fetch(
