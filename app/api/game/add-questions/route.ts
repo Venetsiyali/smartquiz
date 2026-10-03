@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRoom, saveRoomData } from '@/lib/gameState';
+import { getRoom, saveRoomData, shuffleChoiceOptions } from '@/lib/gameState';
 
 export async function POST(req: Request) {
     try {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
         // Append or replace questions. Following standard behavior: we just replace for the new game session
         room.quizTitle = quizTitle || room.quizTitle;
-        room.questions = questions;
+        room.questions = shuffleChoiceOptions(questions);
 
         await saveRoomData(room);
 

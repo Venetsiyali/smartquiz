@@ -57,6 +57,30 @@ export interface Question {
     explanation?: string;    // "Did you know?" text shown after question
 }
 
+/**
+ * Ko'p tanlovli savollarda variantlar tartibini aralashtiradi (correctOptions mos ravishda qayta hisoblanadi).
+ * Manba (AI, kutubxona, qo'lda) to'g'ri javobni doim bir xil o'ringa qo'ygan bo'lsa ham o'quvchi buni sezmaydi.
+ */
+export function shuffleChoiceOptions(questions: Question[]): Question[] {
+    return questions.map(q => {
+        const isChoice = (q.type ?? 'multiple') === 'multiple';
+        if (!isChoice || !Array.isArray(q.options) || q.options.length < 3) return q;
+
+        const order = q.options.map((_, i) => i);
+        for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+        }
+        const correct = new Set(q.correctOptions ?? []);
+        return {
+            ...q,
+            options: order.map(i => q.options[i]),
+            optionImages: q.optionImages ? order.map(i => q.optionImages![i]) : undefined,
+            correctOptions: order.map((oldIdx, newIdx) => (correct.has(oldIdx) ? newIdx : -1)).filter(i => i !== -1),
+        };
+    });
+}
+
 
 export interface GameRoom {
     pin: string;
