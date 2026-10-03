@@ -10,6 +10,8 @@ export interface LLMRequest {
     budgetMs?: number;
     /** "provider/model" ko'rinishida — masalan, oldin yaroqsiz JSON qaytargan model. */
     skip?: string[];
+    /** Faqat shu provayderlardan foydalanish (masalan, tekshiruvchi generatordan boshqa bo'lishi uchun). */
+    providers?: ProviderId[];
 }
 
 export interface LLMResult {
@@ -136,8 +138,8 @@ function shuffled<T>(arr: T[]): T[] {
     return a;
 }
 
-function buildCandidates(preferred?: ProviderId): Candidate[] {
-    const configured = PROVIDERS.filter(p => getProviderKeys(p).length > 0);
+function buildCandidates(preferred?: ProviderId, allowed?: ProviderId[]): Candidate[] {
+    const configured = PROVIDERS.filter(p => getProviderKeys(p).length > 0 && (!allowed || allowed.includes(p.id)));
     // Afzal provayder birinchi, qolganlari har safar aralash tartibda — yuk provayderlar orasida taqsimlanadi
     const ordered = [
         ...configured.filter(p => p.id === preferred),
@@ -196,7 +198,7 @@ export async function callLLM(req: LLMRequest): Promise<LLMResult> {
     const start = Date.now();
     const budget = req.budgetMs ?? 45_000;
     const skip = new Set(req.skip ?? []);
-    const candidates = buildCandidates(req.preferred);
+    const candidates = buildCandidates(req.preferred, req.providers);
 
     if (candidates.length === 0) {
         throw new LLMUnavailableError('AI kaliti sozlanmagan', false, null);
@@ -243,6 +245,8 @@ export async function callLLM(req: LLMRequest): Promise<LLMResult> {
                     rateLimitedCount++;
                     const sec = Math.min(err.retryAfterSec ?? 30, 600);
                     coolDown(keyModelId, sec * 1000, true);
+                } else if (status === 413) {
+                    coolDown(keyModelId, 30 * 60_000); // so'rov bu model/tarif limitidan katta — tez orada o'zgarmaydi
                 } else if (status === 401 || status === 403) {
                     coolDown(keyId, 60 * 60_000); // kalit yaroqsiz yoki bloklangan
                 } else if (status === 404 || (status === 400 && /decommission|not found|does not exist|no longer|not available|invalid model/i.test(body))) {

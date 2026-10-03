@@ -105,7 +105,7 @@ DIQQAT: Qat'iy ravishda AYNAN ${requestCount} ta savol yarating! Massiv uzunligi
         const questions = pickBalanced(valid, count, q => q);
         await saveGeneratedToBank(
             questions.map(q => ({ text: q.question, options: q.options, correctIndex: q.correctIndex, explanation: q.explanation })),
-            { topic, grade: gradeNum, difficulty: difficultyNum },
+            { topic, grade: gradeNum, difficulty: difficultyNum, generatedBy: `${result.provider}/${result.model}` },
         );
         return NextResponse.json({ questions, source: 'ai' });
     }

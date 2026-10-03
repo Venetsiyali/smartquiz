@@ -216,6 +216,9 @@ model BankQuestion {
   status       BankQuestionStatus @default(PENDING)
   source       BankQuestionSource @default(AI)
   contentHash  String             @unique
+  generatedBy  String             @default("") // "provider/model" — tekshiruvchi boshqa provayderdan tanlanadi
+  verifiedAt   DateTime?
+  reviewNote   String             @default("") // tekshiruvchi izohi yoki rad etish sababi
   timesShown   Int                @default(0)
   timesCorrect Int                @default(0)
   reportCount  Int                @default(0)

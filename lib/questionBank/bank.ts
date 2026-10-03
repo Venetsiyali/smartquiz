@@ -129,7 +129,7 @@ export function fallbackNotice(result: FallbackResult): string {
  */
 export async function saveGeneratedToBank(
     questions: { text: string; options: string[]; correctIndex: number; explanation?: string; hint?: string }[],
-    meta: { topic: string; grade?: number | null; difficulty?: number; language?: string },
+    meta: { topic: string; grade?: number | null; difficulty?: number; language?: string; generatedBy?: string },
 ): Promise<void> {
     const subject = detectSubject(meta.topic);
     if (!subject) return;
@@ -152,6 +152,7 @@ export async function saveGeneratedToBank(
                     status: 'PENDING' as const,
                     source: 'AI' as const,
                     contentHash: contentHash(q.text, language),
+                    generatedBy: meta.generatedBy ?? '',
                 })),
             skipDuplicates: true,
         });

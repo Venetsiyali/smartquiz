@@ -19,6 +19,46 @@ export function hasLengthGiveaway(options: string[], correctIndex: number): bool
     return correctLen > maxOther * 1.25 && correctLen - maxOther >= 6;
 }
 
+function levenshtein(a: string, b: string): number {
+    const m = a.length, n = b.length;
+    let prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+        const cur = [i];
+        for (let j = 1; j <= n; j++) {
+            cur[j] = a[i - 1] === b[j - 1] ? prev[j - 1] : 1 + Math.min(prev[j], cur[j - 1], prev[j - 1]);
+        }
+        prev = cur;
+    }
+    return prev[n];
+}
+
+/** 0..1 oralig'ida matn o'xshashligi (1 = bir xil). */
+export function similarityScore(a: string, b: string): number {
+    const s1 = a.toLowerCase().trim();
+    const s2 = b.toLowerCase().trim();
+    const maxLen = Math.max(s1.length, s2.length);
+    if (maxLen === 0) return 1;
+    return 1 - levenshtein(s1, s2) / maxLen;
+}
+
+const BANNED_OPTION = /^(hech (biri|qaysi(si)?)|hammasi|barchasi|barcha javoblar|yuqoridagilarning (hammasi|barchasi)|[a-d] va [a-d]|ikkalasi)\b/i;
+
+/** Savolning tuzilishidagi nuqsonlar ro'yxati (bo'sh massiv = yaroqli). */
+export function qualityIssues(q: { question: string; options: string[]; correctIndex: number }): string[] {
+    const issues: string[] = [];
+    const text = q.question.trim();
+    if (text.length < 10 || text.length > 400) issues.push('savol uzunligi');
+    if (q.options.length !== 4) issues.push('variantlar soni');
+    if (q.correctIndex < 0 || q.correctIndex >= q.options.length) issues.push("to'g'ri javob indeksi");
+    const opts = q.options.map(o => o.trim());
+    if (opts.some(o => o.length === 0 || o.length > 150)) issues.push('variant uzunligi');
+    if (new Set(opts.map(o => o.toLowerCase())).size !== opts.length) issues.push('takroriy variant');
+    if (opts.some(o => BANNED_OPTION.test(o))) issues.push('taqiqlangan variant');
+    if (opts.some(o => /^[A-Da-d][).]\s/.test(o))) issues.push('variant harf bilan boshlangan');
+    if (hasLengthGiveaway(opts, q.correctIndex)) issues.push("to'g'ri javob uzunligi bilan ajralib turadi");
+    return issues;
+}
+
 /** AI'dan zaxira bilan ko'proq savol so'raladi, keyin eng muvozanatlilari tanlanadi. */
 export function withBalanceBuffer(count: number): number {
     return count + Math.max(2, Math.ceil(count * 0.25));

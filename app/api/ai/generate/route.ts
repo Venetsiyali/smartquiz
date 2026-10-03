@@ -1,45 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
+import { OPTION_BALANCE_RULES, pickBalanced, similarityScore, withBalanceBuffer } from '@/lib/questionQuality';
 import { callLLM } from '@/lib/llm/pool';
 import { isProviderId } from '@/lib/llm/providers';
+import { shuffle } from '@/lib/shuffle';
 import { getFallbackQuestions, fallbackNotice, saveGeneratedToBank, type BankQuestionOut } from '@/lib/questionBank/bank';
 
 export const maxDuration = 60;
-
-// ─── Fisher-Yates shuffle ────────────────────────────────────────────────────
-function shuffle<T>(arr: T[]): T[] {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
-
-// ─── Levenshtein distance ────────────────────────────────────────────────────
-function levenshtein(a: string, b: string): number {
-    const m = a.length, n = b.length;
-    const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
-        Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
-    );
-    for (let i = 1; i <= m; i++) {
-        for (let j = 1; j <= n; j++) {
-            dp[i][j] = a[i - 1] === b[j - 1]
-                ? dp[i - 1][j - 1]
-                : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-        }
-    }
-    return dp[m][n];
-}
-
-function similarityScore(a: string, b: string): number {
-    const s1 = a.toLowerCase().trim();
-    const s2 = b.toLowerCase().trim();
-    const maxLen = Math.max(s1.length, s2.length);
-    if (maxLen === 0) return 1;
-    return 1 - levenshtein(s1, s2) / maxLen;
-}
 
 // ─── Topic Shuffler — keng kategoriyalarni quyi mavzularga yo'naltiradi ──────
 const TOPIC_NICHES: Record<string, string[]> = {
@@ -400,7 +367,7 @@ export async function POST(req: Request) {
             if (isMcq) {
                 await saveGeneratedToBank(
                     finalQuestions.map(q => ({ text: q.text, options: q.options, correctIndex: q.correctOptions[0], explanation: q.explanation, hint: q.hint })),
-                    { topic: topic.trim(), language },
+                    { topic: topic.trim(), language, generatedBy: `${result.provider}/${result.model}` },
                 );
             }
 
