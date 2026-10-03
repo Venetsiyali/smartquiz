@@ -35,6 +35,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <Link href="/admin/library" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
                         📚 Kutubxona
                     </Link>
+                    <Link href="/admin/bank" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
+                        🗃️ Savollar ombori
+                    </Link>
                     <Link href="/" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 mt-auto">
                         ← Saytga qaytish
                     </Link>

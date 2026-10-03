@@ -79,7 +79,7 @@ async function main() {
     console.log(`Provayderlar: ${configured.join(', ')} | limit=${LIMIT}, batch=${BATCH}`);
 
     const rows = (await prisma.bankQuestion.findMany({
-        where: { status: 'PENDING', verifiedAt: null, language: 'uz' },
+        where: { status: 'PENDING', verifiedAt: null, language: 'uz', reports: { none: { resolved: false } } },
         orderBy: { createdAt: 'asc' },
         take: LIMIT,
         select: { id: true, text: true, options: true, correctIndex: true, generatedBy: true },

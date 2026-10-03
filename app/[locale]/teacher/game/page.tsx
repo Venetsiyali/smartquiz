@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription } from '@/lib/subscriptionContext';
 import BlitzRaceBar from '@/components/BlitzRaceBar';
 import TeamRaceTrack, { type TeamData } from '@/components/TeamRaceTrack';
+import ReportQuestionButton from '@/components/bank/ReportQuestionButton';
 
 
 
@@ -433,6 +434,9 @@ export default function TeacherGamePage() {
             <button onClick={handleNext} className="btn-primary text-xl px-10 py-5 flex items-center justify-center gap-2 transition-all">
                 {questionEnd.isLastQuestion ? '🏁 Yakunlash' : `➡️ Keyingi Savol ${autoNextTime !== null ? `(${autoNextTime}s)` : ''}`}
             </button>
+            {question && (question.type ?? 'multiple') === 'multiple' && (
+                <ReportQuestionButton key={question.questionIndex} questionText={question.text} />
+            )}
         </div>
     );
 

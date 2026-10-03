@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import ReportQuestionButton from '@/components/bank/ReportQuestionButton';
 
 function fireConfetti() {
     const colors = ['#0056b3', '#FFD600', '#00E676', '#FF1744', '#ffffff'];
@@ -9,6 +10,7 @@ function fireConfetti() {
 }
 
 export default function AnswerFeedback({
+    questionText,
     isCorrect,
     options,
     correctIndex,
@@ -16,6 +18,7 @@ export default function AnswerFeedback({
     explanation,
     onContinue,
 }: {
+    questionText: string;
     isCorrect: boolean;
     options: string[];
     correctIndex: number;
@@ -74,6 +77,9 @@ export default function AnswerFeedback({
             <button onClick={onContinue} className="btn-primary px-10 py-4 text-lg">
                 Davom etish →
             </button>
+            <div className="mt-6">
+                <ReportQuestionButton questionText={questionText} />
+            </div>
         </div>
     );
 }

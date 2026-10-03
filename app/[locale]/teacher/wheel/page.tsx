@@ -257,6 +257,7 @@ export default function WheelGamePage() {
 
                 {gamePhase === 'feedback' && answerResult && currentQuestion && (
                     <AnswerFeedback
+                        questionText={currentQuestion.question}
                         isCorrect={answerResult.isCorrect}
                         options={currentQuestion.options}
                         correctIndex={answerResult.correctIndex}

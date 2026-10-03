@@ -225,8 +225,24 @@ model BankQuestion {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
+  reports      BankReport[]
+
   @@index([status, language, subject, grade])
   @@map("bank_questions")
+}
+
+// O'qituvchilarning "Savolda xato bor" shikoyatlari (bitta foydalanuvchi — bitta savolga bir marta)
+model BankReport {
+  id         String       @id @default(cuid())
+  questionId String
+  question   BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  reason     String       @default("")
+  resolved   Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+
+  @@unique([questionId, userId])
+  @@map("bank_reports")
 }
 
 // ==========================================
