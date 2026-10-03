@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { prisma } from '@/lib/prisma';
-import { GROQ_MODELS, GEMINI_MODELS, GROQ_MAX_TOKENS } from '@/lib/aiModels';
 import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
+import { callLLM } from '@/lib/llm/pool';
+import { isProviderId } from '@/lib/llm/providers';
+import { getFallbackQuestions, fallbackNotice, saveGeneratedToBank, type BankQuestionOut } from '@/lib/questionBank/bank';
 
 export const maxDuration = 60;
 
@@ -315,27 +316,6 @@ function filterDuplicates(newQuestions: any[], existingTexts: string[]): any[] {
     });
 }
 
-// ─── Retry-after extractor ───────────────────────────────────────────────────
-function parseRetryAfter(err: any): number | null {
-    try {
-        const header = err?.headers?.get?.('retry-after') ?? err?.headers?.['retry-after'];
-        if (header) return Math.ceil(parseInt(String(header), 10));
-    } catch {}
-    const msg: string = err?.message ?? err?.error?.message ?? JSON.stringify(err?.error ?? '');
-    const sec = msg.match(/try again in (\d+(?:\.\d+)?)\s*s/i);
-    if (sec) return Math.ceil(parseFloat(sec[1]));
-    const min = msg.match(/try again in (\d+(?:\.\d+)?)\s*m/i);
-    if (min) return Math.ceil(parseFloat(min[1]) * 60);
-    return null;
-}
-
-// ─── API Key Pool helpers ─────────────────────────────────────────────────────
-function getKeys(envVar: string | undefined, fallback: string | undefined): string[] {
-    const multi1 = envVar?.split(',').map(k => k.trim()).filter(Boolean) ?? [];
-    const multi2 = fallback?.split(',').map(k => k.trim()).filter(Boolean) ?? [];
-    return Array.from(new Set([...multi1, ...multi2]));
-}
-
 const FUNNY_MESSAGES = [
     "🤖 AI bugun charchab qoldi... Ertaga qaytib keladi yoki bir oz kuting!",
     "😴 Barcha AI'lar uxlab qoldi. Ularni uyg'otishga urinayapmiz...",
@@ -351,56 +331,24 @@ function getFunnyMessage(): string {
     return FUNNY_MESSAGES[Math.floor(Math.random() * FUNNY_MESSAGES.length)];
 }
 
-async function callGemini(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 25000); // 25s per-model timeout
-    try {
-        const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
-                    generationConfig: { temperature: 0.85, responseMimeType: 'application/json', maxOutputTokens: 8192 },
-                }),
-                signal: controller.signal
-            }
-        );
-        clearTimeout(id);
-        if (!res.ok) {
-            const body = await res.text();
-            const err: any = new Error(`Gemini xatosi: ${res.status}`);
-            err.status = res.status;
-            err.details = body;
-            throw err;
-        }
-        const data = await res.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    } catch (error) {
-        clearTimeout(id);
-        throw error;
-    }
-}
+// AI javobi uchun umumiy vaqt — qolgan vaqtda ombordan javob qaytarishga ulguramiz (Vercel limiti 60s)
+const AI_BUDGET_MS = 40_000;
 
-async function callGroq(key: string, model: string, systemPrompt: string, userPrompt: string): Promise<string> {
-    const client = new Groq({ apiKey: key, timeout: 25000, maxRetries: 0 }); // 25s per-model timeout
-    const completion = await client.chat.completions.create({
-        model,
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.85,
-        top_p: 1,
-        max_tokens: GROQ_MAX_TOKENS,
-    });
-    return completion.choices[0]?.message?.content || '';
+function bankToGameQuestions(questions: BankQuestionOut[], timeLimit: number) {
+    return questions.map(q => ({
+        text: q.text,
+        options: q.options,
+        correctOptions: [q.correctIndex],
+        explanation: q.explanation,
+        hint: q.hint,
+        learning_objective: '',
+        timeLimit,
+    }));
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
-    const { topic, count = 5, language = 'uz', gameType = 'multiple', timeLimit = 20, provider = 'groq' } = await req.json();
+    const { topic, count = 5, language = 'uz', gameType = 'multiple', timeLimit = 20, provider = 'groq', allowFallback = true } = await req.json();
 
     if (!topic || topic.trim().length < 2) {
         return NextResponse.json({ error: 'Mavzu kiriting (kamida 2 ta belgi)' }, { status: 400 });
@@ -409,7 +357,7 @@ export async function POST(req: Request) {
     // 1. Topic Shuffler: keng kategoriya bo'lsa, quyi bo'limga yo'naltirish
     const enrichedTopic = pickTopicNiche(topic.trim());
 
-    // 2. DB dan mavjud savollarni olish (parallel, bloklamaydi)
+    // 2. DB dan mavjud savollarni olish
     const existingTexts = await fetchExistingQuestions(topic.trim(), gameType);
 
     // 3. Dynamic system prompt — excluded context bilan
@@ -417,53 +365,31 @@ export async function POST(req: Request) {
     // Ko'p tanlovli savollar uchun zaxira bilan so'raymiz — keyin uzunlik bo'yicha "shpargalka" bermaydiganlari tanlanadi
     const isMcq = !['truefalse', 'blitz', 'order', 'match', 'anagram'].includes(gameType);
     const requestCount = isMcq ? withBalanceBuffer(count) : count;
-    const userPrompt = buildPrompt(enrichedTopic, gameType, requestCount, language);
 
-    // ─── Multi-Key + Multi-Model Pool setup ────────────────────────────────
-    const geminiKeys = getKeys(process.env.GEMINI_API_KEYS, process.env.GEMINI_API_KEY);
-    const groqKeys   = getKeys(process.env.GROQ_API_KEYS,   process.env.GROQ_API_KEY);
-
-    type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
-
-    // Expand each key × models so every model per key is tried
-    const expandGemini = (keys: string[]): Candidate[] =>
-        keys.flatMap(k => GEMINI_MODELS.map(m => ({ provider: 'gemini' as const, key: k, model: m })));
-    const expandGroq = (keys: string[]): Candidate[] =>
-        keys.flatMap(k => GROQ_MODELS.map(m => ({ provider: 'groq' as const, key: k, model: m })));
-
-    const primaryList  = shuffle(provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys));
-    const fallbackList = shuffle(provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys));
-    const allCandidates: Candidate[] = [...primaryList, ...fallbackList];
-
-    let lastError = '';
     const startTime = Date.now();
-    console.log(`[AI Pool] Starting: provider=${provider}, topic="${enrichedTopic}", gameType=${gameType}, candidates=${allCandidates.length}, geminiKeys=${geminiKeys.length}, groqKeys=${groqKeys.length}`);
+    const skip: string[] = [];
 
-    for (let ci = 0; ci < allCandidates.length; ci++) {
-        if (Date.now() - startTime > 50000) {
-            console.warn('[AI Pool] 50s time limit reached, aborting pool to prevent server timeout');
+    // Yaroqsiz JSON qaytsa, boshqa model va boshqa quyi mavzu bilan yana bir marta urinib ko'ramiz
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const currentTopic = attempt === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
+        let result;
+        try {
+            result = await callLLM({
+                system: systemPrompt,
+                user: buildPrompt(currentTopic, gameType, requestCount, language),
+                temperature: 0.85,
+                preferred: isProviderId(provider) ? provider : undefined,
+                budgetMs: AI_BUDGET_MS - (Date.now() - startTime),
+                skip,
+            });
+        } catch (err: any) {
+            console.warn('[AI Generate] AI mavjud emas:', err?.message);
             break;
         }
-        const { provider: cur, key, model } = allCandidates[ci];
-        console.log(`[AI Pool] Trying ${cur}/${model} (${ci + 1}/${allCandidates.length}), elapsed=${Date.now() - startTime}ms`);
-        const currentTopic      = ci === 0 ? enrichedTopic : pickTopicNiche(topic.trim());
-        const currentUserPrompt = ci === 0 ? userPrompt    : buildPrompt(currentTopic, gameType, requestCount, language);
 
         try {
-            let raw = '';
-            if (cur === 'gemini') {
-                raw = await callGemini(key, model, systemPrompt, currentUserPrompt);
-            } else {
-                raw = await callGroq(key, model, systemPrompt, currentUserPrompt);
-            }
-
-            const parsed    = extractJson(raw);
-            const questions = normalizeQuestions(parsed, gameType, timeLimit);
-
-            if (!questions || questions.length === 0) {
-                lastError = "AI savollarni to'g'ri formatlamadi";
-                continue;
-            }
+            const questions = normalizeQuestions(extractJson(result.text), gameType, timeLimit);
+            if (questions.length === 0) throw new Error("bo'sh natija");
 
             const filtered       = filterDuplicates(questions, existingTexts);
             const deduped        = filtered.length >= Math.ceil(questions.length / 2) ? filtered : questions;
@@ -471,34 +397,38 @@ export async function POST(req: Request) {
                 ? pickBalanced(deduped, count, q => ({ options: q.options, correctIndex: q.correctOptions[0] }))
                 : deduped;
 
-            return NextResponse.json({ questions: finalQuestions, gameType });
-        } catch (err: any) {
-            const status = err?.status ?? 0;
-            const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
-            const isUnavailable = status === 503 || status === 502 || status === 529;
-            const isTimeout     = err?.name === 'AbortError' || err?.message?.includes('timeout') || err?.message?.includes('aborted');
-            const isBlocked     = status === 403 || status === 401; // leaked/invalid key
-            const isNotFound    = status === 404; // model not available
-
-            lastError = err?.message || 'AI xatoligi';
-
-            if (isRateLimit) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} RATE LIMITED — trying next...`);
-            } else if (isTimeout) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} TIMED OUT — trying next...`);
-            } else if (isUnavailable) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} UNAVAILABLE (${status}) — trying next...`);
-            } else if (isBlocked) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} KEY BLOCKED (${status}) — trying next...`);
-            } else if (isNotFound) {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} MODEL NOT FOUND (404) — trying next...`);
-            } else {
-                console.warn(`[AI Pool] ${cur}/${model} #${ci} ERROR (${status}): ${lastError?.slice(0,120)} — trying next...`);
+            if (isMcq) {
+                await saveGeneratedToBank(
+                    finalQuestions.map(q => ({ text: q.text, options: q.options, correctIndex: q.correctOptions[0], explanation: q.explanation, hint: q.hint })),
+                    { topic: topic.trim(), language },
+                );
             }
-            continue; // ALWAYS try next candidate
+
+            return NextResponse.json({ questions: finalQuestions, gameType, source: 'ai' });
+        } catch {
+            skip.push(`${result.provider}/${result.model}`);
+            console.warn(`[AI Generate] ${result.provider}/${result.model} yaroqsiz JSON qaytardi`);
         }
     }
 
-    console.warn('[AI Pool] All candidates exhausted. Last error:', lastError);
+    // AI ishlamadi — tayyor savollar omboridan tasodifiy savollar
+    if (isMcq && allowFallback) {
+        try {
+            const bank = await getFallbackQuestions({ topic: topic.trim(), count, language });
+            if (bank.questions.length > 0) {
+                console.log(`[AI Generate] ombordan ${bank.questions.length} ta savol (${bank.matchLevel})`);
+                return NextResponse.json({
+                    questions: bankToGameQuestions(bank.questions, timeLimit),
+                    gameType,
+                    source: 'bank',
+                    fallback: true,
+                    notice: fallbackNotice(bank),
+                });
+            }
+        } catch (err: any) {
+            console.warn('[AI Generate] ombordan olishda xato:', err?.message);
+        }
+    }
+
     return NextResponse.json({ error: getFunnyMessage(), funny: true }, { status: 503 });
 }

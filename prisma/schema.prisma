@@ -185,6 +185,48 @@ model Quiz {
 }
 
 // ==========================================
+// SAVOLLAR OMBORI (AI ishlamasa zaxira manba)
+// ==========================================
+
+enum BankQuestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BankQuestionSource {
+  SEED
+  AI
+  ADMIN
+  IMPORT
+}
+
+model BankQuestion {
+  id           String             @id @default(cuid())
+  subject      String
+  topic        String             @default("")
+  grade        Int?               // 1–11 maktab, 12 = oliy ta'lim; null = barcha sinflar
+  difficulty   Int                @default(2) // 1 oson, 2 o'rta, 3 qiyin
+  language     String             @default("uz")
+  text         String
+  options      Json               // string[4]
+  correctIndex Int
+  explanation  String             @default("")
+  hint         String             @default("")
+  status       BankQuestionStatus @default(PENDING)
+  source       BankQuestionSource @default(AI)
+  contentHash  String             @unique
+  timesShown   Int                @default(0)
+  timesCorrect Int                @default(0)
+  reportCount  Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([status, language, subject, grade])
+  @@map("bank_questions")
+}
+
+// ==========================================
 // BILIMLAR G'ILDIRAGI (WHEEL) O'YINI
 // ==========================================
 

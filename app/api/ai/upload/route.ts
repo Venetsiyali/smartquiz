@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
-import { GROQ_MODELS, GEMINI_MODELS, GROQ_MAX_TOKENS } from '@/lib/aiModels';
+import { callLLM, LLMUnavailableError } from '@/lib/llm/pool';
+import { isProviderId } from '@/lib/llm/providers';
 import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
 
 export const maxDuration = 60; // Vercel serverless timeout: 60 soniya
@@ -39,19 +39,6 @@ async function extractText(file: File): Promise<string> {
     throw new Error('Faqat PDF yoki DOCX fayl qabul qilinadi');
 }
 
-
-function parseRetryAfter(err: any): number | null {
-    try {
-        const header = err?.headers?.get?.('retry-after') ?? err?.headers?.['retry-after'];
-        if (header) return Math.ceil(parseInt(String(header), 10));
-    } catch {}
-    const msg: string = err?.message ?? err?.error?.message ?? JSON.stringify(err?.error ?? '');
-    const sec = msg.match(/try again in (\d+(?:\.\d+)?)\s*s/i);
-    if (sec) return Math.ceil(parseFloat(sec[1]));
-    const min = msg.match(/try again in (\d+(?:\.\d+)?)\s*m/i);
-    if (min) return Math.ceil(parseFloat(min[1]) * 60);
-    return null;
-}
 
 export async function POST(req: Request) {
     const ip = getClientIp(req);
@@ -142,100 +129,20 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
                 : "Sen matn asosida test savollari tuzuvchi AI yordamchisisiz. Faqat JSON formatda javob ber.";
 
     try {
-        // Build key pools
-        const geminiMulti1 = (process.env.GEMINI_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
-        const geminiMulti2 = (process.env.GEMINI_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
-        const geminiKeys = Array.from(new Set([...geminiMulti1, ...geminiMulti2]));
-
-        const groqMulti1 = (process.env.GROQ_API_KEYS || '').split(',').map((k: string) => k.trim()).filter(Boolean);
-        const groqMulti2 = (process.env.GROQ_API_KEY || '').split(',').map((k: string) => k.trim()).filter(Boolean);
-        const groqKeys = Array.from(new Set([...groqMulti1, ...groqMulti2]));
-
-        type Candidate = { provider: 'gemini' | 'groq'; key: string; model: string };
-
-        const expandGemini = (keys: string[]): Candidate[] =>
-            keys.flatMap(k => GEMINI_MODELS.map(m => ({ provider: 'gemini' as const, key: k, model: m })));
-        const expandGroq = (keys: string[]): Candidate[] =>
-            keys.flatMap(k => GROQ_MODELS.map(m => ({ provider: 'groq' as const, key: k, model: m })));
-
-        const primaryList  = shuffle(provider === 'gemini' ? expandGemini(geminiKeys) : expandGroq(groqKeys));
-        const fallbackList = shuffle(provider === 'gemini' ? expandGroq(groqKeys)     : expandGemini(geminiKeys));
-        const allCandidates: Candidate[] = [...primaryList, ...fallbackList];
-
         let raw = '';
-        let lastKeyErr = '';
-        const startTime = Date.now();
-        console.log(`[Upload AI Pool] Starting with provider=${provider}, candidates=${allCandidates.length}, geminiKeys=${geminiKeys.length}, groqKeys=${groqKeys.length}`);
-
-        for (let ci = 0; ci < allCandidates.length; ci++) {
-            if (Date.now() - startTime > 50000) {
-                console.warn('[Upload AI Pool] 50s time limit reached, aborting pool');
-                break;
+        try {
+            ({ text: raw } = await callLLM({
+                system: systemPrompt,
+                user: prompt,
+                temperature: 0.6,
+                preferred: isProviderId(provider) ? provider : undefined,
+            }));
+        } catch (err) {
+            if (err instanceof LLMUnavailableError && err.allRateLimited) {
+                return NextResponse.json({ rateLimited: true, retryAfter: err.retryAfterSec }, { status: 429 });
             }
-            const { provider: cur, key, model } = allCandidates[ci];
-            
-            try {
-                console.log(`[Upload AI Pool] Trying ${cur}/${model} (${ci + 1}/${allCandidates.length}), elapsed=${Date.now() - startTime}ms`);
-                if (cur === 'gemini') {
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 25000);
-                    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}\n\nReturn ONLY valid JSON. No markdown wrappers.` }] }],
-                            generationConfig: { temperature: 0.6, responseMimeType: 'application/json' },
-                        }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(id);
-                    if (!geminiRes.ok) {
-                        const errObj: any = new Error(`Gemini xatosi: ${geminiRes.status}`);
-                        errObj.status = geminiRes.status;
-                        throw errObj;
-                    }
-                    const data = await geminiRes.json();
-                    raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                } else {
-                    const groq = new Groq({ apiKey: key, timeout: 25000, maxRetries: 0 });
-                    const completion = await groq.chat.completions.create({
-                        model: model,
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user', content: prompt },
-                        ],
-                        temperature: 0.6,
-                        max_tokens: GROQ_MAX_TOKENS,
-                    });
-                    raw = completion.choices[0]?.message?.content || '';
-                }
-                
-                if (raw) break; // success — exit key loop
-            } catch (err: any) {
-                const status = err?.status ?? 0;
-                const isRateLimit   = status === 429 || (err?.message && err.message.includes('429'));
-                const isUnavailable = status === 503 || status === 502 || status === 529;
-                const isTimeout     = err?.name === 'AbortError' || err?.message?.includes('timeout') || err?.message?.includes('aborted');
-                const isBlocked     = status === 403 || status === 401;
-                const isNotFound    = status === 404;
-
-                lastKeyErr = err?.message || 'xatolik';
-
-                if (isRateLimit) {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} RATE LIMITED — trying next...`);
-                } else if (isTimeout) {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} TIMED OUT — trying next...`);
-                } else if (isUnavailable) {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} UNAVAILABLE (${status}) — trying next...`);
-                } else if (isBlocked) {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} KEY BLOCKED (${status}) — trying next...`);
-                } else if (isNotFound) {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} MODEL NOT FOUND (404) — trying next...`);
-                } else {
-                    console.warn(`[Upload AI Pool] ${cur}/${model} #${ci} ERROR (${status}): ${lastKeyErr?.slice(0,120)} — trying next...`);
-                }
-                continue; // ALWAYS try next candidate
-            }
+            console.warn('[Upload] AI mavjud emas:', (err as Error).message);
+            return NextResponse.json({ error: "AI hozircha javob bermayapti. Birozdan so'ng qayta urinib ko'ring." }, { status: 503 });
         }
 
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
@@ -269,12 +176,6 @@ Faqat quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
         return NextResponse.json({ questions, fileInfo: { name: file.name, chars: truncated.length } });
     } catch (err: any) {
         console.error('Upload AI error:', err);
-        if (err?.status === 429) {
-            return NextResponse.json(
-                { rateLimited: true, retryAfter: parseRetryAfter(err) },
-                { status: 429 }
-            );
-        }
         return NextResponse.json({ error: err?.message || 'AI xatoligi' }, { status: 500 });
     }
 }

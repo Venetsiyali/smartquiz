@@ -27,7 +27,7 @@ export const WheelGenerateBodySchema = z.object({
     grade: z.string().optional().default(''),
     count: z.number().int().min(1).max(30).default(10),
     difficulty: z.enum(['oson', "o'rta", 'qiyin']).default("o'rta"),
-    provider: z.enum(['groq', 'gemini']).default('groq'),
+    provider: z.string().optional(),
 });
 
 export const WheelPlayersBodySchema = z.object({

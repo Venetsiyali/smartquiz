@@ -154,8 +154,8 @@ export default function QishloqBozoriSetup() {
                 explanation: q.explanation ?? '',
             }));
             setQuestions(prev => [...prev, ...converted]);
-            setGenMsg({ type: 'ok', text: `✓ ${converted.length} ta savol qo'shildi` });
-            setTimeout(() => setGenMsg(null), 4000);
+            setGenMsg({ type: 'ok', text: data.notice ? `✓ ${converted.length} ta savol qo'shildi. ${data.notice}` : `✓ ${converted.length} ta savol qo'shildi` });
+            setTimeout(() => setGenMsg(null), data.notice ? 8000 : 4000);
         } catch { setGenMsg({ type: 'err', text: 'Server xatoligi' }); }
         finally { setGenerating(false); }
     };

@@ -10,6 +10,7 @@ export default function AIGenerateForm({ onGenerated }: { onGenerated: (qs: Draf
     const [difficulty, setDifficulty] = useState<'oson' | "o'rta" | 'qiyin'>("o'rta");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
 
     const generate = async () => {
         if (topic.trim().length < 2) {
@@ -18,6 +19,7 @@ export default function AIGenerateForm({ onGenerated }: { onGenerated: (qs: Draf
         }
         setLoading(true);
         setError(null);
+        setNotice(null);
         try {
             const res = await fetch('/api/wheel/generate', {
                 method: 'POST',
@@ -27,6 +29,7 @@ export default function AIGenerateForm({ onGenerated }: { onGenerated: (qs: Draf
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'AI xatoligi');
             const drafts: DraftQuestion[] = data.questions.map((q: any) => ({ ...q, source: 'AI' as const }));
+            setNotice(data.notice ?? null);
             onGenerated(drafts);
         } catch (err: any) {
             setError(err.message || 'AI hozircha javob bermayapti');
@@ -85,6 +88,11 @@ export default function AIGenerateForm({ onGenerated }: { onGenerated: (qs: Draf
                 </div>
             </div>
 
+            {notice && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-amber-300 font-semibold text-sm">
+                    📚 {notice}
+                </div>
+            )}
             {error && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-300 font-semibold text-sm flex items-center justify-between">
                     <span>{error}</span>

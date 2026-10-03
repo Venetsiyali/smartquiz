@@ -682,7 +682,8 @@ export default function AdminLibraryPage() {
         try {
             const res = await fetch('/api/ai/generate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic: aiTopic, count: aiCount, language: aiLang, timeLimit: 20, provider: aiProvider }),
+                // Kutubxonaga faqat yangi AI kontent kerak — ombordagi savollarni qayta yozmaslik uchun zaxira o'chirilgan
+                body: JSON.stringify({ topic: aiTopic, count: aiCount, language: aiLang, timeLimit: 20, provider: aiProvider, allowFallback: false }),
             });
             const data = await res.json();
             if (!res.ok) {

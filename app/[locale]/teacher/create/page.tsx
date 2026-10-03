@@ -238,6 +238,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
     const [error, setError] = useState('');
     const [errorFunny, setErrorFunny] = useState(false);
     const [preview, setPreview] = useState<QuizQuestion[] | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
     const [rateLimit, setRateLimit] = useState<{ retryAfter: number | null } | null>(null);
 
     // O'yin turi bo'yicha label
@@ -315,7 +316,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
 
     const generate = async () => {
         if (!topic.trim()) { setError(t('topicRequired')); return; }
-        setError(''); setErrorFunny(false); setLoading(true); setPreview(null);
+        setError(''); setErrorFunny(false); setLoading(true); setPreview(null); setNotice(null);
         try {
             const res = await fetch('/api/ai/generate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -331,6 +332,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
             if (!res.ok) { setErrorFunny(!!data.funny); setError(data.error || 'Xatolik'); setLoading(false); return; }
             const mapped = mapAIResponse(data.questions || []);
             if (mapped.length === 0) { setError("AI savollarni to'g'ri formatlamadi"); setLoading(false); return; }
+            setNotice(data.notice ?? null);
             setPreview(mapped);
         } catch { setError(t('serverError')); }
         setLoading(false);
@@ -395,6 +397,7 @@ function AIModal({ onClose, onImport, gameType = 'multiple' }: { onClose: () => 
                 </button>
                 {preview && (
                     <div className="space-y-2">
+                        {notice && <p className="font-bold text-sm rounded-xl py-2 px-3 text-amber-300 bg-amber-500/10">📚 {notice}</p>}
                         <p className="text-green-400 font-bold text-sm">✅ {t('qsReady', { count: preview.length })}</p>
                         <div className="max-h-48 overflow-y-auto scrollbar-hide space-y-1.5">
                             {preview.map((q, i) => (

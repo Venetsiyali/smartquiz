@@ -1,0 +1,53 @@
+[
+  { "subject": "Matematika", "difficulty": 1, "text": "2 + 2 × 2 = ?", "options": ["8", "6", "4", "2"], "correctIndex": 1, "explanation": "Avval ko'paytirish: 2×2=4, keyin qo'shish: 2+4=6" },
+  { "subject": "Matematika", "difficulty": 1, "text": "Qaysi son tub son?", "options": ["9", "15", "17", "21"], "correctIndex": 2, "explanation": "17 faqat 1 ga va o'ziga bo'linadi" },
+  { "subject": "Matematika", "difficulty": 1, "text": "100 ning 25% i necha?", "options": ["20", "25", "30", "40"], "correctIndex": 1 },
+  { "subject": "Matematika", "difficulty": 1, "text": "Uchburchak ichki burchaklari yig'indisi necha gradus?", "options": ["90°", "180°", "270°", "360°"], "correctIndex": 1 },
+  { "subject": "Matematika", "difficulty": 1, "text": "√144 = ?", "options": ["11", "12", "13", "14"], "correctIndex": 1 },
+  { "subject": "Matematika", "difficulty": 2, "text": "5! (5 faktorial) = ?", "options": ["25", "60", "100", "120"], "correctIndex": 3, "explanation": "5! = 5×4×3×2×1 = 120" },
+  { "subject": "Matematika", "difficulty": 2, "text": "Kvadratning perimetri 24 sm bo'lsa, yuzasi qancha?", "options": ["24 sm²", "36 sm²", "48 sm²", "16 sm²"], "correctIndex": 1, "explanation": "Tomon = 24÷4 = 6 sm; yuza = 6² = 36 sm²" },
+
+  { "subject": "Fizika", "difficulty": 1, "text": "Yorug'lik tezligi taxminan necha km/s?", "options": ["100 000", "200 000", "300 000", "400 000"], "correctIndex": 2 },
+  { "subject": "Fizika", "difficulty": 1, "text": "Kuchning o'lchov birligi qaysi?", "options": ["Vatt", "Nyuton", "Joul", "Paskal"], "correctIndex": 1 },
+  { "subject": "Fizika", "difficulty": 1, "text": "Erkin tushish tezlanishi taxminan qancha?", "options": ["5 m/s²", "9,8 m/s²", "12 m/s²", "15 m/s²"], "correctIndex": 1 },
+  { "subject": "Fizika", "difficulty": 2, "text": "Qaysi moddaning zichligi eng katta?", "options": ["Temir", "Oltin", "Simob", "Platina"], "correctIndex": 3, "explanation": "Platina ≈ 21,4 g/sm³, oltin ≈ 19,3 g/sm³" },
+  { "subject": "Fizika", "difficulty": 2, "text": "Om qonuni formulasi qaysi?", "options": ["I = U / R", "I = U × R", "I = R / U", "I = U + R"], "correctIndex": 0, "explanation": "Tok kuchi kuchlanishga to'g'ri, qarshilikka teskari proporsional" },
+
+  { "subject": "Kimyo", "difficulty": 1, "text": "Suv molekulasining kimyoviy formulasi qaysi?", "options": ["HO", "H2O", "H2O2", "HO2"], "correctIndex": 1 },
+  { "subject": "Kimyo", "difficulty": 1, "text": "Oltingugurt elementining belgisi qaysi?", "options": ["Si", "Se", "S", "Sr"], "correctIndex": 2 },
+  { "subject": "Kimyo", "difficulty": 1, "text": "Kislotalar qanday ta'mga ega?", "options": ["Shirin", "Achchiq", "Nordon", "Sho'r"], "correctIndex": 2 },
+  { "subject": "Kimyo", "difficulty": 1, "text": "Kimyoviy elementlar davriy jadvalini kim yaratgan?", "options": ["Nyuton", "Mendeleyev", "Faradey", "Kyuri"], "correctIndex": 1 },
+  { "subject": "Kimyo", "difficulty": 2, "text": "Olmos qaysi elementdan tashkil topgan?", "options": ["Kremniy", "Azot", "Uglerod", "Kislorod"], "correctIndex": 2 },
+
+  { "subject": "Biologiya", "difficulty": 1, "text": "Fotosintez hujayraning qaysi qismida amalga oshadi?", "options": ["Ildizda", "Xloroplastda", "Mitoxondriyada", "Yadroda"], "correctIndex": 1 },
+  { "subject": "Biologiya", "difficulty": 1, "text": "Katta yoshli odam tanasida nechta suyak bor?", "options": ["106", "206", "306", "406"], "correctIndex": 1 },
+  { "subject": "Biologiya", "difficulty": 2, "text": "DNK qisqartmasining to'liq nomi qaysi?", "options": ["Dezoksiribonuklein kislota", "Ribonuklein kislota", "Dezoksiriboza kislota", "Dinuklein kislota"], "correctIndex": 0 },
+  { "subject": "Biologiya", "difficulty": 1, "text": "Hujayraning \"energiya stansiyasi\" deb qaysi organoid ataladi?", "options": ["Yadro", "Xloroplast", "Mitoxondriya", "Lizosoma"], "correctIndex": 2 },
+  { "subject": "Biologiya", "difficulty": 2, "text": "Qaysi vitamin yetishmasligida raxit kasalligi kelib chiqadi?", "options": ["A vitamini", "B12 vitamini", "C vitamini", "D vitamini"], "correctIndex": 3 },
+
+  { "subject": "Tarix", "difficulty": 1, "text": "O'zbekiston mustaqillikka qaysi yilda erishgan?", "options": ["1989", "1990", "1991", "1992"], "correctIndex": 2 },
+  { "subject": "Tarix", "difficulty": 1, "text": "Amir Temur qayerda tug'ilgan?", "options": ["Samarqand", "Buxoro", "Kesh (Shahrisabz)", "Toshkent"], "correctIndex": 2 },
+  { "subject": "Tarix", "difficulty": 1, "text": "Ikkinchi jahon urushi qaysi yilda boshlangan?", "options": ["1935", "1937", "1939", "1941"], "correctIndex": 2 },
+  { "subject": "Tarix", "difficulty": 1, "text": "Muhammad al-Xorazmiy kim bo'lgan?", "options": ["Davlat arbobi", "Matematik va astronom", "Shoir", "Sarkarda"], "correctIndex": 1, "explanation": "Al-Xorazmiy IX asrda yashagan buyuk matematik — algebra fanining asoschisi" },
+  { "subject": "Tarix", "difficulty": 1, "text": "Qadimgi Misr hukmdorlari qanday nom bilan atalgan?", "options": ["Qaysar", "Fir'avn", "Xon", "Shahanshoh"], "correctIndex": 1 },
+
+  { "subject": "Geografiya", "difficulty": 1, "text": "Dunyodagi eng uzun daryo qaysi?", "options": ["Amazonka", "Nil", "Yanszi", "Missisipi"], "correctIndex": 1 },
+  { "subject": "Geografiya", "difficulty": 1, "text": "O'zbekistonning poytaxti qaysi shahar?", "options": ["Samarqand", "Namangan", "Toshkent", "Buxoro"], "correctIndex": 2 },
+  { "subject": "Geografiya", "difficulty": 1, "text": "Dunyodagi eng katta okean qaysi?", "options": ["Atlantika okeani", "Hind okeani", "Tinch okeani", "Shimoliy Muz okeani"], "correctIndex": 2 },
+  { "subject": "Geografiya", "difficulty": 2, "text": "O'zbekiston tarkibida nechta viloyat bor?", "options": ["11", "12", "13", "14"], "correctIndex": 1, "explanation": "12 ta viloyat, shuningdek Qoraqalpog'iston Respublikasi va Toshkent shahri" },
+  { "subject": "Geografiya", "difficulty": 1, "text": "Everest cho'qqisi qaysi tog' tizmasida joylashgan?", "options": ["Tyanshan", "Pomir", "Himolay", "Kavkaz"], "correctIndex": 2 },
+
+  { "subject": "O'zbek tili", "difficulty": 1, "text": "O'zbek lotin alifbosida nechta harf bor?", "options": ["26", "28", "29", "32"], "correctIndex": 2 },
+  { "subject": "O'zbek tili", "difficulty": 1, "text": "Qaysi juftlik antonimlarga misol bo'ladi?", "options": ["Katta – ulkan", "Baland – past", "Go'zal – chiroyli", "Tez – shoshqin"], "correctIndex": 1 },
+  { "subject": "O'zbek tili", "difficulty": 1, "text": "\"Mehrob\" so'zida nechta harf bor?", "options": ["5", "6", "7", "8"], "correctIndex": 1 },
+  { "subject": "O'zbek tili", "difficulty": 1, "text": "Qaysi so'z ot so'z turkumiga kiradi?", "options": ["Chiroyli", "Yugurmoq", "Maktab", "Tez"], "correctIndex": 2 },
+
+  { "subject": "Ingliz tili", "difficulty": 1, "text": "\"Apple\" so'zining tarjimasi qaysi?", "options": ["Olcha", "Olma", "Anor", "Apelsin"], "correctIndex": 1 },
+  { "subject": "Ingliz tili", "difficulty": 1, "text": "Ingliz tilida \"Salom\" qanday aytiladi?", "options": ["Bonjour", "Hola", "Hello", "Ciao"], "correctIndex": 2 },
+  { "subject": "Ingliz tili", "difficulty": 2, "text": "\"I am going to school\" gapi qaysi zamonda?", "options": ["Past Simple", "Present Simple", "Present Continuous", "Future Simple"], "correctIndex": 2 },
+
+  { "subject": "Informatika", "difficulty": 1, "text": "1 bayt necha bitdan iborat?", "options": ["4", "8", "16", "32"], "correctIndex": 1 },
+  { "subject": "Informatika", "difficulty": 1, "text": "WWW qisqartmasi nimani anglatadi?", "options": ["World Wide Web", "Wide World Web", "Web World Wide", "World Web Wide"], "correctIndex": 0 },
+  { "subject": "Informatika", "difficulty": 2, "text": "Python dasturlash tili nomi nimadan olingan?", "options": ["Ilon turidan", "Komediya shousidan", "Kompaniya nomidan", "Shahar nomidan"], "correctIndex": 1, "explanation": "Guido van Rossum uni BBC'ning \"Monty Python\" komediya shousi sharafiga nomlagan" },
+  { "subject": "Informatika", "difficulty": 1, "text": "CPU nimaning qisqartmasi?", "options": ["Central Processing Unit", "Computer Power Unit", "Central Program Unit", "Core Processing Unit"], "correctIndex": 0 }
+]

@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { requireTeacherId } from '@/lib/wheel/authz';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
-import { callAIPool, extractJsonArray, shuffle } from '@/lib/wheel/aiPool';
-import { WheelGenerateBodySchema, WheelAIQuestionListSchema } from '@/lib/wheel/schema';
+import { callLLM } from '@/lib/llm/pool';
+import { isProviderId } from '@/lib/llm/providers';
+import { extractJsonArray } from '@/lib/llm/json';
+import { shuffle } from '@/lib/shuffle';
+import { WheelGenerateBodySchema, WheelAIQuestionSchema } from '@/lib/wheel/schema';
 import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
+import { getFallbackQuestions, fallbackNotice, saveGeneratedToBank } from '@/lib/questionBank/bank';
+import { parseDifficulty, parseGrade } from '@/lib/questionBank/subjects';
 
 export const maxDuration = 60;
 
@@ -24,6 +29,8 @@ ${OPTION_BALANCE_RULES}
 JSON sxemasi (massiv):
 [{"question":"Savol matni?","options":["Variant A","Variant B","Variant C","Variant D"],"correctIndex":2,"explanation":"To'g'ri javob izohi."}]`;
 
+const AI_BUDGET_MS = 40_000;
+
 export async function POST(req: Request) {
     const teacherId = await requireTeacherId();
     if (!teacherId) {
@@ -41,38 +48,82 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Mavzu kiriting (kamida 2 ta belgi)' }, { status: 400 });
     }
     const { topic, grade, count, difficulty, provider } = parsedBody.data;
+    const gradeNum = parseGrade(grade);
+    const difficultyNum = parseDifficulty(difficulty);
 
     const gradeLine = grade ? `Sinf/daraja: ${grade}.` : '';
     const requestCount = withBalanceBuffer(count);
     const userPrompt = `Mavzu: "${topic}". ${gradeLine} Qiyinlik darajasi: ${difficulty}.
 DIQQAT: Qat'iy ravishda AYNAN ${requestCount} ta savol yarating! Massiv uzunligi aniq ${requestCount} ga teng bo'lishi SHART!`;
 
-    try {
-        const raw = await callAIPool(SYSTEM_PROMPT, userPrompt, provider);
-        const rawArr = extractJsonArray(raw);
+    const startTime = Date.now();
+    const skip: string[] = [];
 
-        const normalized = rawArr.map((q: any) => {
-            const opts: string[] = Array.isArray(q.options) ? q.options.slice(0, 4) : [];
-            while (opts.length < 4) opts.push('—');
-            const correctText = opts[q.correctIndex ?? 0];
-            const shuffled = shuffle(opts);
-            const newCorrectIndex = shuffled.indexOf(correctText);
-            return {
-                question: q.question || q.text || '',
-                options: shuffled,
-                correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
-                explanation: q.explanation || '',
-            };
-        });
-
-        const validated = WheelAIQuestionListSchema.safeParse(normalized);
-        if (!validated.success) {
-            return NextResponse.json({ error: "AI savollarni to'g'ri formatlamadi, qayta urinib ko'ring" }, { status: 502 });
+    for (let attempt = 0; attempt < 2; attempt++) {
+        let result;
+        try {
+            result = await callLLM({
+                system: SYSTEM_PROMPT,
+                user: userPrompt,
+                preferred: isProviderId(provider) ? provider : undefined,
+                budgetMs: AI_BUDGET_MS - (Date.now() - startTime),
+                skip,
+            });
+        } catch (err: any) {
+            console.warn('[Wheel Generate] AI mavjud emas:', err?.message);
+            break;
         }
 
-        return NextResponse.json({ questions: pickBalanced(validated.data, count, q => q) });
-    } catch (err: any) {
-        console.error('[Wheel Generate] xatolik:', err?.message);
-        return NextResponse.json({ error: "AI hozircha javob bermayapti. Birozdan so'ng qayta urinib ko'ring." }, { status: 503 });
+        const normalized = (() => {
+            try {
+                return extractJsonArray(result.text).map((q: any) => {
+                    const opts: string[] = Array.isArray(q.options) ? q.options.slice(0, 4) : [];
+                    const correctText = opts[q.correctIndex ?? 0];
+                    const shuffled = shuffle(opts);
+                    return {
+                        question: q.question || q.text || '',
+                        options: shuffled,
+                        correctIndex: shuffled.indexOf(correctText),
+                        explanation: q.explanation || '',
+                    };
+                });
+            } catch {
+                return null;
+            }
+        })();
+
+        const valid = (normalized ?? []).flatMap(q => {
+            const r = WheelAIQuestionSchema.safeParse(q);
+            return r.success ? [r.data] : [];
+        });
+        if (valid.length === 0) {
+            skip.push(`${result.provider}/${result.model}`);
+            console.warn(`[Wheel Generate] ${result.provider}/${result.model} yaroqsiz JSON qaytardi`);
+            continue;
+        }
+
+        const questions = pickBalanced(valid, count, q => q);
+        await saveGeneratedToBank(
+            questions.map(q => ({ text: q.question, options: q.options, correctIndex: q.correctIndex, explanation: q.explanation })),
+            { topic, grade: gradeNum, difficulty: difficultyNum },
+        );
+        return NextResponse.json({ questions, source: 'ai' });
     }
+
+    // AI ishlamadi — tayyor savollar omboridan
+    try {
+        const bank = await getFallbackQuestions({ topic, count, grade: gradeNum, difficulty: difficultyNum });
+        if (bank.questions.length > 0) {
+            return NextResponse.json({
+                questions: bank.questions.map(q => ({ question: q.text, options: q.options, correctIndex: q.correctIndex, explanation: q.explanation })),
+                source: 'bank',
+                fallback: true,
+                notice: fallbackNotice(bank),
+            });
+        }
+    } catch (err: any) {
+        console.warn('[Wheel Generate] ombordan olishda xato:', err?.message);
+    }
+
+    return NextResponse.json({ error: "AI hozircha javob bermayapti va omborda mos savol topilmadi. Birozdan so'ng qayta urinib ko'ring yoki savollarni qo'lda kiriting." }, { status: 503 });
 }

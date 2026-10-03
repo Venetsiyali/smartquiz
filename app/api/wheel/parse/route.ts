@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireTeacherId } from '@/lib/wheel/authz';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
-import { callAIPool, extractJsonArray, shuffle } from '@/lib/wheel/aiPool';
+import { callLLM } from '@/lib/llm/pool';
+import { extractJsonArray } from '@/lib/llm/json';
+import { shuffle } from '@/lib/shuffle';
 import { parseStructuredTest } from '@/lib/wheel/regexParser';
-import { WheelAIQuestionListSchema } from '@/lib/wheel/schema';
+import { WheelAIQuestionSchema } from '@/lib/wheel/schema';
 import { OPTION_BALANCE_RULES, pickBalanced, withBalanceBuffer } from '@/lib/questionQuality';
 
 export const maxDuration = 60;
@@ -104,29 +106,25 @@ ${truncated}
 DIQQAT: AYNAN ${requestCount} ta savol yarat, massiv uzunligi aniq shunga teng bo'lishi shart.`;
 
     try {
-        const raw = await callAIPool(AI_SYSTEM_PROMPT, userPrompt, 'groq');
-        const rawArr = extractJsonArray(raw);
-
-        const normalized = rawArr.map((q: any) => {
+        const { text } = await callLLM({ system: AI_SYSTEM_PROMPT, user: userPrompt });
+        const valid = extractJsonArray(text).flatMap((q: any) => {
             const opts: string[] = Array.isArray(q.options) ? q.options.slice(0, 4) : [];
-            while (opts.length < 4) opts.push('—');
             const correctText = opts[q.correctIndex ?? 0];
             const shuffled = shuffle(opts);
-            const newCorrectIndex = shuffled.indexOf(correctText);
-            return {
+            const r = WheelAIQuestionSchema.safeParse({
                 question: q.question || q.text || '',
                 options: shuffled,
-                correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
+                correctIndex: shuffled.indexOf(correctText),
                 explanation: q.explanation || '',
-            };
+            });
+            return r.success ? [r.data] : [];
         });
 
-        const validated = WheelAIQuestionListSchema.safeParse(normalized);
-        if (!validated.success) {
+        if (valid.length === 0) {
             return NextResponse.json({ error: "AI matndan savol yaratolmadi, qayta urinib ko'ring" }, { status: 502 });
         }
 
-        return NextResponse.json({ questions: pickBalanced(validated.data, count, q => q), method: 'ai', fileInfo: { name: file.name, chars: truncated.length } });
+        return NextResponse.json({ questions: pickBalanced(valid, count, q => q), method: 'ai', fileInfo: { name: file.name, chars: truncated.length } });
     } catch (err: any) {
         console.error('[Wheel Parse] AI xatoligi:', err?.message);
         return NextResponse.json({ error: 'AI hozircha javob bermayapti. Birozdan so\'ng qayta urinib ko\'ring.' }, { status: 503 });

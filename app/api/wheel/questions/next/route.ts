@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireTeacherId, getOwnedWheelSession } from '@/lib/wheel/authz';
-import { shuffle } from '@/lib/wheel/aiPool';
+import { shuffle } from '@/lib/shuffle';
 
 export async function POST(req: Request) {
     const teacherId = await requireTeacherId();
