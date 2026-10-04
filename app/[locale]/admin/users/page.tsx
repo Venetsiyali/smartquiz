@@ -12,9 +12,17 @@ type User = {
     plan: string;
     lastLogin: string | null;
     totalGamesPlayed: number;
+    isSuperAdmin: boolean;
 };
 
 const ROLES = ['STUDENT', 'TEACHER', 'MODERATOR', 'ADMIN'];
+
+const ROLE_LABELS: Record<string, string> = {
+    STUDENT: "O'quvchi",
+    TEACHER: "O'qituvchi",
+    MODERATOR: 'Moderator',
+    ADMIN: 'Admin',
+};
 
 const ROLE_STYLES: Record<string, string> = {
     ADMIN: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
@@ -29,6 +37,7 @@ export default function AdminUsersPage() {
     const [search, setSearch] = useState('');
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
+    const [viewer, setViewer] = useState<{ id: string; isSuperAdmin: boolean } | null>(null);
 
     const showToast = (text: string, ok = true) => {
         setToast({ text, ok });
@@ -40,6 +49,7 @@ export default function AdminUsersPage() {
             const res = await fetch("/api/admin/users");
             const data = await res.json();
             if (data.users) setUsers(data.users);
+            if (data.viewer) setViewer(data.viewer);
         } catch (error) {
             console.error("Error:", error);
         } finally {
@@ -87,7 +97,7 @@ export default function AdminUsersPage() {
 
     const handleRoleChange = async (userId: string, newRole: string, currentRole: string) => {
         if (newRole === currentRole) return;
-        if (!confirm(`Rolni "${currentRole}" dan "${newRole}" ga o'zgartirmoqchimisiz?`)) return;
+        if (!confirm(`Rolni "${ROLE_LABELS[currentRole]}" dan "${ROLE_LABELS[newRole]}" ga o'zgartirmoqchimisiz?`)) return;
         setProcessingId(userId + '_role');
         try {
             const res = await fetch(`/api/admin/users/${userId}`, {
@@ -96,7 +106,7 @@ export default function AdminUsersPage() {
                 body: JSON.stringify({ role: newRole }),
             });
             if (res.ok) {
-                showToast(`✅ Rol "${newRole}" ga o'zgartirildi.`);
+                showToast(`✅ Rol "${ROLE_LABELS[newRole]}" ga o'zgartirildi (5 daqiqa ichida kuchga kiradi).`);
                 await loadUsers();
             } else {
                 const d = await res.json();
@@ -186,7 +196,10 @@ export default function AdminUsersPage() {
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="text-white font-bold text-sm">{user.name || "Noma'lum"}</p>
+                                                <p className="text-white font-bold text-sm">
+                                                    {user.name || "Noma'lum"}
+                                                    {user.isSuperAdmin && <span className="ml-2 text-yellow-400 text-xs font-black">👑 Asosiy admin</span>}
+                                                </p>
                                                 <p className="text-white/40 text-xs">{user.email}</p>
                                             </div>
                                         </div>
@@ -197,12 +210,16 @@ export default function AdminUsersPage() {
                                         <select
                                             value={user.role}
                                             onChange={e => handleRoleChange(user.id, e.target.value, user.role)}
-                                            disabled={processingId === user.id + '_role'}
+                                            disabled={processingId === user.id + '_role' || user.isSuperAdmin || user.id === viewer?.id}
+                                            title={user.isSuperAdmin ? "Asosiy adminning rolini o'zgartirib bo'lmaydi" : user.id === viewer?.id ? "O'z rolingizni o'zgartira olmaysiz" : undefined}
                                             className={`px-2.5 py-1.5 rounded-xl text-xs font-black border cursor-pointer outline-none transition-all disabled:opacity-50 ${ROLE_STYLES[user.role] || ROLE_STYLES.STUDENT}`}
                                             style={{ background: 'transparent', colorScheme: 'dark' }}
                                         >
                                             {ROLES.map(r => (
-                                                <option key={r} value={r} style={{ background: '#0d1a2e', color: 'white' }}>{r}</option>
+                                                <option key={r} value={r} style={{ background: '#0d1a2e', color: 'white' }}
+                                                    disabled={!viewer?.isSuperAdmin && (r === 'ADMIN' || user.role === 'ADMIN')}>
+                                                    {ROLE_LABELS[r]}
+                                                </option>
                                             ))}
                                         </select>
                                     </td>

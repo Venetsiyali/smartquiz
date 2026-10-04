@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { isSuperAdmin } from "@/lib/superAdmin";
 
 export async function GET() {
     const session = await getServerSession(authOptions);
@@ -24,7 +25,10 @@ export async function GET() {
                 totalGamesPlayed: true,
             }
         });
-        return NextResponse.json({ users });
+        return NextResponse.json({
+            users: users.map(u => ({ ...u, isSuperAdmin: isSuperAdmin(u.email) })),
+            viewer: { id: session.user.id, isSuperAdmin: isSuperAdmin(session.user.email) },
+        });
     } catch (error) {
         return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
     }

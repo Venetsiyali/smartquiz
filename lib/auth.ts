@@ -6,6 +6,9 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import type { Adapter } from "next-auth/adapters";
 import { sendWelcomeEmail } from "./mailer";
+import { isSuperAdmin } from "./superAdmin";
+
+const ROLE_REFRESH_MS = 5 * 60_000;
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma) as Adapter,
@@ -100,10 +103,31 @@ export const authOptions: NextAuthOptions = {
                     });
                 } catch (_) {}
             }
-            if (trigger === "update" && session) {
-                token.role = session.role;
-                token.plan = session.plan;
-                if (session.name) token.name = session.name;
+            // Client faqat ismini yangilay oladi. Rol va tarif HECH QACHON clientdan olinmaydi —
+            // aks holda istalgan foydalanuvchi update({ role: 'ADMIN' }) bilan o'zini admin qilib olardi.
+            if (trigger === "update" && typeof session?.name === "string") {
+                token.name = session.name;
+            }
+
+            // Rol va tarifni bazadan yangilab turamiz — admin bergan rol 5 daqiqa ichida kuchga kiradi
+            const checkedAt = (token.roleCheckedAt as number | undefined) ?? 0;
+            if (token.id && (user || trigger === "update" || Date.now() - checkedAt > ROLE_REFRESH_MS)) {
+                try {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: token.id as string },
+                        select: { role: true, plan: true, email: true },
+                    });
+                    if (dbUser) {
+                        let role: string = dbUser.role;
+                        if (isSuperAdmin(dbUser.email) && role !== "ADMIN") {
+                            await prisma.user.update({ where: { id: token.id as string }, data: { role: "ADMIN" } });
+                            role = "ADMIN";
+                        }
+                        token.role = role;
+                        token.plan = dbUser.plan;
+                    }
+                    token.roleCheckedAt = Date.now();
+                } catch (_) {}
             }
             return token;
         },
