@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import { SUBJECTS } from '@/lib/questionBank/subjects';
+import BankImportPanel from '@/components/bank/BankImportPanel';
 
 type View = 'queue' | 'unverified' | 'approved' | 'rejected';
 type Status = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -142,6 +143,7 @@ export default function AdminBankPage() {
     const [error, setError] = useState<string | null>(null);
     const [busyId, setBusyId] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [showImport, setShowImport] = useState(false);
 
     useEffect(() => {
         if (status === 'loading') return;
@@ -207,11 +209,19 @@ export default function AdminBankPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-white/30 text-xs font-black tracking-widest uppercase mb-1">Admin · Savollar ombori</p>
-                <h1 className="text-3xl font-black text-white">🗃️ Savollar ombori</h1>
-                <p className="text-white/40 text-sm font-semibold mt-1">AI ishlamaganda o&apos;yinlarga faqat tasdiqlangan savollar beriladi.</p>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p className="text-white/30 text-xs font-black tracking-widest uppercase mb-1">Admin · Savollar ombori</p>
+                    <h1 className="text-3xl font-black text-white">🗃️ Savollar ombori</h1>
+                    <p className="text-white/40 text-sm font-semibold mt-1">O&apos;yinlarga faqat tasdiqlangan savollar beriladi.</p>
+                </div>
+                <button onClick={() => setShowImport(s => !s)} className="px-4 py-2.5 rounded-xl text-sm font-black"
+                    style={{ background: 'rgba(234,179,8,0.15)', color: '#facc15', border: '1px solid rgba(234,179,8,0.3)' }}>
+                    {showImport ? '✕ Importni yopish' : '📥 Fayldan import'}
+                </button>
             </div>
+
+            {showImport && <BankImportPanel onImported={load} />}
 
             {stats && (
                 <>
