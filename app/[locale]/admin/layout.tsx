@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { requireModerator } from "@/lib/adminAuth";
 
 // Admin panel — NOINDEX (faqat admin uchun, Google indekslamasin)
 export const metadata: Metadata = {
@@ -12,7 +14,12 @@ export const metadata: Metadata = {
     },
 };
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children, params }: { children: ReactNode; params: { locale: string } }) {
+    // Server tomonda: admin sahifalari (statistika ham) faqat MODERATOR/ADMIN uchun render bo'ladi
+    if (!(await requireModerator())) {
+        redirect(`/${params.locale ?? 'uz'}`);
+    }
+
     return (
         <div className="min-h-screen bg-[#050B14] text-white flex flex-col md:flex-row">
             {/* Sidebar */}
