@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRoom, saveRoomData } from '@/lib/gameState';
+import { withRoom } from '@/lib/gameState';
 import { pusherServer } from '@/lib/pusher';
 
 export async function POST(req: Request) {
@@ -9,10 +9,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'PIN kiritilmagan' }, { status: 400 });
         }
 
-        const room = await getRoom(pin);
-        if (!room) {
-            return NextResponse.json({ error: 'Xona topilmadi' }, { status: 404 });
-        }
+        const found = await withRoom(pin, room => {
+        if (!room) return false;
 
         // Reset game state for continuation
         room.status = 'lobby';
@@ -48,7 +46,13 @@ export async function POST(req: Request) {
             }));
         }
 
-        await saveRoomData(room);
+        room.currentOrder = undefined;
+        room.currentScramble = undefined;
+        return true;
+        });
+        if (!found) {
+            return NextResponse.json({ error: 'Xona topilmadi' }, { status: 404 });
+        }
 
         // Tell all players in the room to go back to the lobby waiting state
         await pusherServer.trigger(`game-${pin}`, 'return-to-lobby', {});

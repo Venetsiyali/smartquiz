@@ -49,39 +49,58 @@ export default function WaitingPage() {
 
         const pusher = getPusherClient();
         const ch = pusher.subscribe(`game-${storedPin}`);
+        let left = false;
 
-        ch.bind('question-start', (payload: unknown) => {
+        const goToGame = (payload?: unknown) => {
+            if (left) return;
+            left = true;
             // Store Q1 payload so game page loads it instantly (no network roundtrip)
-            if (payload) {
-                sessionStorage.setItem('pendingQuestion', JSON.stringify(payload));
-            }
+            if (payload) sessionStorage.setItem('pendingQuestion', JSON.stringify(payload));
             router.push('/play/game');
-        });
+        };
+        const onStart = (payload: unknown) => goToGame(payload);
 
-        ch.bind('team-updated', (payload: { playerTeams: PlayerTeam[] }) => {
+        // "O'yin boshlandi" xabari o'tkazib yuborilgan bo'lsa (telefon ekrani o'chgan, internet uzilgan) —
+        // serverdan tekshirib, o'yinga o'tkazamiz
+        const resync = async () => {
+            try {
+                const res = await fetch(`/api/game/state?pin=${storedPin}&playerId=${pid}`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.status === 'question' && !data.answered && data.currentQuestion) goToGame(data.currentQuestion);
+                else if (data.status === 'question' || data.status === 'leaderboard' || data.status === 'ended') goToGame();
+            } catch { /* keyingi urinishda */ }
+        };
+        const onVisible = () => { if (document.visibilityState === 'visible') resync(); };
+        pusher.connection.bind('connected', resync);
+        document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('online', resync);
+        const poll = setInterval(resync, 5000);
+
+        const onTeamUpdated = (payload: { playerTeams: PlayerTeam[] }) => {
             if (payload?.playerTeams) {
                 setPlayerTeams(payload.playerTeams);
                 const mine = payload.playerTeams.find(p => p.id === pid);
                 if (mine) setMyTeamId(mine.teamId);
             }
-        });
+        };
+        // team-assigned: fired when teacher starts the game and stragglers are auto-assigned
+        ch.bind('question-start', onStart);
+        ch.bind('team-updated', onTeamUpdated);
+        ch.bind('team-assigned', onTeamUpdated);
+        ch.bind('pusher:subscription_succeeded', resync);
 
-        ch.bind('team-assigned', (payload: { playerTeams: PlayerTeam[] }) => {
-            // Fired when teacher starts the game and stragglers are auto-assigned
-            if (payload?.playerTeams) {
-                setPlayerTeams(payload.playerTeams);
-                const mine = payload.playerTeams.find(p => p.id === pid);
-                if (mine) setMyTeamId(mine.teamId);
-            }
-        });
-
-        // Only unbind the handler — don't unsubscribe the channel.
-        // If we unsubscribe here, the game page may miss events that fire
-        // during the React navigation transition.
+        // Only unbind OUR handlers — don't unsubscribe the channel (the game page may need it during
+        // navigation) and don't remove handlers the game page has bound for the same events.
         return () => {
-            ch.unbind('question-start');
-            ch.unbind('team-updated');
-            ch.unbind('team-assigned');
+            ch.unbind('question-start', onStart);
+            ch.unbind('team-updated', onTeamUpdated);
+            ch.unbind('team-assigned', onTeamUpdated);
+            ch.unbind('pusher:subscription_succeeded', resync);
+            pusher.connection.unbind('connected', resync);
+            document.removeEventListener('visibilitychange', onVisible);
+            window.removeEventListener('online', resync);
+            clearInterval(poll);
         };
     }, [router]);
 

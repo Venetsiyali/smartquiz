@@ -1,19 +1,25 @@
 import { NextResponse } from 'next/server';
-import { getRoom } from '@/lib/gameState';
+import { getRoom, getLeaderboard, computeBadges, questionPayload } from '@/lib/gameState';
 
+export const dynamic = 'force-dynamic';
+
+// O'quvchi qayta ulanganda (ekran yoqilganda, internet tiklanganda) joriy holatni shu yerdan oladi —
+// shuning uchun javob Pusher orqali yuboriladigan savol bilan aynan bir xil va to'g'ri javobsiz.
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const pin = searchParams.get('pin');
+    const playerId = searchParams.get('playerId');
 
     if (!pin) return NextResponse.json({ error: 'PIN kerak' }, { status: 400 });
 
     const room = await getRoom(pin);
     if (!room) return NextResponse.json({ error: "O'yin topilmadi" }, { status: 404 });
 
-    const currentQ = room.questions[room.currentQuestionIndex];
+    const inGame = room.status === 'question' || room.status === 'leaderboard';
 
     return NextResponse.json({
         status: room.status,
+        serverTime: Date.now(),
         players: room.players.map(p => ({
             id: p.id,
             nickname: p.nickname,
@@ -31,16 +37,9 @@ export async function GET(req: Request) {
             emoji: t.emoji,
             color: t.color,
         })) ?? null,
-        currentQuestion: currentQ
-            ? {
-                questionIndex: room.currentQuestionIndex,
-                total: room.questions.length,
-                text: currentQ.text,
-                options: currentQ.options,
-                timeLimit: currentQ.timeLimit,
-                imageUrl: currentQ.imageUrl,
-                questionStartTime: room.questionStartTime,
-            }
-            : null,
-    });
+        currentQuestion: inGame ? questionPayload(room) : null,
+        answered: playerId ? room.answeredPlayerIds.includes(playerId) : undefined,
+        leaderboard: room.status === 'leaderboard' || room.status === 'ended' ? getLeaderboard(room.players) : undefined,
+        badges: room.status === 'ended' ? computeBadges(room.players) : undefined,
+    }, { headers: { 'Cache-Control': 'no-store' } });
 }

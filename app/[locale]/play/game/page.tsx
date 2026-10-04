@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusherClient';
+import { serverNow, syncServerClock } from '@/lib/serverClock';
 import { motion, AnimatePresence } from 'framer-motion';
 import SortGame from '@/components/SortGame';
 import MatchGame, { type MatchPair, type MatchResult } from '@/components/MatchGame';
@@ -27,6 +28,7 @@ interface AnswerResult {
     optionImages?: string[] | null;
     selectedOption: number;
     submittedOrder?: number[] | null;
+    shownOrder?: number[] | null;
     correctCount?: number | null;
     questionType?: string;
     matchResult?: MatchResult | null;
@@ -88,10 +90,17 @@ export default function StudentGamePage() {
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const reviewRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const retryTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+    const resyncRef = useRef<(() => void) | null>(null);
+    const timerDoneRef = useRef(false);
     const pinRef = useRef('');
     const playerIdRef = useRef('');
     const nextPhaseRef = useRef<PagePhase>('between');
+    // Pusher handler'lari bir marta bog'lanadi — joriy holatni ref orqali o'qiymiz (eski qiymat "qotib" qolmasin)
+    const phaseRef = useRef<PagePhase>('loading');
+    const questionIndexRef = useRef<number>(-1);
+    const answeredRef = useRef(false);
+
+    useEffect(() => { phaseRef.current = phase; }, [phase]);
 
     const clearTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
 
@@ -107,8 +116,14 @@ export default function StudentGamePage() {
     };
 
     const showQuestion = (payload: QuestionPayload) => {
+        // Qayta ulanishda xuddi shu savol yana kelsa — o'quvchining tanlovi va taymerini buzmaymiz
+        const sameQuestion = payload.questionIndex === questionIndexRef.current;
+        if (sameQuestion && (answeredRef.current || (phaseRef.current !== 'loading' && phaseRef.current !== 'between'))) return;
+        questionIndexRef.current = payload.questionIndex;
+        answeredRef.current = false;
         clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
         setQuestion(payload); setSelected(null); setResult(null); setPhase('question');
+        phaseRef.current = 'question';
         setSortSubmitted(false);
         setMatchSubmitted(false);
         setBlitzSubmitted(false);
@@ -124,11 +139,13 @@ export default function StudentGamePage() {
                 imageUrl: payload.optionImages?.[idx],
             })));
         }
-        const elapsed = payload.questionStartTime ? Math.floor((Date.now() - payload.questionStartTime) / 1000) : 0;
-        const rem = Math.max(1, payload.timeLimit - elapsed);
+        // Telefon soati emas, server soati bo'yicha — soati noto'g'ri telefonda ham taymer to'g'ri
+        const elapsed = payload.questionStartTime ? Math.floor((serverNow() - payload.questionStartTime) / 1000) : 0;
+        const rem = Math.min(payload.timeLimit, Math.max(1, payload.timeLimit - elapsed));
         setTimeLeft(rem);
+        timerDoneRef.current = false;
         timerRef.current = setInterval(() => {
-            setTimeLeft(prev => { if (prev <= 1) { clearTimer(); return 0; } return prev - 1; });
+            setTimeLeft(prev => { if (prev <= 1) { clearTimer(); timerDoneRef.current = true; return 0; } return prev - 1; });
         }, 1000);
         vibrate(30);
     };
@@ -140,36 +157,75 @@ export default function StudentGamePage() {
         pinRef.current = pin; playerIdRef.current = pid;
         setTotalScore(0);
 
+        syncServerClock();
+
         // Fast path: waiting room stored Q1 payload in sessionStorage before navigating.
-        // This gives zero-latency Q1 rendering without a network round-trip.
         const pendingRaw = sessionStorage.getItem('pendingQuestion');
         if (pendingRaw) {
             sessionStorage.removeItem('pendingQuestion');
             try {
                 showQuestion(JSON.parse(pendingRaw) as QuestionPayload);
-            } catch { /* malformed — fall through to state fetch */ }
-        } else {
-            // Fallback: poll state with up to 3 retries (covers late-joining students
-            // or cases where sessionStorage wasn't set).
-            const fetchState = (attempts: number) => {
-                fetch(`/api/game/state?pin=${pin}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'question' && data.currentQuestion) {
-                            showQuestion(data.currentQuestion);
-                        } else if (attempts > 0) {
-                            retryTimeoutsRef.current.push(setTimeout(() => fetchState(attempts - 1), 400));
-                        }
-                    })
-                    .catch(() => {
-                        if (attempts > 0) retryTimeoutsRef.current.push(setTimeout(() => fetchState(attempts - 1), 400));
-                    });
-            };
-            fetchState(3);
+            } catch { /* malformed — resync below covers it */ }
         }
 
+        // Joriy holatni serverdan olib ekranni moslaydi. Pusher xabari o'tkazib yuborilganda
+        // (telefon ekrani o'chgan, Wi-Fi uzilgan) o'quvchi eski ekranda qotib qolmasligi uchun.
+        const resync = async () => {
+            try {
+                const res = await fetch(`/api/game/state?pin=${pin}&playerId=${pid}`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+
+                if (data.status === 'lobby') { router.push('/play/waiting'); return; }
+                if (data.status === 'ended') {
+                    if (phaseRef.current !== 'ended') {
+                        clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
+                        setLeaderboard(data.leaderboard ?? []); setBadges(data.badges ?? []);
+                        setPhase('ended');
+                    }
+                    return;
+                }
+
+                const q: QuestionPayload | null = data.currentQuestion;
+                if (!q) return;
+                const isNewQuestion = q.questionIndex !== questionIndexRef.current;
+
+                if (data.status === 'question') {
+                    if (!data.answered) {
+                        showQuestion(q);
+                    } else if (isNewQuestion || phaseRef.current === 'loading') {
+                        // Javob serverda bor, natija xabari esa yetib kelmagan — kutish ekraniga o'tamiz
+                        questionIndexRef.current = q.questionIndex;
+                        answeredRef.current = true;
+                        clearTimer(); setPhase('between');
+                    }
+                } else if (data.status === 'leaderboard') {
+                    if (data.leaderboard) setLeaderboard(data.leaderboard);
+                    // Savol yopilgan, o'quvchi esa hali savol ekranida (yoki eski savolda) qolgan
+                    if (phaseRef.current === 'loading' || (phaseRef.current === 'question' && !isNewQuestion) || isNewQuestion) {
+                        questionIndexRef.current = q.questionIndex;
+                        clearTimer(); setPhase('between');
+                    }
+                }
+            } catch { /* tarmoq yo'q — keyingi urinishda */ }
+        };
+        resyncRef.current = resync;
+        resync();
+
         const pusher = getPusherClient();
+        // Har qayta ulanishda o'tkazib yuborilgan xabarlarni tiklaymiz
+        pusher.connection.bind('connected', resync);
+        const onVisible = () => { if (document.visibilityState === 'visible') resync(); };
+        document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('online', resync);
+        // Zaxira: kutish ekranida yoki taymer tugab qolganda — har 5 soniyada tekshiramiz
+        const poll = setInterval(() => {
+            const p = phaseRef.current;
+            if (p === 'loading' || p === 'between' || (p === 'question' && timerDoneRef.current)) resync();
+        }, 5000);
+
         const gameCh = pusher.subscribe(`game-${pin}`);
+        gameCh.bind('pusher:subscription_succeeded', resync);
         gameCh.bind('question-start', (payload: QuestionPayload) => showQuestion(payload));
         // Blitz: 1-second gap between questions
         gameCh.bind('blitz-between', () => {
@@ -177,16 +233,13 @@ export default function StudentGamePage() {
             setPhase('between');
         });
         gameCh.bind('question-end', (payload: QuestionEndPayload) => {
-
             clearTimer();
-            // If already in feedback/review, stay — review auto-advances to between
-            if (phase === 'question') {
-                setLeaderboard(payload.leaderboard);
+            setLeaderboard(payload.leaderboard);
+            // Feedback/review'da bo'lsa — review o'zi 'between'ga o'tadi
+            if (phaseRef.current === 'question' || phaseRef.current === 'loading') {
                 setPhase('between');
             } else {
-                // Will advance naturally via review countdown
                 nextPhaseRef.current = 'between';
-                setLeaderboard(payload.leaderboard);
             }
         });
         gameCh.bind('game-end', ({ leaderboard: lb, badges: bs }: { leaderboard: LeaderboardEntry[]; badges: Badge[] }) => {
@@ -200,6 +253,7 @@ export default function StudentGamePage() {
 
         const playerCh = pusher.subscribe(`player-${pid}`);
         playerCh.bind('answer-result', (r: AnswerResult) => {
+            answeredRef.current = true;
             clearTimer(); setResult(r); setTotalScore(r.totalScore);
             setStreak(r.streak);
             // Blitz: just flash result inline, stay in question phase (auto-advance from server)
@@ -244,19 +298,37 @@ export default function StudentGamePage() {
 
         return () => {
             pusher.unsubscribe(`game-${pin}`); pusher.unsubscribe(`player-${pid}`);
+            pusher.connection.unbind('connected', resync);
+            document.removeEventListener('visibilitychange', onVisible);
+            window.removeEventListener('online', resync);
+            clearInterval(poll);
             clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
-            retryTimeoutsRef.current.forEach(clearTimeout);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router]);
 
+    /** Javobni yuboradi; tarmoq uzilsa yoki server band bo'lsa (503) — qayta urinadi. */
+    const postAnswer = async (payload: Record<string, unknown>) => {
+        answeredRef.current = true;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                const res = await fetch('/api/game/answer', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, ...payload }),
+                });
+                if (res.ok) return;
+                // 400: savol allaqachon yopilgan yoki javob qabul qilingan — ekranni server holatiga moslaymiz
+                if (res.status === 400) { resyncRef.current?.(); return; }
+            } catch { /* tarmoq uzildi — qayta urinamiz */ }
+            await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
+        }
+        resyncRef.current?.();
+    };
+
     const handleAnswer = async (i: number) => {
         if (selected !== null || phase !== 'question') return;
         setSelected(i); vibrate(40);
-        await fetch('/api/game/answer', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, optionIndex: i }),
-        });
+        await postAnswer({ optionIndex: i });
     };
 
     // Submit sorted order
@@ -265,10 +337,7 @@ export default function StudentGamePage() {
         setSortSubmitted(true); vibrate(40);
         // Map IDs back to indices
         const submittedOrder = orderedIds.map(id => parseInt(id.replace('item-', '')));
-        await fetch('/api/game/answer', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, submittedOrder }),
-        });
+        await postAnswer({ submittedOrder });
     };
 
     // Submit match result when all pairs matched
@@ -276,33 +345,21 @@ export default function StudentGamePage() {
         if (matchSubmitted || phase !== 'question') return;
         setMatchSubmitted(true);
         vibrate(mr.cleanSweep ? [80, 40, 80, 40, 120] : 60);
-        await fetch('/api/game/answer', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, matchResult: mr }),
-        });
+        await postAnswer({ matchResult: mr });
     };
 
     const handleBlitzAnswer = async (optionIndex: number) => {
         if (blitzSubmitted || phase !== 'question') return;
         setBlitzSubmitted(true);
         vibrate(40);
-        await fetch('/api/game/answer', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, optionIndex }),
-        });
+        await postAnswer({ optionIndex });
     };
 
     const handleAnagramSubmit = async (answer: string, hintsUsed: number, completedMs: number) => {
         if (anagramSubmitted || phase !== 'question') return;
         setAnagramSubmitted(true);
         vibrate(40);
-        await fetch('/api/game/answer', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                pin: pinRef.current, playerId: playerIdRef.current,
-                anagramAnswer: answer, anagramHintsUsed: hintsUsed, anagramCompletedMs: completedMs,
-            }),
-        });
+        await postAnswer({ anagramAnswer: answer, anagramHintsUsed: hintsUsed, anagramCompletedMs: completedMs });
     };
 
     const pct = question ? (timeLeft / question.timeLimit) * 100 : 100;
@@ -448,8 +505,9 @@ export default function StudentGamePage() {
                             points: result.points,
                             streak: result.streak,
                             streakFire: result.streakFire || false,
-                            correctOrder: result.correctOptions.map(i => `item-${i}`),
-                            submittedOrder: (result.submittedOrder || []).map(i => `item-${i}`),
+                            // Server asl indekslarni yuboradi; elementlar esa o'quvchiga ko'rsatilgan pozitsiya bilan belgilangan
+                            correctOrder: result.correctOptions.map(i => `item-${result.shownOrder ? result.shownOrder.indexOf(i) : i}`),
+                            submittedOrder: (result.submittedOrder || []).map(i => `item-${result.shownOrder ? result.shownOrder.indexOf(i) : i}`),
                             explanation: result.explanation,
                         } : null}
                         disabled={sortSubmitted}

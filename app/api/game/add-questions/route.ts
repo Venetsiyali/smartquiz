@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRoom, saveRoomData, shuffleChoiceOptions } from '@/lib/gameState';
+import { withRoom, shuffleChoiceOptions } from '@/lib/gameState';
 
 export async function POST(req: Request) {
     try {
@@ -8,21 +8,18 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Malumotlar toliq emas' }, { status: 400 });
         }
 
-        const room = await getRoom(pin);
-        if (!room) {
-            return NextResponse.json({ error: 'Xona topilmadi' }, { status: 404 });
-        }
+        const result = await withRoom(pin, room => {
+            if (!room) return { error: 'Xona topilmadi', status: 404 } as const;
+            if (room.status !== 'lobby') {
+                return { error: "O'yin allaqachon boshlangan yoki tugallangan", status: 400 } as const;
+            }
+            // Yangi o'yin sessiyasi uchun savollar almashtiriladi
+            room.quizTitle = quizTitle || room.quizTitle;
+            room.questions = shuffleChoiceOptions(questions);
+            return { ok: true } as const;
+        });
 
-        if (room.status !== 'lobby') {
-            return NextResponse.json({ error: 'O\'yin allaqachon boshlangan yoki tugallangan' }, { status: 400 });
-        }
-
-        // Append or replace questions. Following standard behavior: we just replace for the new game session
-        room.quizTitle = quizTitle || room.quizTitle;
-        room.questions = shuffleChoiceOptions(questions);
-
-        await saveRoomData(room);
-
+        if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status });
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Add questions error:', error);

@@ -100,6 +100,112 @@ export interface GameRoom {
     teams?: Team[];
     customTeamNames?: string[]; // Pro: teacher-set names
     gameMode?: 'classic' | 'tezkor';
+    // Joriy savolda o'quvchilarga ko'rsatilgan holat — ballash va qayta ulanish shu bilan bir xil bo'lsin
+    currentOrder?: number[];          // 'order': ko'rsatilgan tartib (asl indekslar)
+    currentScramble?: string | null;  // 'anagram': aralashtirilgan so'z
+}
+
+// ─── Atomik yangilash ──────────────────────────────────────────────────────────
+// Xona bitta Redis kalitida saqlanadi va route'lar uni o'qib-o'zgartirib-yozadi. 20 ta o'quvchi bir vaqtda
+// kirsa yoki javob bersa, qulfsiz yozuvlar bir-birini o'chirib yuboradi (o'yinchi yoki javob yo'qoladi,
+// kech kelgan javob xonani oldingi savolga qaytarib yozadi). Shuning uchun har bir o'zgartirish qulf ichida.
+// Har bir o'zgartirish ikki Redis so'rovidan iborat: (1) qulf olish + xonani o'qish, (2) xonani yozish + qulfni ochish.
+// Ikkalasi ham atomik Lua skripti — qulf ichida vaqt minimal, 20 ta javob tez navbatdan o'tadi.
+const LOCK_TTL_MS = 5_000;
+const LOCK_WAIT_MS = 8_000;
+const ACQUIRE_SCRIPT = `if redis.call('SET', KEYS[1], ARGV[1], 'NX', 'PX', ARGV[2]) then
+  local v = redis.call('GET', KEYS[2])
+  if v then return v end
+  return ''
+end
+return false`;
+const COMMIT_SCRIPT = `if redis.call('GET', KEYS[1]) == ARGV[1] then
+  if ARGV[2] ~= '' then redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3]) end
+  redis.call('DEL', KEYS[1])
+  return 1
+end
+return 0`;
+const RELEASE_SCRIPT = `if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) else return 0 end`;
+
+/**
+ * Xonani qulf ostida o'qib, fn ichida o'zgartirishga beradi va natijani atomik saqlaydi.
+ * fn xonani (yoki xona topilmasa null) oladi va uni joyida o'zgartiradi. fn xato tashlasa — hech narsa saqlanmaydi.
+ */
+export async function withRoom<T>(pin: string, fn: (room: GameRoom | null) => Promise<T> | T): Promise<T> {
+    const lockKey = `lock:room:${pin}`;
+    const roomKey = `room:${pin}`;
+    const token = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const deadline = Date.now() + LOCK_WAIT_MS;
+
+    let room: GameRoom | null;
+    let delay = 5;
+    for (;;) {
+        const raw = await redis.eval(ACQUIRE_SCRIPT, [lockKey, roomKey], [token, String(LOCK_TTL_MS)]);
+        if (raw !== null && raw !== undefined) {
+            room = raw === '' ? null : (typeof raw === 'string' ? JSON.parse(raw) : raw) as GameRoom;
+            break;
+        }
+        if (Date.now() > deadline) throw new Error("O'yin xonasi band, qayta urinib ko'ring");
+        await new Promise(r => setTimeout(r, delay + Math.random() * delay));
+        delay = Math.min(delay * 1.5, 40);
+    }
+
+    let committed = false;
+    try {
+        const result = await fn(room);
+        const ok = await redis.eval(COMMIT_SCRIPT, [lockKey, roomKey], [token, room ? JSON.stringify(room) : '', String(ROOM_TTL)]);
+        committed = true;
+        if (Number(ok) !== 1) throw new Error("O'yin xonasi band edi, qayta urinib ko'ring");
+        return result;
+    } finally {
+        if (!committed) await redis.eval(RELEASE_SCRIPT, [lockKey], [token]).catch(() => {});
+    }
+}
+
+function shuffleArr<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+/** Joriy savol uchun o'quvchilarga ko'rsatiladigan tartib/aralashtirishni tayyorlaydi (savol boshlanganda bir marta). */
+export function prepareCurrentQuestion(room: GameRoom): void {
+    const q = room.questions[room.currentQuestionIndex];
+    room.currentOrder = undefined;
+    room.currentScramble = undefined;
+    if (!q) return;
+    if (q.type === 'order') {
+        room.currentOrder = shuffleArr(q.options.map((_, i) => i));
+    } else if (q.type === 'anagram') {
+        const word = q.options[0] || '';
+        let scrambled = shuffleArr(word.split('')).join('');
+        if (word.length > 1 && scrambled === word) scrambled = shuffleArr(word.split('')).join('');
+        room.currentScramble = scrambled;
+    }
+}
+
+/** O'quvchilarga yuboriladigan joriy savol (to'g'ri javobsiz) — start, next va qayta ulanish uchun bir xil. */
+export function questionPayload(room: GameRoom) {
+    const q = room.questions[room.currentQuestionIndex];
+    if (!q) return null;
+    const order = q.type === 'order' ? (room.currentOrder ?? q.options.map((_, i) => i)) : null;
+    return {
+        questionIndex: room.currentQuestionIndex,
+        total: room.questions.length,
+        type: q.type || 'multiple',
+        text: q.text,
+        options: order ? order.map(i => q.options[i]) : q.type === 'anagram' ? [] : q.options,
+        optionImages: order && q.optionImages ? order.map(i => q.optionImages![i]) : (q.optionImages || null),
+        pairs: q.pairs || null,
+        anagramScrambled: q.type === 'anagram' ? (room.currentScramble ?? null) : null,
+        anagramWordLength: q.type === 'anagram' ? (q.options[0] || '').length : null,
+        timeLimit: q.timeLimit,
+        imageUrl: q.imageUrl,
+        questionStartTime: room.questionStartTime,
+    };
 }
 
 export async function getRoom(pin: string): Promise<GameRoom | null> {
