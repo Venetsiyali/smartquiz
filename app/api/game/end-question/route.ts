@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
 import { getRoom, saveRoomData, getLeaderboard } from '@/lib/gameState';
+import { recordAnswerStats } from '@/lib/questionBank/stats';
 
 export async function POST(req: Request) {
     const { pin }: { pin: string } = await req.json();
@@ -19,6 +20,12 @@ export async function POST(req: Request) {
     } else {
         room.status = 'leaderboard';
         await saveRoomData(room);
+
+        // Ombordagi ko'p tanlovli savol bo'lsa — natijani statistikaga yozamiz (faqat birinchi yakunlashda)
+        if ((question.type ?? 'multiple') === 'multiple') {
+            const correct = room.questionStats?.index === room.currentQuestionIndex ? room.questionStats.correct : 0;
+            await recordAnswerStats(question.text, room.answeredPlayerIds.length, correct);
+        }
     }
 
     await pusherServer.trigger(`game-${pin}`, 'question-end', {

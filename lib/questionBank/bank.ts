@@ -90,13 +90,16 @@ export async function getFallbackQuestions(params: {
     await add({}, 'general');
 
     if (picked.size === 0) return { questions: [], matchLevel: 'general', subject };
+    return { questions: await loadForGame(Array.from(picked)), matchLevel, subject };
+}
 
-    const ids = Array.from(picked);
+/** Tanlangan savollarni o'yin uchun yuklaydi: variantlar aralashtiriladi, "berilgan" hisobi oshiriladi. */
+async function loadForGame(ids: string[]): Promise<BankQuestionOut[]> {
     const rows = await prisma.bankQuestion.findMany({ where: { id: { in: ids } } });
     await prisma.bankQuestion.updateMany({ where: { id: { in: ids } }, data: { timesShown: { increment: 1 } } });
 
     const byId = new Map(rows.map(r => [r.id, r]));
-    const questions = ids.flatMap(id => {
+    return ids.flatMap(id => {
         const r = byId.get(id);
         if (!r) return [];
         const options = r.options as string[];
@@ -112,8 +115,52 @@ export async function getFallbackQuestions(params: {
             hint: r.hint,
         }];
     });
+}
 
-    return { questions, matchLevel, subject };
+export interface BankCatalogSubject {
+    subject: string;
+    count: number;
+    topics: { topic: string; count: number }[];
+}
+
+/** O'qituvchi tanlashi uchun: tasdiqlangan savollar fan va mavzular bo'yicha. */
+export async function getBankCatalog(language = 'uz'): Promise<BankCatalogSubject[]> {
+    const groups = await prisma.bankQuestion.groupBy({
+        by: ['subject', 'topic'],
+        where: { status: 'APPROVED', language },
+        _count: true,
+    });
+    const bySubject = new Map<string, BankCatalogSubject>();
+    for (const g of groups) {
+        const s = bySubject.get(g.subject) ?? { subject: g.subject, count: 0, topics: [] };
+        s.count += g._count;
+        if (g.topic) s.topics.push({ topic: g.topic, count: g._count });
+        bySubject.set(g.subject, s);
+    }
+    return Array.from(bySubject.values())
+        .map(s => ({ ...s, topics: s.topics.sort((a, b) => a.topic.localeCompare(b.topic)) }))
+        .sort((a, b) => a.subject.localeCompare(b.subject));
+}
+
+/** O'qituvchi tanlagan filtr bo'yicha tasdiqlangan savollardan tasodifiy tanlov (yetmasa — borini qaytaradi). */
+export async function getBankQuestions(params: {
+    subject: string;
+    topic?: string;
+    grade?: number | null;
+    difficulty?: number;
+    count: number;
+    language?: string;
+}): Promise<BankQuestionOut[]> {
+    const { subject, topic, grade, difficulty, count, language = 'uz' } = params;
+    const where = {
+        status: 'APPROVED' as const,
+        language,
+        subject,
+        ...(topic ? { topic } : {}),
+        ...(grade != null ? { OR: [{ grade: null }, { grade: { gte: grade - 1, lte: grade + 1 } }] } : {}),
+    };
+    const ids = await sampleIds(where, count, new Set(), difficulty);
+    return ids.length > 0 ? loadForGame(ids) : [];
 }
 
 export function fallbackNotice(result: FallbackResult): string {

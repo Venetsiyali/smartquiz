@@ -219,7 +219,8 @@ model BankQuestion {
   generatedBy  String             @default("") // "provider/model" — tekshiruvchi boshqa provayderdan tanlanadi
   verifiedAt   DateTime?
   reviewNote   String             @default("") // tekshiruvchi izohi yoki rad etish sababi
-  timesShown   Int                @default(0)
+  timesShown   Int                @default(0) // ombordan o'yinga necha marta berilgan
+  timesAnswered Int               @default(0) // o'quvchilar necha marta javob bergan
   timesCorrect Int                @default(0)
   reportCount  Int                @default(0)
   createdAt    DateTime           @default(now())
@@ -253,6 +254,7 @@ enum WheelQuestionSource {
   AI
   FILE
   MANUAL
+  BANK
 }
 
 model WheelSession {

@@ -373,7 +373,8 @@
       "ai": "🤖 AI",
       "lobby": "🚀 Lobby",
       "newQuestions": "Yangi savollar",
-      "continue": "✅ Davom etish"
+      "continue": "✅ Davom etish",
+      "bank": "📚 Ombor"
     },
     "Editor": {
       "quizName": "Quiz nomi (ixtiyoriy)...",
@@ -418,7 +419,30 @@
       "analyzeBtn": "🤖 AI bilan Tahlil Qilish",
       "charsRead": "belgi o'qildi",
       "aiOson": "Zukkoo AI (Oson)",
-      "aiQiyin": "Zukkoo AI (Qiyin)"
+      "aiQiyin": "Zukkoo AI (Qiyin)",
+      "bankTitle": "📚 Tayyor savollar ombori",
+      "bank": {
+        "subject": "Fan",
+        "topic": "Mavzu",
+        "allTopics": "Barcha mavzular",
+        "grade": "Sinf",
+        "allGrades": "Barcha sinflar",
+        "gradeN": "{grade}-sinf",
+        "higherEd": "Oliy ta'lim",
+        "difficulty": "Qiyinlik",
+        "anyDifficulty": "Aralash",
+        "easy": "Oson",
+        "medium": "O'rta",
+        "hard": "Qiyin",
+        "count": "Savollar soni",
+        "submit": "📚 Savollarni qo'shish",
+        "loading": "Yuklanmoqda...",
+        "empty": "Ombor hali bo'sh",
+        "notFound": "Bu tanlov bo'yicha omborda savol topilmadi. Mavzu yoki sinfni o'zgartirib ko'ring.",
+        "got": "{count} ta savol qo'shildi",
+        "fewer": "Omborda bu tanlov bo'yicha faqat {count} ta savol bor edi — hammasi qo'shildi.",
+        "note": "Tekshiruvdan o'tgan tayyor savollar — AI kutishsiz, bir zumda."
+      }
     }
   },
   "SocialProof": {

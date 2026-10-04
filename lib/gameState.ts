@@ -92,6 +92,8 @@ export interface GameRoom {
     status: 'lobby' | 'question' | 'leaderboard' | 'ended';
     questionStartTime?: number;
     answeredPlayerIds: string[];
+    // Joriy savol bo'yicha to'g'ri javoblar soni (index boshqa bo'lsa — eski savolniki, 0 deb hisoblanadi)
+    questionStats?: { index: number; correct: number };
     // Team mode
     teamMode?: boolean;
     teamCount?: number;

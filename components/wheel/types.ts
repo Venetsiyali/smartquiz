@@ -12,7 +12,7 @@ export interface WheelQuestionPreview {
     options: string[];
     correctIndex: number;
     explanation: string;
-    source: 'AI' | 'FILE' | 'MANUAL';
+    source: 'AI' | 'FILE' | 'MANUAL' | 'BANK';
     used: boolean;
 }
 
@@ -22,5 +22,5 @@ export interface DraftQuestion {
     options: string[];
     correctIndex: number;
     explanation: string;
-    source: 'AI' | 'FILE' | 'MANUAL';
+    source: 'AI' | 'FILE' | 'MANUAL' | 'BANK';
 }

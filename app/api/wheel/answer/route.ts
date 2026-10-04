@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireTeacherId, getOwnedWheelSession } from '@/lib/wheel/authz';
 import { WheelAnswerBodySchema } from '@/lib/wheel/schema';
+import { recordAnswerStats } from '@/lib/questionBank/stats';
 
 const POINTS_PER_CORRECT = 10;
 
@@ -46,6 +47,8 @@ export async function POST(req: Request) {
             },
         }),
     ]);
+
+    await recordAnswerStats(question.question, 1, isCorrect ? 1 : 0);
 
     return NextResponse.json({
         isCorrect,

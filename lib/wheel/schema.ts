@@ -14,7 +14,7 @@ export type WheelAIQuestion = z.infer<typeof WheelAIQuestionSchema>;
 
 // Sessiyaga saqlash uchun kelayotgan savol (source ko'rsatilgan holda).
 export const WheelSaveQuestionSchema = WheelAIQuestionSchema.extend({
-    source: z.enum(['AI', 'FILE', 'MANUAL']).default('MANUAL'),
+    source: z.enum(['AI', 'FILE', 'MANUAL', 'BANK']).default('MANUAL'),
 });
 
 export const WheelSaveQuestionsBodySchema = z.object({

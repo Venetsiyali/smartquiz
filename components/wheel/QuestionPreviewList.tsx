@@ -6,6 +6,7 @@ const SOURCE_LABEL: Record<DraftQuestion['source'], string> = {
     AI: '✨ AI',
     FILE: '📄 Fayl',
     MANUAL: "✍️ Qo'lda",
+    BANK: '📚 Ombor',
 };
 
 export default function QuestionPreviewList({

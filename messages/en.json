@@ -349,7 +349,8 @@
       "ai": "🤖 AI",
       "lobby": "🚀 Lobby",
       "newQuestions": "New questions",
-      "continue": "✅ Continue"
+      "continue": "✅ Continue",
+      "bank": "📚 Bank"
     },
     "Editor": {
       "quizName": "Quiz name (optional)...",
@@ -394,7 +395,30 @@
       "analyzeBtn": "🤖 Analyze with AI",
       "charsRead": "characters read",
       "aiOson": "Zukkoo AI (Easy)",
-      "aiQiyin": "Zukkoo AI (Hard)"
+      "aiQiyin": "Zukkoo AI (Hard)",
+      "bankTitle": "📚 Ready-made question bank",
+      "bank": {
+        "subject": "Subject",
+        "topic": "Topic",
+        "allTopics": "All topics",
+        "grade": "Grade",
+        "allGrades": "All grades",
+        "gradeN": "Grade {grade}",
+        "higherEd": "University",
+        "difficulty": "Difficulty",
+        "anyDifficulty": "Mixed",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "count": "Number of questions",
+        "submit": "📚 Add questions",
+        "loading": "Loading...",
+        "empty": "The bank is empty for now",
+        "notFound": "No questions match this selection. Try another topic or grade.",
+        "got": "{count} questions added",
+        "fewer": "Only {count} questions matched — all of them were added.",
+        "note": "Verified ready-made questions (currently in Uzbek) — instant, no AI wait."
+      }
     }
   },
   "SocialProof": {

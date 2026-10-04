@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
 import { getRoom, saveRoomData, calculateScore, calculateBlitzScore, calculateAnagramScore, getLeaderboard, recalcTeamScores, getTeamLeaderboard } from '@/lib/gameState';
+import { recordAnswerStats } from '@/lib/questionBank/stats';
 
 
 
@@ -141,6 +142,11 @@ export async function POST(req: Request) {
         if (elapsed < player.fastestAnswerMs) player.fastestAnswerMs = elapsed;
         if (isCorrect) player.correctCount += 1;
 
+        if (room.questionStats?.index !== room.currentQuestionIndex) {
+            room.questionStats = { index: room.currentQuestionIndex, correct: 0 };
+        }
+        if (isCorrect) room.questionStats.correct += 1;
+
         room.answeredPlayerIds.push(playerId);
         await saveRoomData(room);
 
@@ -223,6 +229,9 @@ export async function POST(req: Request) {
     if (room.answeredPlayerIds.length >= room.players.length && room.players.length > 0) {
         room.status = 'leaderboard';
         await saveRoomData(room);
+        if (qType === 'multiple') {
+            await recordAnswerStats(question.text, room.answeredPlayerIds.length, room.questionStats?.correct ?? 0);
+        }
         const leaderboard = getLeaderboard(room.players);
         const isLastQuestion = room.currentQuestionIndex >= room.questions.length - 1;
         await pusherServer.trigger(`game-${pin}`, 'question-end', {
