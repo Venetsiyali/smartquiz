@@ -9,7 +9,8 @@
     "postinstall": "prisma generate",
     "bank:seed": "node scripts/bank/seed.js",
     "bank:generate": "tsx scripts/bank/generate.ts",
-    "bank:verify": "tsx scripts/bank/verify.ts"
+    "bank:verify": "tsx scripts/bank/verify.ts",
+    "bank:export": "tsx scripts/bank/export.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
