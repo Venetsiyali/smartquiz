@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher';
 import { withRoom } from '@/lib/gameState';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(req: Request) {
     const { pin, playerId, nickname, avatar }: {
         pin: string; playerId: string; nickname: string; avatar: string;
     } = await req.json();
+
+    // Tizimga kirgan o'quvchi — XP uning akkauntiga yoziladi (mehmonlar ham o'ynay oladi, faqat XP olmaydi)
+    const userId = (await getServerSession(authOptions).catch(() => null))?.user?.id as string | undefined;
 
     // Ko'p o'quvchi bir vaqtda (QR orqali) kirganda hech kim yo'qolib qolmasligi uchun — qulf ichida
     let result;
@@ -18,6 +23,7 @@ export async function POST(req: Request) {
             if (existing) {
                 // Faqat oxirgi avatarni yangilaymiz — avvalgi ballar va ketma-ketliklar saqlanadi
                 existing.avatar = avatar || existing.avatar || '🤖';
+                if (userId && !existing.userId) existing.userId = userId;
                 return {
                     room,
                     response: {
@@ -45,6 +51,7 @@ export async function POST(req: Request) {
                 totalAnswers: 0,
                 totalResponseMs: 0,
                 fastestAnswerMs: 0,
+                ...(userId ? { userId } : {}),
             });
 
             let team;

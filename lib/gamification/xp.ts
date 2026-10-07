@@ -65,3 +65,33 @@ export async function getXP(userId: string): Promise<number> {
         return 0;
     }
 }
+
+export interface GameXPAward { userId: string; amount: number }
+
+/**
+ * O'yin tugaganda (withRoom ichida) chaqiriladi: kim qancha XP olishini hisoblaydi va xonani belgilaydi,
+ * shunda takroriy "next" so'rovi XP'ni ikki marta bermaydi. Bazaga yozish — awardGameXP (qulfdan tashqarida).
+ */
+export function collectGameXP(room: { xpAwarded?: boolean; players: { userId?: string; correctCount: number }[]; questions: unknown[] }): GameXPAward[] {
+    if (room.xpAwarded) return [];
+    room.xpAwarded = true;
+    const total = room.questions.length;
+    const best = new Map<string, number>();
+    for (const p of room.players) {
+        if (!p.userId) continue;
+        const amount = XP_REWARDS.QUIZ_PARTICIPATION
+            + p.correctCount * XP_REWARDS.CORRECT_ANSWER
+            + (total > 0 && p.correctCount >= total ? XP_REWARDS.PERFECT_SCORE_BONUS : 0);
+        best.set(p.userId, Math.max(best.get(p.userId) ?? 0, amount));
+    }
+    return Array.from(best, ([userId, amount]) => ({ userId, amount }));
+}
+
+/** XP va o'ynalgan o'yinlar sonini atomar oshiradi (parallel o'yinlarda ham yo'qolmaydi). */
+export async function awardGameXP(awards: GameXPAward[]): Promise<void> {
+    if (awards.length === 0) return;
+    await Promise.allSettled(awards.map(a => prisma.user.update({
+        where: { id: a.userId },
+        data: { xp: { increment: a.amount }, totalGamesPlayed: { increment: 1 } },
+    })));
+}

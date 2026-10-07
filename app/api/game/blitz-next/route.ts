@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { awardGameXP, collectGameXP, type GameXPAward } from '@/lib/gamification/xp';
 import { pusherServer, triggerAll, type PusherEvent } from '@/lib/pusher';
 import { getRoom, withRoom, getLeaderboard, computeBadges, prepareCurrentQuestion, questionPayload } from '@/lib/gameState';
 
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     await pusherServer.trigger(`game-${pin}`, 'blitz-between', { countdown: 1 });
     await new Promise(r => setTimeout(r, 1000));
 
-    let result: { events: PusherEvent[]; ended?: boolean; skipped?: boolean } | null;
+    let result: { events: PusherEvent[]; ended?: boolean; skipped?: boolean; xp?: GameXPAward[] } | null;
     try {
         result = await withRoom(pin, fresh => {
             if (!fresh) return null;
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
                 fresh.status = 'ended';
                 return {
                     ended: true,
+                    xp: collectGameXP(fresh),
                     events: [{
                         channel: `game-${pin}`,
                         name: 'game-end',
@@ -59,5 +61,6 @@ export async function POST(req: Request) {
 
     if (!result) return NextResponse.json({ ok: true });
     if (result.events.length > 0) await triggerAll(result.events);
+    if (result.xp) await awardGameXP(result.xp);
     return NextResponse.json({ ok: true, ...(result.ended ? { ended: true } : {}), ...(result.skipped ? { skipped: true } : {}) });
 }

@@ -20,6 +20,7 @@ export interface Player {
     fastestAnswerMs: number; // fastest single answer in ms
     teamId?: string;         // team mode: which team this player belongs to
     hintsUsed?: number;      // anagram: accumulated hints used
+    userId?: string;         // tizimga kirgan o'quvchi — o'yin oxirida XP shu akkauntga yoziladi
 }
 
 /** One team in team-mode */
@@ -90,6 +91,7 @@ export interface GameRoom {
     players: Player[];
     currentQuestionIndex: number;
     status: 'lobby' | 'question' | 'leaderboard' | 'ended';
+    xpAwarded?: boolean;        // XP bir o'yin uchun faqat bir marta beriladi
     questionStartTime?: number;
     answeredPlayerIds: string[];
     // Joriy savol bo'yicha to'g'ri javoblar soni (index boshqa bo'lsa — eski savolniki, 0 deb hisoblanadi)

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
+import { awardGameXP, collectGameXP, type GameXPAward } from '@/lib/gamification/xp';
 import { triggerAll, type PusherEvent } from '@/lib/pusher';
 import { withRoom, getLeaderboard, computeBadges, resetTeamQuestion, getTeamLeaderboard, prepareCurrentQuestion, questionPayload } from '@/lib/gameState';
 
 export async function POST(req: Request) {
     const { pin }: { pin: string } = await req.json();
 
-    let result: { events: PusherEvent[]; ended: boolean } | null;
+    let result: { events: PusherEvent[]; ended: boolean; xp?: GameXPAward[] } | null;
     try {
         result = await withRoom(pin, room => {
             if (!room) return null;
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
                 room.status = 'ended';
                 return {
                     ended: true,
+                    xp: collectGameXP(room),
                     events: [{
                         channel: `game-${pin}`,
                         name: 'game-end',
@@ -49,5 +51,6 @@ export async function POST(req: Request) {
 
     if (!result) return NextResponse.json({ error: "O'yin topilmadi" }, { status: 400 });
     await triggerAll(result.events);
+    if (result.xp) await awardGameXP(result.xp);
     return NextResponse.json({ ok: true, ...(result.ended ? { ended: true } : {}) });
 }
