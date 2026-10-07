@@ -75,9 +75,14 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "O'yin xonasi topilmadi (Pin noto'g'ri)" }, { status: 400 });
     }
 
-    await pusherServer.trigger(`game-${pin}`, 'player-joined', {
-        players: result.room.players.map(p => ({ id: p.id, nickname: p.nickname, avatar: p.avatar, streak: p.streak, teamId: p.teamId })),
-    });
+    // Faqat o'qituvchi ekraniga va faqat yangi o'yinchi: butun ro'yxat 80+ o'yinchida Pusher'ning 10KB xabar chegarasidan oshardi,
+    // hammaga yuborish esa har kirishda N ta xabar sarflardi
+    const p = result.room.players.find(x => x.id === playerId || x.nickname === nickname);
+    if (p) {
+        await pusherServer.trigger(`host-${pin}`, 'player-joined', {
+            player: { id: p.id, nickname: p.nickname, avatar: p.avatar, streak: p.streak, teamId: p.teamId },
+        }).catch(err => console.error('player-joined trigger:', err));
+    }
 
     return NextResponse.json(result.response);
 }

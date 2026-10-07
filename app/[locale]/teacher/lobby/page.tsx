@@ -53,8 +53,8 @@ export default function TeacherLobbyPage() {
 
         const pusher = getPusherClient();
         channelRef.current = pusher.subscribe(`game-${existingPin}`);
-        channelRef.current.bind('player-joined', ({ players: updated }: { players: Player[] }) => {
-            setPlayers(updated);
+        pusher.subscribe(`host-${existingPin}`).bind('player-joined', ({ player }: { player: Player }) => {
+            setPlayers(prev => prev.some(p => p.id === player.id) ? prev : [...prev, player]);
         });
         channelRef.current.bind('team-updated', ({ playerTeams }: { playerTeams: PlayerTeam[] }) => {
             setPlayers(prev => prev.map(p => {
@@ -64,8 +64,30 @@ export default function TeacherLobbyPage() {
         });
     }, [router]);
 
+    // Pusher xabari yo'qolsa ham ro'yxat to'g'ri bo'lsin: har 10 soniyada serverdan qayta olinadi
     useEffect(() => {
-        return () => { if (pin) getPusherClient().unsubscribe(`game-${pin}`); };
+        if (!pin) return;
+        const sync = () => fetch(`/api/game/state?pin=${pin}`, { cache: 'no-store' })
+            .then(res => res.json())
+            .then(data => {
+                if (!Array.isArray(data?.players)) return;
+                setPlayers(prev => {
+                    const known = new Set(prev.map(p => p.id));
+                    const added = (data.players as Player[]).filter(p => !known.has(p.id));
+                    return added.length ? [...prev, ...added] : prev;
+                });
+            })
+            .catch(() => {});
+        const id = setInterval(sync, 10_000);
+        return () => clearInterval(id);
+    }, [pin]);
+
+    useEffect(() => {
+        return () => {
+            if (!pin) return;
+            getPusherClient().unsubscribe(`game-${pin}`);
+            getPusherClient().unsubscribe(`host-${pin}`);
+        };
     }, [pin]);
 
     const handleStart = () => {

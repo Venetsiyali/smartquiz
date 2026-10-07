@@ -14,7 +14,7 @@ interface QuestionPayload {
 interface QuestionEndPayload { leaderboard: LeaderboardEntry[]; isLastQuestion: boolean; }
 interface Badge { nickname: string; avatar: string; badge: string; icon: string; desc: string; }
 interface GameEndPayload { leaderboard: LeaderboardEntry[]; badges: Badge[]; }
-interface PlayerJoinedPayload { players: any[] }
+interface PlayerJoinedPayload { player: { id: string; nickname: string } }
 
 function fireConfetti() {
     const end = Date.now() + 3500;
@@ -94,18 +94,13 @@ export default function TezkorGamePage() {
 
         const pusher = getPusherClient();
         channelRef.current = pusher.subscribe(`game-${pin}`);
+        const hostChannel = pusher.subscribe(`host-${pin}`);
 
         // Track new players joining (though they mostly join in lobby, some might reconnect)
-        channelRef.current.bind('player-joined', ({ players: updated }: PlayerJoinedPayload) => {
-            setPlayers(prev => {
-                const newPlayers = [...prev];
-                updated.forEach(u => {
-                    if (!newPlayers.find(p => p.id === u.id)) {
-                        newPlayers.push({ id: u.id, nickname: u.nickname, score: 0, correctCount: 0, isJumping: false });
-                    }
-                });
-                return newPlayers;
-            });
+        hostChannel.bind('player-joined', ({ player: u }: PlayerJoinedPayload) => {
+            setPlayers(prev => prev.some(p => p.id === u.id)
+                ? prev
+                : [...prev, { id: u.id, nickname: u.nickname, score: 0, correctCount: 0, isJumping: false }]);
         });
 
         channelRef.current.bind('question-start', (payload: QuestionPayload) => {
@@ -120,7 +115,7 @@ export default function TezkorGamePage() {
         // Zukkoo classic doesn't seem to emit live scores per player, just team or blitz live updates.
         // If we want frogs to jump *live*, we should ideally have an event. 
         // Let's add a 'player-answered' bind just in case we add it to the server.
-        channelRef.current.bind('player-answered', (data: { playerId: string; isCorrect: boolean; currentCorrectCount: number; score: number }) => {
+        hostChannel.bind('player-answered', (data: { playerId: string; isCorrect: boolean; currentCorrectCount: number; score: number }) => {
             if (data.isCorrect) {
                 setPlayers(prev => prev.map(p => {
                     if (p.id === data.playerId) {
@@ -165,7 +160,7 @@ export default function TezkorGamePage() {
             fetch('/api/game/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
         });
 
-        return () => { pusher.unsubscribe(`game-${pin}`); clearTimer(); };
+        return () => { pusher.unsubscribe(`game-${pin}`); pusher.unsubscribe(`host-${pin}`); clearTimer(); };
     }, [router, startTimer]);
 
     useEffect(() => {

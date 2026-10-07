@@ -178,7 +178,8 @@ export async function POST(req: Request) {
 
         if (player && qType !== 'anagram') {
             events.push({
-                channel: `game-${pin}`,
+                // Faqat o'qituvchi ekraniga — hammaga yuborilsa har javob N ta Pusher xabari sarflardi
+                channel: `host-${pin}`,
                 name: 'player-answered',
                 data: { playerId, isCorrect, currentCorrectCount: player.correctCount, score: player.score },
             });
