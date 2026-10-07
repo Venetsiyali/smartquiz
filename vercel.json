@@ -1,12 +1,24 @@
 {
+  "regions": [
+    "fra1"
+  ],
   "functions": {
-    "app/api/ai/generate/route.ts": { "maxDuration": 60 },
-    "app/api/ai/upload/route.ts":   { "maxDuration": 60 }
+    "app/api/ai/generate/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/ai/upload/route.ts": {
+      "maxDuration": 60
+    }
   },
   "redirects": [
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "zukkoo.uz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "zukkoo.uz"
+        }
+      ],
       "destination": "https://www.zukkoo.uz/:path*",
       "permanent": true
     }
