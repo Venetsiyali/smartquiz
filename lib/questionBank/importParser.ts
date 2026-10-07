@@ -64,8 +64,8 @@ export function resolveSubject(raw: string | undefined): string | null {
 }
 
 const META = /^(fan|mavzu|sinf|qiyinlik)\s*:\s*(.*)$/i;
-const ANSWER = /^(javob|to'g'ri javob|to‘g‘ri javob|togri javob|answer|ответ)\s*[:\-]\s*(.+)$/i;
-const EXPLANATION = /^(izoh|tushuntirish)\s*[:\-]\s*(.*)$/i;
+const ANSWER = /^(javob|to'g'ri javob|to‘g‘ri javob|togri javob|answer|correct answer|ответ|правильный ответ)\s*[:\-]\s*(.+)$/i;
+const EXPLANATION = /^(izoh|tushuntirish|explanation|пояснение|объяснение)\s*[:\-]\s*(.*)$/i;
 const HINT = /^(ishora|maslahat)\s*[:\-]\s*(.*)$/i;
 const OPTION = /^([*+])?\s*([A-Da-dАБВГабвг])\s*[).:]\s+(.+?)\s*([*+])?$/;
 const NUMBERING = /^(\d{1,4})\s*(?:-\s*savol)?\s*[.)\-:]\s*/i;
@@ -123,6 +123,22 @@ function buildQuestion(d: Draft, ctx: ImportDefaults & { subjectRaw?: string }, 
     });
 }
 
+/**
+ * ChatGPT / Gemini kabi chatlardan nusxalangan matndagi markdown bezaklarini olib tashlaydi:
+ * **qalin**, __qalin__, `kod`, # sarlavha, > iqtibos, - / • ro'yxat belgisi, ``` bloklar.
+ * Bitta * (to'g'ri javob belgisi) saqlanadi.
+ */
+export function stripMarkdown(raw: string): string {
+    return raw
+        .replace(/```[a-z]*\n?/gi, '')
+        .split(/\r?\n/)
+        .map(l => l
+            .replace(/\*\*|__|`/g, '')
+            .replace(/^\s*(#{1,6}|>|[-•–]\s)\s*/, '')
+            .trim())
+        .join('\n');
+}
+
 /** TXT / DOCX / PDF dan olingan matnni tahlil qiladi. */
 export function parseTextFormat(raw: string, defaults: ImportDefaults): ParseResult {
     const lines = raw.replace(/\r\n?/g, '\n').split('\n').map(l => l.replace(/ /g, ' ').trim());
@@ -170,6 +186,9 @@ export function parseTextFormat(raw: string, defaults: ImportDefaults): ParseRes
             cur.alphabet = /[a-d]/i.test(opt[2]) ? 'latin' : 'cyrillic';
             return;
         }
+
+        // Raqamsiz, variantsiz matndan keyin raqamli savol kelsa — oldingisi kirish gapi ("Mana savollar:"), tashlab yuboriladi
+        if (cur && !cur.number && cur.options.length === 0 && cur.answer === null && NUMBERING.test(line)) cur = null;
 
         // Oddiy matn: variantlar boshlangan bo'lsa — yangi savol, aks holda savol matnining davomi
         if (!cur || cur.options.length > 0 || cur.answer !== null) {

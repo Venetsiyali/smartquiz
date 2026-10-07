@@ -8,6 +8,7 @@ import { useSubscription, ProLock, CrownBadge, PLAN_LIMITS } from '@/lib/subscri
 import RateLimitModal from '@/components/ai/RateLimitModal';
 import { SHOW_AUTHOR_PAGE } from '@/lib/featureFlags';
 import BankPicker, { type BankPickerLabels, type PickedQuestion } from '@/components/bank/BankPicker';
+import ExternalImport, { type ExternalImportLabels, type ExternalQuestion } from '@/components/bank/ExternalImport';
 
 type QuestionType = 'multiple' | 'truefalse' | 'order' | 'match' | 'blitz' | 'anagram';
 
@@ -455,7 +456,37 @@ function BankModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: 
     );
 }
 
-type ModalType = 'none' | 'ai' | 'file' | 'bank';
+/* ── Tashqi AI'dan import (ChatGPT, Gemini...) — barcha foydalanuvchilar uchun ── */
+function ExternalModal({ onClose, onImport }: { onClose: () => void; onImport: (qs: QuizQuestion[]) => void }) {
+    const t = useTranslations('TeacherCreate.Modals');
+    const labels = t.raw('external') as ExternalImportLabels & { title: string };
+
+    const handlePicked = (qs: ExternalQuestion[]) => {
+        onImport(qs.map(q => ({
+            id: uuidv4(),
+            type: 'multiple' as QuestionType,
+            text: q.text,
+            options: q.options.map((o, i) => ({ text: o, isCorrect: i === q.correctIndex })),
+            timeLimit: 20,
+            explanation: q.explanation || undefined,
+        })));
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+            <div className="glass w-full max-w-xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto scrollbar-hide">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-black text-white">{labels.title}</h2>
+                    <button onClick={onClose} className="text-white/40 hover:text-white text-3xl">×</button>
+                </div>
+                <ExternalImport labels={labels} onPicked={handlePicked} />
+            </div>
+        </div>
+    );
+}
+
+type ModalType = 'none' | 'ai' | 'file' | 'bank' | 'external';
 
 export default function TeacherCreatePage() {
     const t = useTranslations('Common');
@@ -853,6 +884,7 @@ function TeacherCreateInner() {
             {modal === 'ai' && <AIModal onClose={() => setModal('none')} onImport={importQuestions} gameType={lockedMode === 'team' ? 'team' : lockedMode || q.type || 'multiple'} />}
             {modal === 'file' && <FileModal onClose={() => setModal('none')} onImport={importQuestions} />}
             {modal === 'bank' && <BankModal onClose={() => setModal('none')} onImport={importQuestions} />}
+            {modal === 'external' && <ExternalModal onClose={() => setModal('none')} onImport={importQuestions} />}
 
             {/* Header */}
             <header className="flex items-center gap-3 p-4 border-b border-white/10 flex-wrap">
@@ -898,6 +930,14 @@ function TeacherCreateInner() {
                             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
                             style={{ background: 'rgba(236,72,153,0.15)', border: '1px solid rgba(236,72,153,0.3)', color: '#f472b6' }}>
                             {t('TopBar.bank')}
+                        </button>
+                    )}
+                    {/* Tashqi AI'dan tayyor savollarni joylash — hamma uchun bepul */}
+                    {!['order', 'match', 'blitz', 'anagram'].includes(lockedMode ?? '') && (
+                        <button onClick={() => setModal('external')}
+                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
+                            style={{ background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.3)', color: '#facc15' }}>
+                            {t('TopBar.external')}
                         </button>
                     )}
                     {/* File upload — Pro only */}

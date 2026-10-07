@@ -374,7 +374,8 @@
       "lobby": "🚀 Lobby",
       "newQuestions": "Yangi savollar",
       "continue": "✅ Davom etish",
-      "bank": "📚 Ombor"
+      "bank": "📚 Ombor",
+      "external": "🧩 ChatGPT'dan"
     },
     "Editor": {
       "quizName": "Quiz nomi (ixtiyoriy)...",
@@ -442,6 +443,25 @@
         "got": "{count} ta savol qo'shildi",
         "fewer": "Omborda bu tanlov bo'yicha faqat {count} ta savol bor edi — hammasi qo'shildi.",
         "note": "Tekshiruvdan o'tgan tayyor savollar — AI kutishsiz, bir zumda."
+      },
+      "external": {
+        "title": "🧩 Tashqi AI'dan savollar",
+        "step1": "1-qadam. Promptni nusxalang va ChatGPT, Gemini yoki boshqa AI'ga yuboring",
+        "step2": "2-qadam. AI javobini shu yerga joylang yoki faylni yuklang",
+        "topicPlaceholder": "Mavzu, masalan: Fotosintez, 6-sinf",
+        "count": "Savollar soni",
+        "prompt": "\"{topic}\" mavzusida {count} ta test savoli tuzib ber. Har bir savolda aynan 4 ta variant bo'lsin, faqat bittasi to'g'ri. To'g'ri javoblar A, B, C, D orasida aralash taqsimlansin. Javobni faqat quyidagi formatda, jadvalsiz va ortiqcha gapsiz yoz:\n\n1. Savol matni?\nA) ...\nB) ...\nC) ...\nD) ...\nJavob: B\nIzoh: ...\n\nHar bir savol orasida bitta bo'sh qator qoldir.",
+        "copy": "📋 Promptni nusxalash",
+        "copied": "✅ Nusxalandi",
+        "pastePlaceholder": "AI javobini shu yerga joylang (Ctrl+V)...",
+        "orFile": "yoki fayl: DOCX, PDF, TXT, XLSX, CSV (5MB gacha)",
+        "check": "🔍 Savollarni o'qish",
+        "checking": "⏳ O'qilmoqda...",
+        "found": "✅ {n} ta savol topildi",
+        "failed": "O'qib bo'lmagan savollar ({n} ta):",
+        "warning": "Diqqat",
+        "add": "➕ {n} ta savolni quizga qo'shish",
+        "empty": "Savol topilmadi. AI javobi namunadagi formatda ekanini tekshiring."
       }
     }
   },

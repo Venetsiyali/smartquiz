@@ -350,7 +350,8 @@
       "lobby": "🚀 Lobby",
       "newQuestions": "New questions",
       "continue": "✅ Continue",
-      "bank": "📚 Bank"
+      "bank": "📚 Bank",
+      "external": "🧩 From ChatGPT"
     },
     "Editor": {
       "quizName": "Quiz name (optional)...",
@@ -418,6 +419,25 @@
         "got": "{count} questions added",
         "fewer": "Only {count} questions matched — all of them were added.",
         "note": "Verified ready-made questions (currently in Uzbek) — instant, no AI wait."
+      },
+      "external": {
+        "title": "🧩 Questions from external AI",
+        "step1": "Step 1. Copy the prompt and send it to ChatGPT, Gemini or any other AI",
+        "step2": "Step 2. Paste the AI's answer here or upload a file",
+        "topicPlaceholder": "Topic, e.g. Photosynthesis, grade 6",
+        "count": "Number of questions",
+        "prompt": "Create {count} multiple-choice questions on \"{topic}\". Each question must have exactly 4 options with only one correct. Mix the correct answers across A, B, C and D. Reply strictly in this format, with no tables or extra text:\n\n1. Question text?\nA) ...\nB) ...\nC) ...\nD) ...\nAnswer: B\nExplanation: ...\n\nLeave one empty line between questions.",
+        "copy": "📋 Copy prompt",
+        "copied": "✅ Copied",
+        "pastePlaceholder": "Paste the AI's answer here (Ctrl+V)...",
+        "orFile": "or a file: DOCX, PDF, TXT, XLSX, CSV (up to 5MB)",
+        "check": "🔍 Read questions",
+        "checking": "⏳ Reading...",
+        "found": "✅ {n} questions found",
+        "failed": "Could not read ({n}):",
+        "warning": "Note",
+        "add": "➕ Add {n} questions to quiz",
+        "empty": "No questions found. Make sure the AI's answer follows the sample format."
       }
     }
   },
