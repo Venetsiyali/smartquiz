@@ -6,10 +6,15 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   reloadOnOnline: true,
   swcMinify: true,
   disable: process.env.NODE_ENV === 'development',
+  extendDefaultRuntimeCaching: true,
   workboxOptions: {
     disableDevLogs: true,
     skipWaiting: true,
     clientsClaim: true,
+    // API (o'yin holati, javoblar) hech qachon keshlanmasin — aks holda sekin tarmoqda telefon eski savolni ko'radi
+    runtimeCaching: [
+      { urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/api/'), handler: 'NetworkOnly' },
+    ],
   },
 });
 
@@ -21,9 +26,6 @@ const withNextIntl = createNextIntlPlugin(
 const nextConfig = {
     reactStrictMode: false,
     trailingSlash: false,
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
     images: {
         remotePatterns: [
             {

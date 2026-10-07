@@ -12,7 +12,6 @@ export async function readImportFile(name: string, buffer: Buffer): Promise<File
         return { kind: 'text', text: (await mammoth.extractRawText({ buffer })).value };
     }
     if (lower.endsWith('.pdf')) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
         return { kind: 'text', text: (await pdfParse(buffer)).text };
     }

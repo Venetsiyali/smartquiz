@@ -24,7 +24,6 @@ async function extractText(file: File): Promise<string> {
 
     if (name.endsWith('.pdf')) {
         // pdf-parse is a CJS module; use require() to avoid TS "no call signatures" error
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
         const result = await pdfParse(buffer);
         return result.text;
