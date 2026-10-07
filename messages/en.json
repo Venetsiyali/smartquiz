@@ -351,7 +351,7 @@
       "newQuestions": "New questions",
       "continue": "✅ Continue",
       "bank": "📚 Bank",
-      "external": "🧩 From ChatGPT"
+      "external": "🧩 From other AI"
     },
     "Editor": {
       "quizName": "Quiz name (optional)...",
@@ -422,7 +422,7 @@
       },
       "external": {
         "title": "🧩 Questions from external AI",
-        "step1": "Step 1. Copy the prompt and send it to ChatGPT, Gemini or any other AI",
+        "step1": "Step 1. Copy the prompt and send it to ChatGPT, Claude, Gemini or any other AI",
         "step2": "Step 2. Paste the AI's answer here or upload a file",
         "topicPlaceholder": "Topic, e.g. Photosynthesis, grade 6",
         "count": "Number of questions",

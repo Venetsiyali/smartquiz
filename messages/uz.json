@@ -375,7 +375,7 @@
       "newQuestions": "Yangi savollar",
       "continue": "✅ Davom etish",
       "bank": "📚 Ombor",
-      "external": "🧩 ChatGPT'dan"
+      "external": "🧩 Boshqa AI'dan"
     },
     "Editor": {
       "quizName": "Quiz nomi (ixtiyoriy)...",
@@ -446,7 +446,7 @@
       },
       "external": {
         "title": "🧩 Tashqi AI'dan savollar",
-        "step1": "1-qadam. Promptni nusxalang va ChatGPT, Gemini yoki boshqa AI'ga yuboring",
+        "step1": "1-qadam. Promptni nusxalang va ChatGPT, Claude, Gemini yoki boshqa AI'ga yuboring",
         "step2": "2-qadam. AI javobini shu yerga joylang yoki faylni yuklang",
         "topicPlaceholder": "Mavzu, masalan: Fotosintez, 6-sinf",
         "count": "Savollar soni",
