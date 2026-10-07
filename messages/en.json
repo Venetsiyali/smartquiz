@@ -100,6 +100,12 @@
       "sub": "Classroom Game",
       "badge": "NEW",
       "desc": "Spin the wheel to pick a student, then answer a question. One screen, whole class!"
+    },
+    "code": {
+      "name": "Code Summit",
+      "sub": "Python race",
+      "badge": "NEW",
+      "desc": "Students write Python code — every solution is one step up the mountain. Who reaches the summit first?"
     }
   },
   "GamePlay": {

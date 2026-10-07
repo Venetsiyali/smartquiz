@@ -106,6 +106,15 @@ const GAME_STYLES = [
         route: '/teacher/wheel',
         pro: false,
     },
+    {
+        id: 'code',
+        image: '/images/games/code.webp',
+        gradient: 'linear-gradient(135deg, #062a24 0%, #065f46 60%, #10b981 100%)',
+        glowColor: 'rgba(16,185,129,0.5)',
+        badgeStyle: { background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.5)' },
+        route: '/teacher/code-race',
+        pro: false,
+    },
 ];
 
 function getGreetingKey() {

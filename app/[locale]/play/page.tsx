@@ -86,6 +86,20 @@ function PlayEntry() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const joinCodeRace = async (): Promise<boolean> => {
+        let cid = localStorage.getItem('cr-player-id');
+        if (!cid) { cid = uuidv4(); localStorage.setItem('cr-player-id', cid); }
+        const res = await fetch('/api/code-race/join', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin, playerId: cid, nickname: nickname.trim(), avatar }),
+        }).catch(() => null);
+        if (!res?.ok) return false;
+        localStorage.setItem(`cr-joined-${pin}`, '1');
+        localStorage.setItem('cr-nickname', nickname.trim());
+        router.push(`/play/code?pin=${pin}`);
+        return true;
+    };
+
     const join = async () => {
         if (pin.length !== 6) { setError('6 raqamli PIN kiriting'); return; }
         if (nickname.trim().length < 2) { setError('Nikneym kamida 2 ta harf'); return; }
@@ -99,7 +113,11 @@ function PlayEntry() {
             body: JSON.stringify({ pin, playerId: pid, nickname: nickname.trim(), avatar }),
         });
         const data = await res.json();
-        if (!res.ok) { setError(data.error || 'Ulanishda xatolik'); setLoading(false); return; }
+        if (!res.ok) {
+            // Oddiy o'yin topilmasa — bu "Kod Cho'qqisi" PIN'i bo'lishi mumkin
+            if (res.status === 400 && await joinCodeRace()) return;
+            setError(data.error || 'Ulanishda xatolik'); setLoading(false); return;
+        }
 
         sessionStorage.setItem('playerPin', pin);
         sessionStorage.setItem('playerNickname', nickname.trim());

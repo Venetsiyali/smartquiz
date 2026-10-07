@@ -106,6 +106,12 @@
       "sub": "Sinfxona o'yini",
       "badge": "YANGI",
       "desc": "Baraban o'quvchi tanlaydi, savolga javob beradi. Bitta ekranda, butun sinf bilan!"
+    },
+    "code": {
+      "name": "Kod Cho'qqisi",
+      "sub": "Python musobaqasi",
+      "badge": "YANGI",
+      "desc": "Talabalar Python kod yozadi, har bir yechim — tog'da bir pog'ona. Kim birinchi cho'qqiga chiqadi?"
     }
   },
   "GamePlay": {
