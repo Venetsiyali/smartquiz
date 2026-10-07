@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { getQuestionCount } from '@/lib/quizUtils';
 
+export const dynamic = 'force-dynamic';
+
 // Returns weekly quiz creation activity for the analytics chart
 export async function GET() {
     try {
