@@ -41,8 +41,9 @@ export async function POST(req: Request) {
     }
 
     // Pusher qulfdan tashqarida — qulf qisqa bo'lsin, boshqa o'quvchilar kutib qolmasin
-    if (outcome.events.length > 0) await triggerAll(outcome.events);
-    if (outcome.stats) await recordAnswerStats(outcome.stats.text, outcome.stats.answered, outcome.stats.correct);
+    // Pusher yoki statistika xatosi javobni buzmasin — javob allaqachon saqlangan, natija HTTP orqali qaytadi
+    if (outcome.events.length > 0) await triggerAll(outcome.events).catch(err => console.error('answer pusher:', err));
+    if (outcome.stats) await recordAnswerStats(outcome.stats.text, outcome.stats.answered, outcome.stats.correct).catch(() => {});
 
     return NextResponse.json(outcome.body, { status: outcome.status });
 
@@ -51,7 +52,10 @@ export async function POST(req: Request) {
             return { status: 400, body: { error: 'Savol aktiv emas' }, events: [] };
         }
         if (room.answeredPlayerIds.includes(playerId)) {
-            return { status: 400, body: { error: 'Allaqachon javob bergansiz' }, events: [] };
+            // Qayta urinish (masalan, birinchi javob kelmay qolgan bo'lsa) — saqlangan natijani qaytaramiz
+            const last = room.players.find(p => p.id === playerId)?.lastResult;
+            const result = last && last.q === room.currentQuestionIndex ? last.data : undefined;
+            return { status: 400, body: { error: 'Allaqachon javob bergansiz', result }, events: [] };
         }
 
         const question = room.questions[room.currentQuestionIndex];
@@ -121,11 +125,9 @@ export async function POST(req: Request) {
         room.answeredPlayerIds.push(playerId);
 
         // O'quvchining o'z natijasi — eng birinchi yuboriladi
+        let resultData: Record<string, unknown> | undefined;
         if (player) {
-            events.push({
-                channel: `player-${playerId}`,
-                name: 'answer-result',
-                data: qType === 'anagram'
+            resultData = qType === 'anagram'
                     ? { correct: isCorrect, points, totalScore: player.score, streak: player.streak, streakFire, correctWord, questionType: 'anagram' }
                     : {
                         correct: isCorrect,
@@ -142,8 +144,10 @@ export async function POST(req: Request) {
                         shownOrder: qType === 'order' ? (room.currentOrder ?? null) : null,
                         questionType: qType,
                         matchResult: qType === 'match' ? b.matchResult : null,
-                    },
-            });
+                    };
+            // Natija HTTP javobida ham qaytadi va saqlanadi — Pusher xabari yo'qolsa ham o'quvchi uni ko'radi
+            player.lastResult = { q: room.currentQuestionIndex, data: resultData };
+            events.push({ channel: `player-${playerId}`, name: 'answer-result', data: resultData });
         }
 
         // Jamoa rejimi
@@ -214,6 +218,6 @@ export async function POST(req: Request) {
             });
         }
 
-        return { status: 200, body: { ok: true }, events, stats };
+        return { status: 200, body: { ok: true, result: resultData }, events, stats };
     }
 }

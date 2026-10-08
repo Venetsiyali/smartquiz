@@ -21,6 +21,7 @@ export interface Player {
     teamId?: string;         // team mode: which team this player belongs to
     hintsUsed?: number;      // anagram: accumulated hints used
     userId?: string;         // tizimga kirgan o'quvchi — o'yin oxirida XP shu akkauntga yoziladi
+    lastResult?: { q: number; data: Record<string, unknown> }; // oxirgi javob natijasi — qayta so'ralsa ham ko'rsatiladi
 }
 
 /** One team in team-mode */

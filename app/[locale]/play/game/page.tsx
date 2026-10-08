@@ -98,6 +98,8 @@ export default function StudentGamePage() {
     // Pusher handler'lari bir marta bog'lanadi — joriy holatni ref orqali o'qiymiz (eski qiymat "qotib" qolmasin)
     const phaseRef = useRef<PagePhase>('loading');
     const questionIndexRef = useRef<number>(-1);
+    const resultShownRef = useRef<number | null>(null);
+    const applyResultRef = useRef<(r: AnswerResult) => void>(() => {});
     const answeredRef = useRef(false);
 
     useEffect(() => { phaseRef.current = phase; }, [phase]);
@@ -252,7 +254,11 @@ export default function StudentGamePage() {
         });
 
         const playerCh = pusher.subscribe(`player-${pid}`);
-        playerCh.bind('answer-result', (r: AnswerResult) => {
+        playerCh.bind('answer-result', (r: AnswerResult) => applyResultRef.current(r));
+        applyResultRef.current = (r: AnswerResult) => {
+            // Natija Pusher orqali ham, HTTP javobi orqali ham kelishi mumkin — faqat bir marta ko'rsatamiz
+            if (resultShownRef.current === questionIndexRef.current) return;
+            resultShownRef.current = questionIndexRef.current;
             answeredRef.current = true;
             clearTimer(); setResult(r); setTotalScore(r.totalScore);
             setStreak(r.streak);
@@ -273,7 +279,7 @@ export default function StudentGamePage() {
             setPhase('feedback');
             vibrate(r.correct ? [80, 40, 80] : 300);
             setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 2000);
-        });
+        };
         // Team mode: assign my team and listen for updates
         const myPlayerId = pid;
         gameCh.bind('team-assigned', (data: { teams: TeamData[]; playerTeams: { id: string; teamId: string }[] }) => {
@@ -316,9 +322,12 @@ export default function StudentGamePage() {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: pinRef.current, playerId: playerIdRef.current, ...payload }),
                 });
+                const data = await res.json().catch(() => ({}));
+                // Natija shu javobning o'zida keladi (Pusher xabari yo'qolsa ham ko'rinadi)
+                if (data?.result) applyResultRef.current(data.result as AnswerResult);
                 if (res.ok) return;
                 // 400: savol allaqachon yopilgan yoki javob qabul qilingan — ekranni server holatiga moslaymiz
-                if (res.status === 400) { resyncRef.current?.(); return; }
+                if (res.status === 400) { if (!data?.result) resyncRef.current?.(); return; }
             } catch { /* tarmoq uzildi — qayta urinamiz */ }
             await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
         }
