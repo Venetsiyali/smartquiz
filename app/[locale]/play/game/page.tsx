@@ -326,6 +326,8 @@ export default function StudentGamePage() {
                 // Natija shu javobning o'zida keladi (Pusher xabari yo'qolsa ham ko'rinadi)
                 if (data?.result) applyResultRef.current(data.result as AnswerResult);
                 if (res.ok) return;
+                // Server bu o'quvchini tanimadi (eski sessiya) — PIN sahifasiga qaytaramiz, qayta kirsin
+                if (data?.rejoin) { router.push('/play'); return; }
                 // 400: savol allaqachon yopilgan yoki javob qabul qilingan — ekranni server holatiga moslaymiz
                 if (res.status === 400) { if (!data?.result) resyncRef.current?.(); return; }
             } catch { /* tarmoq uzildi — qayta urinamiz */ }

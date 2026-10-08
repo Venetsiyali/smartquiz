@@ -19,7 +19,14 @@ export async function POST(req: Request) {
             if (!room) return null;
 
             // 1. REJOIN ENGINE: Agar foydalanuvchi allaqachon xonada bo'lsa (ID yoki Nickname orqali), uni qayta kiritish
-            const existing = room.players.find(p => p.id === playerId || p.nickname === nickname);
+            // Avval ID bo'yicha; topilmasa — nik bo'yicha (telefonda sessiya yo'qolib, qayta kirgan o'quvchi)
+            const sameNick = (p: { nickname: string }) => p.nickname.trim().toLowerCase() === nickname.trim().toLowerCase();
+            const existing = room.players.find(p => p.id === playerId) ?? room.players.find(sameNick);
+            // Lobbida bir xil nik — bu boshqa o'quvchi: uni birinchisiga qo'shib yuborsak, uning javoblari
+            // boshqa ID bilan keladi va umuman hisobga olinmaydi. Shuning uchun boshqa nik so'raymiz.
+            if (existing && existing.id !== playerId && room.status === 'lobby') {
+                return { room: null, response: { error: `"${nickname}" niki band — boshqa nik tanlang (masalan, familiya harfi bilan)` } };
+            }
             if (existing) {
                 // Faqat oxirgi avatarni yangilaymiz — avvalgi ballar va ketma-ketliklar saqlanadi
                 existing.avatar = avatar || existing.avatar || '🤖';
@@ -33,6 +40,8 @@ export async function POST(req: Request) {
                         teamColor: room.teams?.find(t => t.id === existing.teamId)?.color,
                         teamEmoji: room.teams?.find(t => t.id === existing.teamId)?.emoji,
                         rejoined: true,
+                        // O'quvchi endi shu ID bilan o'ynaydi (nik bo'yicha qayta kirganda telefon ID'si boshqacha bo'ladi)
+                        playerId: existing.id,
                     },
                 };
             }
@@ -65,6 +74,7 @@ export async function POST(req: Request) {
                 room,
                 response: {
                     ok: true, pin,
+                    playerId,
                     teamMode: !!room.teamMode,
                     teams: room.teams?.map(t => ({ id: t.id, name: t.name, emoji: t.emoji, color: t.color })) ?? null,
                     teamId: team?.id,
@@ -84,8 +94,13 @@ export async function POST(req: Request) {
 
     // Faqat o'qituvchi ekraniga va faqat yangi o'yinchi: butun ro'yxat 80+ o'yinchida Pusher'ning 10KB xabar chegarasidan oshardi,
     // hammaga yuborish esa har kirishda N ta xabar sarflardi
-    const p = result.room.players.find(x => x.id === playerId || x.nickname === nickname);
-    if (p) {
+    if ('error' in result.response) {
+        return NextResponse.json(result.response, { status: 409 });
+    }
+
+    const effectiveId = (result.response as { playerId?: string }).playerId ?? playerId;
+    const p = result.room?.players.find(x => x.id === effectiveId);
+    if (p && !('rejoined' in result.response)) {
         await pusherServer.trigger(`host-${pin}`, 'player-joined', {
             player: { id: p.id, nickname: p.nickname, avatar: p.avatar, streak: p.streak, teamId: p.teamId },
         }).catch(err => console.error('player-joined trigger:', err));

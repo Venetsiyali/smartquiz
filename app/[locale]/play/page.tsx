@@ -119,6 +119,8 @@ function PlayEntry() {
             setError(data.error || 'Ulanishda xatolik'); setLoading(false); return;
         }
 
+        // Qayta kirishda server o'quvchining avvalgi ID'sini qaytaradi — javoblar shu ID bilan hisoblanadi
+        if (data.playerId && data.playerId !== pid) sessionStorage.setItem('playerId', data.playerId);
         sessionStorage.setItem('playerPin', pin);
         sessionStorage.setItem('playerNickname', nickname.trim());
         sessionStorage.setItem('playerAvatar', avatar);

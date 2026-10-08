@@ -58,6 +58,12 @@ export async function POST(req: Request) {
             return { status: 400, body: { error: 'Allaqachon javob bergansiz', result }, events: [] };
         }
 
+        // O'yinchi xonada bo'lmasa (masalan, eski ID bilan) — javobni "hisobga olindi" deb belgilamaymiz,
+        // aks holda u hech qayerda yozilmay yo'qolib ketardi
+        if (!room.players.some(p => p.id === playerId)) {
+            return { status: 409, body: { error: "Siz bu o'yinda topilmadingiz — PIN orqali qayta kiring", rejoin: true }, events: [] };
+        }
+
         const question = room.questions[room.currentQuestionIndex];
         const elapsed = Date.now() - (room.questionStartTime || Date.now());
         const totalMs = question.timeLimit * 1000;
