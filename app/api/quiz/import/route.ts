@@ -19,10 +19,9 @@ const limiter = rateLimit({ windowMs: 60_000, max: 20 });
  * matn yoki fayldan o'qib, quizga qo'shish uchun qaytaradi. Omborga yozmaydi va platforma AI'sini ishlatmaydi.
  */
 export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'Avval tizimga kiring' }, { status: 401 });
-
-    const { success, retryAfter } = limiter(session.user.email || getClientIp(req));
+    // Login shart emas — tizimga kirmagan o'qituvchi ham foydalana oladi; cheklov IP bo'yicha
+    const session = await getServerSession(authOptions).catch(() => null);
+    const { success, retryAfter } = limiter(session?.user?.email || getClientIp(req));
     if (!success) return NextResponse.json({ error: `Juda ko'p urinish. ${retryAfter} soniyadan keyin qayta urining.` }, { status: 429 });
 
     const form = await req.formData();

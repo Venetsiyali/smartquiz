@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { pusherServer } from '@/lib/pusher';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { currentQuestion, isCorrect, publicQuestion, sanitizeQuestions } from '@/lib/engRace';
 import { redis } from '@/lib/gameState';
 import { awardGameXP, XP_REWARDS } from '@/lib/gamification/xp';
@@ -12,6 +13,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 
+const createLimiter = rateLimit({ windowMs: 60_000, max: 10 });
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status });
 const hostChannel = (pin: string) => `host-cr-${pin}`;
 const playChannel = (pin: string) => `cr-${pin}`;
@@ -83,8 +85,8 @@ export async function POST(req: Request, { params }: { params: { action: string 
 
     switch (params.action) {
         case 'create': {
-            const session = await getServerSession(authOptions);
-            if (!session?.user) return json({ error: 'Avval tizimga kiring' }, 401);
+            // Login shart emas — faqat IP bo'yicha cheklov (bir daqiqada 10 ta o'yin)
+            if (!createLimiter(getClientIp(req)).success) return json({ error: "Juda ko'p urinish, bir daqiqadan keyin qayta urining" }, 429);
             const english = body.kind === 'english';
             const { tasks, error } = english ? { tasks: [], error: undefined } : sanitizeTasks(body.tasks);
             const { questions, error: qError } = english ? sanitizeQuestions(body.questions) : { questions: undefined, error: undefined };
