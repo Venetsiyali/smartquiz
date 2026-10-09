@@ -30,7 +30,7 @@ function fireConfetti() {
 interface PlayerView { id: string; nickname: string; avatar?: string; score: number; correctCount: number; isJumping: boolean }
 interface Reveal { correctOptions: number[]; explanation: string | null; isLastQuestion: boolean }
 
-const MAX_LANES = 8;
+const MAX_LANES = 20;
 const AUTO_NEXT_SEC = 8;
 
 export default function TezkorGamePage() {
@@ -241,7 +241,14 @@ export default function TezkorGamePage() {
     const ranked = [...players].sort((a, b) => b.correctCount - a.correctCount || b.score - a.score);
     const lanes = ranked.slice(0, MAX_LANES);
     const hidden = ranked.length - lanes.length;
-    const laneHeight = lanes.length > 6 ? 'h-16' : lanes.length > 4 ? 'h-20' : 'h-28';
+    // Ixcham rejim: talaba ko'payganda yo'lak va qurbaqa kichrayadi, 12 tadan keyin — ikki ustun
+    const twoCols = lanes.length > 12;
+    const perCol = twoCols ? Math.ceil(lanes.length / 2) : lanes.length;
+    const laneH = perCol > 8 ? 42 : perCol > 6 ? 56 : perCol > 4 ? 80 : 112;
+    const frog = perCol > 8 ? 42 : perCol > 6 ? 48 : 48;
+    const compact = perCol > 6;
+    const frogScale = compact ? 1.6 : 1; // rasmda bo'sh joy ko'p — kichik yo'lakda qurbaqani kattalashtiramiz // ism qurbaqa yonida — qurbaqa katta qoladi, yo'lak past bo'ladi
+    const pads = twoCols ? 0 : totalQ; // ikki ustunda barglar qurbaqalarni to'sib qo'ymasin
 
     /* ── Loading ── */
     if (phase === 'loading') return (
@@ -345,7 +352,7 @@ export default function TezkorGamePage() {
 
             {/* Question Text (Optional overlay at the top) */}
             {question && (
-                <div className="relative z-20 w-full flex justify-center mt-6 px-4">
+                <div className={`relative z-20 w-full flex justify-center px-4 ${twoCols ? 'mt-3' : 'mt-6'}`}>
                     <div className="bg-black/60 backdrop-blur-md border border-emerald-500/30 p-6 rounded-3xl max-w-4xl text-center shadow-2xl">
                         <h2 className="text-2xl md:text-4xl font-black text-white leading-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
                             {question.text}
@@ -369,8 +376,8 @@ export default function TezkorGamePage() {
             )}
 
             {/* Race Track */}
-            <div className="relative z-10 flex-1 flex flex-col justify-center px-6 md:px-10 py-10 overflow-hidden">
-                <div className="w-full max-w-7xl mx-auto space-y-3">
+            <div className={`relative z-10 flex-1 flex flex-col justify-center px-6 md:px-10 overflow-hidden ${twoCols ? 'py-3' : 'py-10'}`}>
+                <div className={`w-full max-w-7xl mx-auto grid gap-y-2 ${twoCols ? 'grid-cols-2 gap-x-6' : 'grid-cols-1'}`}>
                     {lanes.map(player => {
                         // Progress based on exact correct answers
                         const correct = player.correctCount || 0;
@@ -379,17 +386,17 @@ export default function TezkorGamePage() {
                         if (progressPct < 0) progressPct = 0;
 
                         return (
-                            <motion.div layout key={player.id} className={`relative w-full ${laneHeight} bg-black/20 rounded-full border border-white/5`}>
+                            <motion.div layout key={player.id} className="relative w-full bg-black/20 rounded-full border border-white/5" style={{ height: laneH }}>
                                 {/* ── Lily pads + Frog share ONE coordinate space ── */}
-                                <div className="absolute inset-y-0 left-10 right-10">
+                                <div className="absolute inset-y-0" style={{ left: frog * 0.8, right: frog * 0.8 }}>
                                     {/* Lily pads: pad i is at exactly i/totalQ * 100% */}
-                                    {Array.from({ length: totalQ + 1 }).map((_, i) => {
+                                    {pads > 0 && Array.from({ length: pads + 1 }).map((_, i) => {
                                         const padPct = totalQ === 0 ? 0 : (i / totalQ) * 100;
                                         return (
                                             <div
                                                 key={i}
-                                                className="absolute w-12 h-12 -translate-x-1/2"
-                                                style={{ left: `${padPct}%`, bottom: '8px' }}
+                                                className="absolute -translate-x-1/2"
+                                                style={{ left: `${padPct}%`, bottom: 4, width: frog, height: frog }}
                                             >
                                                 <div className="w-full h-full bg-[url('/game/tezkor/lilypad.webp')] bg-contain bg-center bg-no-repeat drop-shadow-lg opacity-75" />
                                             </div>
@@ -398,20 +405,20 @@ export default function TezkorGamePage() {
 
                                     {/* Frog: same left % as corresponding lily pad */}
                                     <div
-                                        className="absolute -translate-x-1/2 z-20 flex flex-col items-end transition-[left] duration-[700ms]"
+                                        className={`absolute z-20 flex ${compact ? 'flex-row items-center gap-1 -translate-x-[20px]' : 'flex-col items-end -translate-x-1/2'} transition-[left] duration-[700ms]`}
                                         style={{
                                             left: `${progressPct}%`,
-                                            bottom: '8px',
+                                            bottom: 4,
                                             transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
                                         }}
                                     >
                                         {/* Nickname above frog */}
-                                        <span className="self-center bg-black/70 text-white text-[11px] font-bold px-2 py-0.5 rounded-md mb-0.5 whitespace-nowrap shadow">
+                                        <span className={`self-center bg-black/70 text-white font-bold px-2 rounded-md whitespace-nowrap shadow max-w-[120px] truncate ${compact ? 'order-2 text-xs py-0.5' : 'text-[11px] py-0.5 mb-0.5'}`}>
                                             {player.nickname}
                                         </span>
 
                                         {/* Frog + shadow — w-12 h-12 matches lily pad size */}
-                                        <div className="relative w-12 h-12">
+                                        <div className="relative" style={{ width: frog, height: frog }}>
                                             {/* Soya */}
                                             <div
                                                 className="absolute bottom-0 left-1/2 w-10 h-2.5 bg-black/70 rounded-full blur-sm transition-all duration-[600ms]"
@@ -427,14 +434,14 @@ export default function TezkorGamePage() {
                                                     transformOrigin: 'bottom center',
                                                     backgroundImage: `url('/game/tezkor/${player.isJumping ? 'frog_jump.webp' : 'frog_idle.webp'}')`,
                                                     transform: player.isJumping
-                                                        ? 'translateY(-36px) scaleX(1.1) scaleY(1.18) rotate(7deg)'
-                                                        : 'translateY(0) scale(1) rotate(0deg)',
+                                                        ? `translateY(-${Math.round(frog * 0.7)}px) scaleX(${1.1 * frogScale}) scaleY(${1.18 * frogScale}) rotate(7deg)`
+                                                        : `translateY(0) scale(${frogScale}) rotate(0deg)`,
                                                 }}
                                             />
                                         </div>
 
                                         {/* Score */}
-                                        <span className="self-center text-emerald-300 font-black text-[11px] mt-0.5 drop-shadow">
+                                        <span className={`self-center text-emerald-300 font-black text-[11px] mt-0.5 drop-shadow ${compact ? 'hidden' : ''}`}>
                                             {player.score.toLocaleString()}
                                         </span>
                                     </div>
@@ -442,10 +449,18 @@ export default function TezkorGamePage() {
                             </motion.div>
                         );
                     })}
+                    {/* 20 dan ko'p bo'lsa: qolganlar pastki chiziqda kichik qurbaqa bo'lib yuradi */}
                     {hidden > 0 && (
-                        <p className="text-center text-white/70 font-black bg-black/40 rounded-full py-2">
-                            🐸 yana {hidden} ta o&apos;quvchi poygada — reytingni savol oxirida ko&apos;rasiz
-                        </p>
+                        <div className={`relative h-9 bg-black/40 rounded-full border border-white/10 ${twoCols ? 'col-span-2' : ''}`}>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-xs font-black">+{hidden}</span>
+                            <div className="absolute inset-y-0 left-12 right-6">
+                                {ranked.slice(MAX_LANES).map(p => (
+                                    <span key={p.id} title={p.nickname}
+                                        className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 text-base transition-[left] duration-700"
+                                        style={{ left: `${Math.min(100, (p.correctCount / totalQ) * 100)}%` }}>🐸</span>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
