@@ -39,6 +39,13 @@ export async function GET(req: Request) {
         })) ?? null,
         currentQuestion: inGame ? questionPayload(room) : null,
         answered: playerId ? room.answeredPlayerIds.includes(playerId) : undefined,
+        answeredCount: inGame ? room.answeredPlayerIds.length : 0,
+        // Savol yopilgandan keyin to'g'ri javob (o'qituvchi ekrani qayta ochilganda ko'rsatish uchun)
+        reveal: room.status === 'leaderboard' && room.questions[room.currentQuestionIndex] ? {
+            correctOptions: room.questions[room.currentQuestionIndex].correctOptions,
+            explanation: room.questions[room.currentQuestionIndex].explanation || null,
+            isLastQuestion: room.currentQuestionIndex >= room.questions.length - 1,
+        } : undefined,
         leaderboard: room.status === 'leaderboard' || room.status === 'ended' ? getLeaderboard(room.players) : undefined,
         badges: room.status === 'ended' ? computeBadges(room.players) : undefined,
     }, { headers: { 'Cache-Control': 'no-store' } });

@@ -4,12 +4,14 @@ import { triggerAll, type PusherEvent } from '@/lib/pusher';
 import { withRoom, getLeaderboard, computeBadges, resetTeamQuestion, getTeamLeaderboard, prepareCurrentQuestion, questionPayload } from '@/lib/gameState';
 
 export async function POST(req: Request) {
-    const { pin }: { pin: string } = await req.json();
+    const { pin, fromIndex }: { pin: string; fromIndex?: number } = await req.json();
 
-    let result: { events: PusherEvent[]; ended: boolean; xp?: GameXPAward[] } | null;
+    let result: { events: PusherEvent[]; ended: boolean; xp?: GameXPAward[]; skipped?: boolean } | null;
     try {
         result = await withRoom(pin, room => {
             if (!room) return null;
+            // Takroriy so'rov (avtomatik o'tish + tugma bir vaqtda) savolni o'tkazib yubormasin
+            if (fromIndex !== undefined && room.currentQuestionIndex !== fromIndex) return { events: [], ended: false, skipped: true };
 
             room.currentQuestionIndex++;
 

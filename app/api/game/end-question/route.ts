@@ -4,12 +4,14 @@ import { withRoom, getLeaderboard } from '@/lib/gameState';
 import { recordAnswerStats } from '@/lib/questionBank/stats';
 
 export async function POST(req: Request) {
-    const { pin }: { pin: string } = await req.json();
+    const { pin, questionIndex }: { pin: string; questionIndex?: number } = await req.json();
 
     let result;
     try {
         result = await withRoom(pin, room => {
             if (!room) return null;
+            // Oldingi savolning kechikkan taymeri yangi savolni yopib qo'ymasin
+            if (questionIndex !== undefined && (questionIndex !== room.currentQuestionIndex || room.status !== 'question')) return { stale: true as const };
 
             const question = room.questions[room.currentQuestionIndex];
             // Birinchi yakunlashdagina statistika yoziladi (keyingi chaqiruvlar — faqat qayta e'lon)
@@ -36,6 +38,7 @@ export async function POST(req: Request) {
     }
 
     if (!result) return NextResponse.json({ error: "O'yin topilmadi" }, { status: 400 });
+    if ('stale' in result) return NextResponse.json({ ok: true, stale: true });
 
     await pusherServer.trigger(`game-${pin}`, 'question-end', result.payload);
 
