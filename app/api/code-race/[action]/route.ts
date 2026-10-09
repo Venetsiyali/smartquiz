@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { pusherServer } from '@/lib/pusher';
+import { currentQuestion, isCorrect, publicQuestion, sanitizeQuestions } from '@/lib/engRace';
 import { redis } from '@/lib/gameState';
 import { awardGameXP, XP_REWARDS } from '@/lib/gamification/xp';
 import {
-    CR_TTL, generateRacePin, getRace, getRacer, getRacers, publicRacer, publicTasks, rankRacers,
+    CR_TTL, generateRacePin, raceSteps, getRace, getRacer, getRacers, publicRacer, publicTasks, rankRacers,
     sanitizeTasks, saveRace, saveRacer, saveSolution, type CodeRace,
 } from '@/lib/codeRace';
 
@@ -35,7 +36,7 @@ async function finish(race: CodeRace) {
         for (const r of racers) {
             if (!r.userId) continue;
             const amount = XP_REWARDS.QUIZ_PARTICIPATION + r.solved * 10
-                + (r.solved >= race.tasks.length ? XP_REWARDS.PERFECT_SCORE_BONUS : 0);
+                + (r.solved >= raceSteps(race) ? XP_REWARDS.PERFECT_SCORE_BONUS : 0);
             awards.set(r.userId, Math.max(awards.get(r.userId) ?? 0, amount));
         }
         await awardGameXP(Array.from(awards, ([userId, amount]) => ({ userId, amount })));
@@ -62,7 +63,12 @@ export async function GET(req: Request, { params }: { params: { action: string }
     return json({
         pin, title: race.title, status: race.status,
         startedAt: race.startedAt ?? null, durationSec: race.durationSec,
-        taskCount: race.tasks.length,
+        kind: race.kind ?? 'code',
+        taskCount: raceSteps(race),
+        questionCount: race.questions?.length ?? 0,
+        // Ingliz tili: o'quvchiga faqat navbatdagi savol (javobsiz) yuboriladi
+        question: race.kind === 'english' && me && race.status === 'running' ? publicQuestion(currentQuestion(race, me), me.id) : undefined,
+        attempts: me?.attempts,
         tasks: isHost ? race.tasks : publicTasks(race),
         players: isHost ? ranked.map(publicRacer) : undefined,
         playerCount: ranked.length,
@@ -79,9 +85,12 @@ export async function POST(req: Request, { params }: { params: { action: string 
         case 'create': {
             const session = await getServerSession(authOptions);
             if (!session?.user) return json({ error: 'Avval tizimga kiring' }, 401);
-            const { tasks, error } = sanitizeTasks(body.tasks);
-            if (error) return json({ error }, 400);
+            const english = body.kind === 'english';
+            const { tasks, error } = english ? { tasks: [], error: undefined } : sanitizeTasks(body.tasks);
+            const { questions, error: qError } = english ? sanitizeQuestions(body.questions) : { questions: undefined, error: undefined };
+            if (error || qError) return json({ error: error || qError }, 400);
             const race: CodeRace = {
+                ...(english ? { kind: 'english' as const, questions, goal: Math.min(Math.max(Number(body.goal) || 15, 3), 100) } : {}),
                 pin: await generateRacePin(),
                 title: String(body.title || "Kod Cho'qqisi").slice(0, 80),
                 hostKey: crypto.randomUUID(),
@@ -130,6 +139,37 @@ export async function POST(req: Request, { params }: { params: { action: string 
             await Promise.all([saveRacer(pin, racer), saveSolution(pin, racer.id, task, String(body.code ?? ''))]);
             await notify(hostChannel(pin), 'cr-progress', { player: publicRacer(racer), finished: racer.solved >= race.tasks.length });
             return json({ ok: true, solved: racer.solved });
+        }
+
+        case 'answer': {
+            const race = await getRace(pin);
+            if (!race || race.kind !== 'english') return json({ error: "O'yin topilmadi" }, 404);
+            if (race.status !== 'running' || timeIsUp(race)) return json({ error: 'Vaqt tugadi', ended: true }, 400);
+            const racer = await getRacer(pin, String(body.playerId ?? ''));
+            if (!racer) return json({ error: "Avval o'yinga qo'shiling" }, 400);
+            const goal = raceSteps(race);
+            if (racer.solved >= goal) return json({ finished: true, solved: racer.solved });
+            // Ikki marta yuborilgan javob (tarmoq takrori) faqat bir marta hisoblanadi
+            if (Number(body.attempt) !== racer.attempts) {
+                return json({ stale: true, solved: racer.solved, attempts: racer.attempts, question: publicQuestion(currentQuestion(race, racer), racer.id) });
+            }
+
+            const q = currentQuestion(race, racer)!;
+            const correct = isCorrect(q, String(body.answer ?? ''));
+            racer.attempts += 1;
+            if (correct) {
+                racer.solved += 1;
+                racer.solvedAt.push(Date.now() - (race.startedAt ?? Date.now()));
+            }
+            await saveRacer(pin, racer);
+            const finished = racer.solved >= goal;
+            // Faqat to'g'ri javoblar o'qituvchi ekraniga — xabarlar soni kam bo'lsin
+            if (correct) await notify(hostChannel(pin), 'cr-progress', { player: publicRacer(racer), finished });
+            return json({
+                correct, answer: q.answer, explain: q.explain ?? null,
+                solved: racer.solved, attempts: racer.attempts, finished,
+                question: finished ? null : publicQuestion(currentQuestion(race, racer), racer.id),
+            });
         }
 
         case 'start':

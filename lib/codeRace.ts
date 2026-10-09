@@ -26,6 +26,9 @@ export interface CodeRace {
     title: string;
     hostKey: string;       // o'yinni boshqarish huquqi (faqat o'qituvchi brauzerida saqlanadi)
     tasks: CodeTask[];
+    kind?: 'code' | 'english';   // yo'q bo'lsa — 'code' (Kod Cho'qqisi)
+    questions?: import('./engRace').EngQuestion[];
+    goal?: number;               // english: finishga yetish uchun nechta to'g'ri javob kerak
     durationSec: number;
     status: 'lobby' | 'running' | 'ended';
     startedAt?: number;
@@ -95,8 +98,11 @@ export const publicRacer = (r: CodeRacer) => ({
     lastSolvedAt: r.solvedAt[r.solved - 1] ?? null, attempts: r.attempts,
 });
 
+/** Finishgacha nechta pog'ona: kod — masalalar soni, ingliz tili — maqsad (goal). */
+export const raceSteps = (race: CodeRace) => race.kind === 'english' ? (race.goal ?? 15) : race.tasks.length;
+
 /** O'quvchiga yuboriladigan masala: kodni tekshirish uchun testlar ham kerak (tekshiruv brauzerda). */
-export const publicTasks = (race: CodeRace) => race.status === 'lobby' ? [] : race.tasks;
+export const publicTasks = (race: CodeRace) => race.status === 'lobby' || race.kind === 'english' ? [] : race.tasks;
 
 export async function generateRacePin(): Promise<string> {
     for (let i = 0; i < 20; i++) {

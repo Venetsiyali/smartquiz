@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 import { getPusherClient } from '@/lib/pusherClient';
 import { serverNow, syncServerClock } from '@/lib/serverClock';
 import Mountain from '@/components/code-race/Mountain';
+import RaceTrack from '@/components/code-race/RaceTrack';
 import { formatClock, type RacerView } from '@/components/code-race/utils';
 
 interface FeedItem { key: number; text: string }
@@ -21,6 +22,8 @@ export default function CodeRaceHostPage() {
     const [title, setTitle] = useState('');
     const [status, setStatus] = useState<'lobby' | 'running' | 'ended'>('lobby');
     const [taskCount, setTaskCount] = useState(0);
+    const [kind, setKind] = useState<'code' | 'english'>('code');
+    const kindRef = useRef<'code' | 'english'>('code');
     const [startedAt, setStartedAt] = useState<number | null>(null);
     const [durationSec, setDurationSec] = useState(0);
     const [racers, setRacers] = useState<RacerView[]>([]);
@@ -40,6 +43,7 @@ export default function CodeRaceHostPage() {
         const data = await res.json();
         if (!res.ok) { setError(data.error); return; }
         setTitle(data.title); setStatus(data.status); setTaskCount(data.taskCount);
+        setKind(data.kind); kindRef.current = data.kind;
         setStartedAt(data.startedAt); setDurationSec(data.durationSec);
         if (data.players) setRacers(data.players);
     }, [pin]);
@@ -59,8 +63,10 @@ export default function CodeRaceHostPage() {
         ch.bind('cr-progress', ({ player, finished }: { player: RacerView; finished: boolean }) => {
             setRacers(prev => prev.map(p => p.id === player.id ? player : p));
             const text = finished
-                ? `🏁 ${player.nickname} cho'qqiga chiqdi!`
-                : `⚡ ${player.nickname} ${player.solved}-masalani yechdi (${formatClock(player.lastSolvedAt ?? 0)})`;
+                ? (kindRef.current === 'english' ? `🏁 ${player.nickname} finishga yetdi!` : `🏁 ${player.nickname} cho'qqiga chiqdi!`)
+                : kindRef.current === 'english'
+                    ? `⚡ ${player.nickname} — ${player.solved} ta to'g'ri javob`
+                    : `⚡ ${player.nickname} ${player.solved}-masalani yechdi (${formatClock(player.lastSolvedAt ?? 0)})`;
             setFeed(f => [{ key: ++feedSeq.current, text }, ...f].slice(0, 6));
             if (finished) confetti({ particleCount: 80, spread: 70, origin: { y: 0.3 } });
         });
@@ -114,7 +120,7 @@ export default function CodeRaceHostPage() {
         <div className="min-h-screen bg-[#070b18] text-white p-4 md:p-6">
             <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
-                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">🏔️ Kod Cho&apos;qqisi</p>
+                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'english' ? '🏁 Grammar Race' : <>🏔️ Kod Cho&apos;qqisi</>}</p>
                     <h1 className="text-2xl md:text-3xl font-black">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
@@ -139,7 +145,7 @@ export default function CodeRaceHostPage() {
                         <div className="inline-block bg-white p-3 rounded-2xl">
                             {joinUrl && <QRCodeSVG value={joinUrl} size={180} bgColor="#ffffff" fgColor="#0a0f1e" level="M" />}
                         </div>
-                        <p className="text-white/40 text-sm">{taskCount} ta masala · {Math.round(durationSec / 60)} daqiqa</p>
+                        <p className="text-white/40 text-sm">{kind === 'english' ? `Finish — ${taskCount} ta to'g'ri javob` : `${taskCount} ta masala`} · {Math.round(durationSec / 60)} daqiqa</p>
                         <button onClick={() => action('start')} disabled={racers.length === 0}
                             className="w-full py-4 rounded-2xl text-xl font-black disabled:opacity-40"
                             style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 10px 40px rgba(16,185,129,0.35)' }}>
@@ -166,7 +172,9 @@ export default function CodeRaceHostPage() {
             {status === 'running' && (
                 <div className="grid lg:grid-cols-[1fr_320px] gap-4" style={{ height: 'calc(100vh - 120px)' }}>
                     <div className="relative min-h-[420px]">
-                        <Mountain racers={racers} steps={taskCount} leaders={leaders} />
+                        {kind === 'english'
+                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} />
+                            : <Mountain racers={racers} steps={taskCount} leaders={leaders} />}
                         <div className="absolute left-4 top-4 space-y-2 max-w-[60%]">
                             <AnimatePresence initial={false}>
                                 {feed.map(f => (
@@ -222,7 +230,7 @@ function Podium({ ranked, taskCount }: { ranked: RacerView[]; taskCount: number 
                         className="flex flex-col items-center w-36">
                         <span className="text-5xl mb-1">{r.avatar}</span>
                         <p className="font-black truncate max-w-full">{r.nickname}</p>
-                        <p className="text-emerald-300 font-black text-sm mb-2">{r.solved}/{taskCount} masala</p>
+                        <p className="text-emerald-300 font-black text-sm mb-2">{r.solved}/{taskCount}</p>
                         <div className={`${heights[i]} w-full rounded-t-2xl flex items-start justify-center pt-3 text-4xl`}
                             style={{ background: ['linear-gradient(#cbd5e1,#64748b)', 'linear-gradient(#fde047,#d97706)', 'linear-gradient(#fdba74,#9a3412)'][i] }}>
                             {medals[i]}

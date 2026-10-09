@@ -112,6 +112,12 @@
       "sub": "Python musobaqasi",
       "badge": "YANGI",
       "desc": "Talabalar Python kod yozadi, har bir yechim — tog'da bir pog'ona. Kim birinchi cho'qqiga chiqadi?"
+    },
+    "english": {
+      "name": "Grammar Race",
+      "sub": "Ingliz tili poygasi",
+      "badge": "YANGI",
+      "desc": "B1 grammatika: to be, zamonlar va boshqalar. Har bir to'g'ri javob — finishga bir qadam. Kim birinchi yetib keladi?"
     }
   },
   "GamePlay": {

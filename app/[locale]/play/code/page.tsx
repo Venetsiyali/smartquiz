@@ -10,6 +10,7 @@ import { serverNow, syncServerClock } from '@/lib/serverClock';
 import { PyRunner, type RunResult } from '@/lib/pyRunner';
 import type { CodeTask } from '@/lib/codeRace';
 import CodeEditor from '@/components/code-race/CodeEditor';
+import EnglishArena, { type EngPublicQuestion } from '@/components/code-race/EnglishArena';
 import { AVATARS, callRepr, formatClock, pyRepr } from '@/components/code-race/utils';
 
 interface Me { solved: number; rank: number }
@@ -18,6 +19,9 @@ interface RaceState {
     startedAt: number | null; durationSec: number; taskCount: number;
     tasks: CodeTask[]; playerCount: number; me: Me | null;
     top: { id: string; nickname: string; avatar: string; solved: number }[];
+    kind?: 'code' | 'english';
+    question?: EngPublicQuestion | null;
+    attempts?: number;
 }
 type ConsoleLine = { kind: 'out' | 'err' | 'ok' | 'fail' | 'info'; text: string };
 
@@ -40,13 +44,16 @@ function CodeRacePlay() {
     const [pyStatus, setPyStatus] = useState<'loading' | 'ready' | 'error'>('loading');
     const runnerRef = useRef<PyRunner | null>(null);
 
-    // Python lobbida kutib turgan paytda yuklanadi — o'yin boshlanganda tayyor bo'ladi
+    // Python lobbida kutib turgan paytda yuklanadi — o'yin boshlanganda tayyor bo'ladi.
+    // Ingliz tili poygasida Python umuman yuklanmaydi.
+    const isCode = state ? (state.kind ?? 'code') === 'code' : false;
     useEffect(() => {
+        if (!isCode) return;
         const runner = new PyRunner(setPyStatus);
         runnerRef.current = runner;
         runner.ready.catch(() => {});
         return () => runner.dispose();
-    }, []);
+    }, [isCode]);
 
     useEffect(() => {
         let id = store.get('cr-player-id');
@@ -91,11 +98,13 @@ function CodeRacePlay() {
         return (
             <Centered>
                 <div className="space-y-5">
-                    <p className="text-6xl">🏔️</p>
+                    <p className="text-6xl">{isCode ? '🏔️' : '🏁'}</p>
                     <h1 className="text-3xl font-black">{state.title}</h1>
                     <p className="text-white/60 font-bold">O&apos;qituvchi boshlashini kuting · 👥 {state.playerCount}</p>
-                    <PyBadge status={pyStatus} />
-                    <p className="text-white/40 text-sm max-w-sm">{state.taskCount} ta masala. Har bir yechim sizni bir pog&apos;ona yuqoriga ko&apos;taradi — cho&apos;qqiga birinchi chiqing!</p>
+                    {isCode && <PyBadge status={pyStatus} />}
+                    <p className="text-white/40 text-sm max-w-sm">{isCode
+                        ? <>{state.taskCount} ta masala. Har bir yechim sizni bir pog&apos;ona yuqoriga ko&apos;taradi — cho&apos;qqiga birinchi chiqing!</>
+                        : <>Har bir to&apos;g&apos;ri javob sizni finishga bir qadam yaqinlashtiradi. {state.taskCount} ta to&apos;g&apos;ri javob — finish!</>}</p>
                 </div>
             </Centered>
         );
@@ -104,6 +113,8 @@ function CodeRacePlay() {
     if (state.status === 'ended' || (state.me && state.me.solved >= state.taskCount)) {
         return <Finished state={state} />;
     }
+
+    if (!isCode) return <EnglishArena state={state} pin={pin} playerId={playerId} onChange={load} />;
 
     return <Arena key={state.me?.solved ?? 0} state={state} pin={pin} playerId={playerId} runner={runnerRef.current} pyStatus={pyStatus} onSolved={load} />;
 }
@@ -268,8 +279,8 @@ function Finished({ state }: { state: RaceState }) {
         <Centered>
             <div className="space-y-4">
                 <p className="text-7xl">{done ? '🏁' : '⛺'}</p>
-                <h1 className="text-3xl font-black">{done ? "Cho'qqiga chiqdingiz!" : 'Musobaqa yakunlandi'}</h1>
-                <p className="text-white/70 font-bold">{state.me?.solved ?? 0}/{state.taskCount} masala · o&apos;rningiz <span className="text-yellow-300">#{state.me?.rank ?? '–'}</span> / {state.playerCount}</p>
+                <h1 className="text-3xl font-black">{done ? (state.kind === 'english' ? 'Finishga yetdingiz!' : "Cho'qqiga chiqdingiz!") : 'Musobaqa yakunlandi'}</h1>
+                <p className="text-white/70 font-bold">{state.me?.solved ?? 0}/{state.taskCount} · o&apos;rningiz <span className="text-yellow-300">#{state.me?.rank ?? '–'}</span> / {state.playerCount}</p>
                 {state.status !== 'ended' && <p className="text-white/40 text-sm">Boshqalar hali chiqyapti — proyektorni kuzating 👀</p>}
                 <div className="rounded-2xl bg-white/5 p-4 text-left space-y-1 min-w-[260px]">
                     {state.top.slice(0, 5).map((p, i) => (
@@ -305,8 +316,8 @@ function JoinForm({ pin, playerId, onJoined }: { pin: string; playerId: string |
     return (
         <Centered>
             <div className="w-full max-w-sm space-y-4">
-                <p className="text-6xl">🏔️</p>
-                <h1 className="text-3xl font-black">Kod Cho&apos;qqisi</h1>
+                <p className="text-6xl">🏁</p>
+                <h1 className="text-3xl font-black">Musobaqaga qo&apos;shilish</h1>
                 <p className="text-white/50 font-bold">PIN: {pin}</p>
                 <input value={nickname} onChange={e => setNickname(e.target.value)} maxLength={24} placeholder="Ismingiz" className={field}
                     onKeyDown={e => e.key === 'Enter' && join()} />

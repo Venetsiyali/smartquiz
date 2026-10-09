@@ -106,6 +106,12 @@
       "sub": "Python race",
       "badge": "NEW",
       "desc": "Students write Python code — every solution is one step up the mountain. Who reaches the summit first?"
+    },
+    "english": {
+      "name": "Grammar Race",
+      "sub": "English race",
+      "badge": "NEW",
+      "desc": "B1 grammar: to be, tenses and more. Every correct answer is a step to the finish line. Who gets there first?"
     }
   },
   "GamePlay": {
