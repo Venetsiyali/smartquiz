@@ -2,10 +2,30 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-/** Joriy so'rovni yuborgan o'qituvchining foydalanuvchi id'sini qaytaradi, aks holda null. */
-export async function requireTeacherId(): Promise<string | null> {
-    const session = await getServerSession(authOptions);
-    return session?.user?.id ?? null;
+/**
+ * Tizimga kirmagan o'qituvchilar uchun umumiy "mehmon" akkaunti. `.invalid` domeni (RFC 2606) —
+ * bu manzilga hech kim xat ololmaydi, shuning uchun bu akkauntga hech kim login qila olmaydi.
+ * Mehmon o'yinlari bir-biridan sessiya id'si (cuid — taxmin qilib bo'lmaydi) orqali ajratiladi.
+ */
+export const GUEST_TEACHER_EMAIL = 'guest-teacher@zukkoo.invalid';
+let guestIdCache: string | null = null;
+
+async function guestTeacherId(): Promise<string> {
+    if (guestIdCache) return guestIdCache;
+    const user = await prisma.user.upsert({
+        where: { email: GUEST_TEACHER_EMAIL },
+        update: {},
+        create: { email: GUEST_TEACHER_EMAIL, name: "Mehmon o'qituvchi", role: 'TEACHER' },
+        select: { id: true },
+    });
+    guestIdCache = user.id;
+    return user.id;
+}
+
+/** Joriy o'qituvchining id'si; tizimga kirmagan bo'lsa — mehmon akkaunti (login shart emas). */
+export async function requireTeacherId(): Promise<string> {
+    const session = await getServerSession(authOptions).catch(() => null);
+    return session?.user?.id ?? await guestTeacherId();
 }
 
 /**

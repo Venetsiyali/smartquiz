@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { GUEST_TEACHER_EMAIL } from '@/lib/wheel/authz';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -7,6 +8,8 @@ export async function GET(req: Request) {
 
     try {
         const users = await prisma.user.findMany({
+            // Mehmon o'qituvchi akkaunti (G'ildirak loginsiz rejimi) reytingda ko'rinmasin
+            where: { OR: [{ email: null }, { email: { not: GUEST_TEACHER_EMAIL } }] },
             orderBy: { xp: 'desc' },
             take: limit,
             select: {
