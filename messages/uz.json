@@ -118,6 +118,12 @@
       "sub": "Ingliz tili poygasi",
       "badge": "YANGI",
       "desc": "B1 grammatika: to be, zamonlar va boshqalar. Har bir to'g'ri javob — finishga bir qadam. Kim birinchi yetib keladi?"
+    },
+    "it": {
+      "name": "AKT Poygasi",
+      "sub": "Iqtisodiyot va turizm",
+      "badge": "YANGI",
+      "desc": "Axborot texnologiyalari fanidan jonli poyga: Excel, 1C, elektron tijorat, bron tizimlari. Savollar o'zbek va rus tilida."
     }
   },
   "GamePlay": {

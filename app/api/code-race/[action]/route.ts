@@ -66,6 +66,7 @@ export async function GET(req: Request, { params }: { params: { action: string }
         pin, title: race.title, status: race.status,
         startedAt: race.startedAt ?? null, durationSec: race.durationSec,
         kind: race.kind ?? 'code',
+        theme: race.theme ?? null,
         taskCount: raceSteps(race),
         questionCount: race.questions?.length ?? 0,
         // Ingliz tili: o'quvchiga faqat navbatdagi savol (javobsiz) yuboriladi
@@ -92,7 +93,10 @@ export async function POST(req: Request, { params }: { params: { action: string 
             const { questions, error: qError } = english ? sanitizeQuestions(body.questions) : { questions: undefined, error: undefined };
             if (error || qError) return json({ error: error || qError }, 400);
             const race: CodeRace = {
-                ...(english ? { kind: 'english' as const, questions, goal: Math.min(Math.max(Number(body.goal) || 15, 3), 100) } : {}),
+                ...(english ? {
+                    kind: 'english' as const, questions, goal: Math.min(Math.max(Number(body.goal) || 15, 3), 100),
+                    theme: body.theme === 'it' ? 'it' as const : 'grammar' as const,
+                } : {}),
                 pin: await generateRacePin(),
                 title: String(body.title || "Kod Cho'qqisi").slice(0, 80),
                 hostKey: crypto.randomUUID(),

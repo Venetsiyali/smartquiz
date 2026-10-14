@@ -11,7 +11,7 @@ const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899'
  * qolganlar pastdagi "peloton" chizig'ida kichik nuqtalar bo'lib yuradi (100 kishida ham tartibli ko'rinadi).
  * `racers` reyting tartibida keladi.
  */
-export default function RaceTrack({ racers, goal, leaders }: { racers: RacerView[]; goal: number; leaders: Set<string> }) {
+export default function RaceTrack({ racers, goal, leaders, badge = '🇬🇧' }: { racers: RacerView[]; goal: number; leaders: Set<string>; badge?: string }) {
     const pack = racers.slice(LANES);
     const x = (solved: number) => 2 + Math.min(solved / Math.max(goal, 1), 1) * 86; // % (start 2% → finish 88%)
 
@@ -30,7 +30,7 @@ export default function RaceTrack({ racers, goal, leaders }: { racers: RacerView
                 </g>
                 {Array.from({ length: 30 }, (_, i) => <circle key={i} cx={(i * 47) % 400} cy={(i * 13) % 45} r="0.6" fill="#fff" opacity="0.6" />)}
             </svg>
-            <div className="absolute right-4 top-3 text-3xl" aria-hidden>🇬🇧</div>
+            <div className="absolute right-4 top-3 text-3xl" aria-hidden>{badge}</div>
 
             {/* Trek */}
             <div className="relative mt-auto mb-3 mx-3 rounded-2xl overflow-hidden" style={{ height: '58%', background: '#2b2f3a' }}>

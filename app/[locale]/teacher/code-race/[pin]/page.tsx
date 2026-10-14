@@ -24,6 +24,7 @@ export default function CodeRaceHostPage() {
     const [taskCount, setTaskCount] = useState(0);
     const [kind, setKind] = useState<'code' | 'english'>('code');
     const kindRef = useRef<'code' | 'english'>('code');
+    const [theme, setTheme] = useState<'grammar' | 'it' | null>(null);
     const [startedAt, setStartedAt] = useState<number | null>(null);
     const [durationSec, setDurationSec] = useState(0);
     const [racers, setRacers] = useState<RacerView[]>([]);
@@ -43,7 +44,7 @@ export default function CodeRaceHostPage() {
         const data = await res.json();
         if (!res.ok) { setError(data.error); return; }
         setTitle(data.title); setStatus(data.status); setTaskCount(data.taskCount);
-        setKind(data.kind); kindRef.current = data.kind;
+        setKind(data.kind); kindRef.current = data.kind; setTheme(data.theme);
         setStartedAt(data.startedAt); setDurationSec(data.durationSec);
         if (data.players) setRacers(data.players);
     }, [pin]);
@@ -120,7 +121,7 @@ export default function CodeRaceHostPage() {
         <div className="min-h-screen bg-[#070b18] text-white p-4 md:p-6">
             <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
-                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'english' ? '🏁 Grammar Race' : <>🏔️ Kod Cho&apos;qqisi</>}</p>
+                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'english' ? (theme === 'it' ? '💼 AKT Poygasi' : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
                     <h1 className="text-2xl md:text-3xl font-black">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
@@ -173,7 +174,7 @@ export default function CodeRaceHostPage() {
                 <div className="grid lg:grid-cols-[1fr_320px] gap-4" style={{ height: 'calc(100vh - 120px)' }}>
                     <div className="relative min-h-[420px]">
                         {kind === 'english'
-                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} />
+                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} badge={theme === 'it' ? '💼' : '🇬🇧'} />
                             : <Mountain racers={racers} steps={taskCount} leaders={leaders} />}
                         <div className="absolute left-4 top-4 space-y-2 max-w-[60%]">
                             <AnimatePresence initial={false}>

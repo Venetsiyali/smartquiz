@@ -124,6 +124,15 @@ const GAME_STYLES = [
         route: '/teacher/eng-race',
         pro: false,
     },
+    {
+        id: 'it',
+        image: '/images/games/it.webp',
+        gradient: 'linear-gradient(135deg, #3b1d06 0%, #b45309 60%, #f59e0b 100%)',
+        glowColor: 'rgba(245,158,11,0.5)',
+        badgeStyle: { background: 'rgba(245,158,11,0.2)', color: '#fcd34d', border: '1px solid rgba(245,158,11,0.5)' },
+        route: '/teacher/it-race',
+        pro: false,
+    },
 ];
 
 function getGreetingKey() {

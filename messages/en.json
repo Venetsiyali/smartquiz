@@ -112,6 +112,12 @@
       "sub": "English race",
       "badge": "NEW",
       "desc": "B1 grammar: to be, tenses and more. Every correct answer is a step to the finish line. Who gets there first?"
+    },
+    "it": {
+      "name": "IT Race",
+      "sub": "Economics & tourism",
+      "badge": "NEW",
+      "desc": "Live IT race: Excel, 1C, e-commerce, booking systems. Questions in Uzbek and Russian."
     }
   },
   "GamePlay": {
