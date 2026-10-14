@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { serverNow } from '@/lib/serverClock';
 import { formatClock } from './utils';
+import { raceT } from './raceI18n';
 
 export interface EngPublicQuestion { q: string; options: string[] | null; topic: string | null }
 
@@ -41,8 +42,8 @@ function Sentence({ text, fill, ok }: { text: string; fill?: string; ok?: boolea
     );
 }
 
-export default function EnglishArena({ state, pin, playerId, onChange }: {
-    state: ArenaState; pin: string; playerId: string; onChange: () => void;
+export default function EnglishArena({ state, pin, playerId, onChange, t = raceT('uz') }: {
+    state: ArenaState; pin: string; playerId: string; onChange: () => void; t?: ReturnType<typeof raceT>;
 }) {
     const [question, setQuestion] = useState(state.question ?? null);
     const [attempt, setAttempt] = useState(state.attempts ?? 0);
@@ -143,8 +144,8 @@ export default function EnglishArena({ state, pin, playerId, onChange }: {
                 </div>
                 <div className="flex justify-between text-sm font-black text-white/60">
                     <span>✅ {solved}/{goal}</span>
-                    {streak >= 3 && <span className="text-orange-300">🔥 {streak} ketma-ket!</span>}
-                    <span>O&apos;rningiz <span className="text-yellow-300">#{state.me?.rank ?? '–'}</span> / {state.playerCount}</span>
+                    {streak >= 3 && <span className="text-orange-300">{t('streak', { n: streak })}</span>}
+                    <span>{t('rank')} <span className="text-yellow-300">#{state.me?.rank ?? '–'}</span> / {state.playerCount}</span>
                 </div>
 
                 {/* Savol */}
@@ -159,7 +160,7 @@ export default function EnglishArena({ state, pin, playerId, onChange }: {
                             </p>
                             {feedback && !feedback.correct && (
                                 <div className="mt-4 rounded-xl bg-black/30 p-3 text-sm">
-                                    <p className="font-black text-red-300">❌ Sizning javobingiz: <s>{feedback.given}</s> → to&apos;g&apos;risi: <span className="text-emerald-300">{feedback.answer}</span></p>
+                                    <p className="font-black text-red-300">❌ {t('yourAnswer')}: <s>{feedback.given}</s> → {t('correctIs')}: <span className="text-emerald-300">{feedback.answer}</span></p>
                                     {feedback.explain && <p className="text-white/70 mt-1">💡 {feedback.explain}</p>}
                                 </div>
                             )}
@@ -190,13 +191,13 @@ export default function EnglishArena({ state, pin, playerId, onChange }: {
                 ) : question && (
                     <form className="flex gap-2" onSubmit={e => { e.preventDefault(); submit(typed); }}>
                         <input ref={inputRef} value={typed} onChange={e => setTyped(e.target.value)} disabled={!!feedback}
-                            autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="Javobni yozing..."
+                            autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder={t('typeAnswer')}
                             className="flex-1 bg-white/5 border-2 border-white/15 rounded-2xl px-5 py-4 text-xl font-bold outline-none focus:border-sky-400" />
                         <button disabled={!typed.trim() || !!feedback || busy} className="px-6 rounded-2xl text-lg font-black disabled:opacity-40"
                             style={{ background: 'linear-gradient(135deg,#0ea5e9,#2563eb)' }}>➜</button>
                     </form>
                 )}
-                {!question && <p className="text-center text-white/50 font-bold">⏳ Yuklanmoqda...</p>}
+                {!question && <p className="text-center text-white/50 font-bold">{t('loading')}</p>}
             </div>
         </div>
     );

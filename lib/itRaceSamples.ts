@@ -124,7 +124,13 @@ export const IT_TOUR_RU = build([
 const LANG_NAMES: Record<string, string> = { uz: "o'zbek", ru: 'rus' };
 
 /** Tashqi AI'da savol tayyorlatish uchun prompt (savollar tanlangan tilda). */
-export const IT_PROMPT = (topic: string, count: number, lang: string) => `Universitet talabalari uchun "Axborot texnologiyalari" fanidan "${topic}" mavzusida ${count} ta test savoli tuz. Savollar, variantlar va izohlar ${LANG_NAMES[lang] ?? "o'zbek"} tilida bo'lsin.
+export const IT_PROMPT = (topic: string, count: number, lang: string) => lang === 'ru' ? `Составь ${count} тестовых вопросов для студентов университета по предмету «Информационные технологии» на тему «${topic}». Вопросы, варианты и пояснения — на русском языке.
+В каждом вопросе ровно 4 варианта, правильный только один. Вопросы должны быть практичными и понятными.
+Ответ верни ТОЛЬКО в виде JSON-массива, без какого-либо другого текста:
+[
+  { "topic": "Excel", "q": "Текст вопроса?", "options": ["A", "B", "C", "D"], "answer": "B", "explain": "Короткое пояснение (1 предложение)." }
+]
+Правила: "answer" должен в точности совпадать с одним из вариантов; правильные ответы размещай среди вариантов вперемешку; проверь, что ответы на 100% верны.` : `Universitet talabalari uchun "Axborot texnologiyalari" fanidan "${topic}" mavzusida ${count} ta test savoli tuz. Savollar, variantlar va izohlar ${LANG_NAMES[lang] ?? "o'zbek"} tilida bo'lsin.
 Har bir savolda aynan 4 ta variant, faqat bittasi to'g'ri. Savollar amaliy va tushunarli bo'lsin.
 Javobni FAQAT JSON massiv ko'rinishida, boshqa hech qanday matnsiz qaytar:
 [

@@ -10,6 +10,7 @@ import { serverNow, syncServerClock } from '@/lib/serverClock';
 import Mountain from '@/components/code-race/Mountain';
 import RaceTrack from '@/components/code-race/RaceTrack';
 import { formatClock, type RacerView } from '@/components/code-race/utils';
+import { raceT, type RaceLang } from '@/components/code-race/raceI18n';
 
 interface FeedItem { key: number; text: string }
 
@@ -25,6 +26,9 @@ export default function CodeRaceHostPage() {
     const [kind, setKind] = useState<'code' | 'english'>('code');
     const kindRef = useRef<'code' | 'english'>('code');
     const [theme, setTheme] = useState<'grammar' | 'it' | null>(null);
+    const [uiLang, setUiLang] = useState<RaceLang>('uz');
+    const uiLangRef = useRef<RaceLang>('uz');
+    const t = raceT(uiLang);
     const [startedAt, setStartedAt] = useState<number | null>(null);
     const [durationSec, setDurationSec] = useState(0);
     const [racers, setRacers] = useState<RacerView[]>([]);
@@ -45,6 +49,7 @@ export default function CodeRaceHostPage() {
         if (!res.ok) { setError(data.error); return; }
         setTitle(data.title); setStatus(data.status); setTaskCount(data.taskCount);
         setKind(data.kind); kindRef.current = data.kind; setTheme(data.theme);
+        setUiLang(data.uiLang ?? 'uz'); uiLangRef.current = data.uiLang ?? 'uz';
         setStartedAt(data.startedAt); setDurationSec(data.durationSec);
         if (data.players) setRacers(data.players);
     }, [pin]);
@@ -52,7 +57,7 @@ export default function CodeRaceHostPage() {
     useEffect(() => {
         let key: string | null = null;
         try { key = localStorage.getItem(`cr-host-${pin}`); } catch { /* ignore */ }
-        if (!key) { setError("Bu o'yinni faqat uni yaratgan o'qituvchi boshqara oladi"); return; }
+        if (!key) { setError(raceT(null)('onlyHost') + ' / ' + raceT('ru')('onlyHost')); return; }
         setHostKey(key);
         syncServerClock();
         load(key);
@@ -64,9 +69,9 @@ export default function CodeRaceHostPage() {
         ch.bind('cr-progress', ({ player, finished }: { player: RacerView; finished: boolean }) => {
             setRacers(prev => prev.map(p => p.id === player.id ? player : p));
             const text = finished
-                ? (kindRef.current === 'english' ? `🏁 ${player.nickname} finishga yetdi!` : `🏁 ${player.nickname} cho'qqiga chiqdi!`)
+                ? (kindRef.current === 'english' ? raceT(uiLangRef.current)('feedFinished', { name: player.nickname }) : `🏁 ${player.nickname} cho'qqiga chiqdi!`)
                 : kindRef.current === 'english'
-                    ? `⚡ ${player.nickname} — ${player.solved} ta to'g'ri javob`
+                    ? raceT(uiLangRef.current)('feedSolved', { name: player.nickname, n: player.solved })
                     : `⚡ ${player.nickname} ${player.solved}-masalani yechdi (${formatClock(player.lastSolvedAt ?? 0)})`;
             setFeed(f => [{ key: ++feedSeq.current, text }, ...f].slice(0, 6));
             if (finished) confetti({ particleCount: 80, spread: 70, origin: { y: 0.3 } });
@@ -121,7 +126,7 @@ export default function CodeRaceHostPage() {
         <div className="min-h-screen bg-[#070b18] text-white p-4 md:p-6">
             <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
-                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'english' ? (theme === 'it' ? '💼 AKT Poygasi' : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
+                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'english' ? (theme === 'it' ? (uiLang === 'ru' ? '💼 Гонка ИКТ' : '💼 AKT Poygasi') : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
                     <h1 className="text-2xl md:text-3xl font-black">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
@@ -132,7 +137,7 @@ export default function CodeRaceHostPage() {
                         </div>
                     )}
                     {status === 'running' && (
-                        <button onClick={() => { endingRef.current = true; action('end'); }} className="px-4 py-2 rounded-2xl bg-red-500/15 text-red-300 font-black">⏹ Yakunlash</button>
+                        <button onClick={() => { endingRef.current = true; action('end'); }} className="px-4 py-2 rounded-2xl bg-red-500/15 text-red-300 font-black">{t('endGame')}</button>
                     )}
                 </div>
             </header>
@@ -140,21 +145,21 @@ export default function CodeRaceHostPage() {
             {status === 'lobby' && (
                 <div className="grid lg:grid-cols-[360px_1fr] gap-6">
                     <div className="rounded-3xl bg-white/[0.04] border border-white/10 p-6 text-center space-y-4">
-                        <p className="text-white/50 font-bold">Telefoningiz yoki noutbukingizda oching:</p>
+                        <p className="text-white/50 font-bold">{t('openOnDevice')}</p>
                         <p className="text-white font-black">{origin.replace(/^https?:\/\//, '')}/play</p>
                         <p className="text-6xl font-black tracking-[0.15em] text-emerald-300">{pin}</p>
                         <div className="inline-block bg-white p-3 rounded-2xl">
                             {joinUrl && <QRCodeSVG value={joinUrl} size={180} bgColor="#ffffff" fgColor="#0a0f1e" level="M" />}
                         </div>
-                        <p className="text-white/40 text-sm">{kind === 'english' ? `Finish — ${taskCount} ta to'g'ri javob` : `${taskCount} ta masala`} · {Math.round(durationSec / 60)} daqiqa</p>
+                        <p className="text-white/40 text-sm">{kind === 'english' ? t('finishGoal', { n: taskCount }) : t('tasksCount', { n: taskCount })} · {Math.round(durationSec / 60)} {t('minutes')}</p>
                         <button onClick={() => action('start')} disabled={racers.length === 0}
                             className="w-full py-4 rounded-2xl text-xl font-black disabled:opacity-40"
                             style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 10px 40px rgba(16,185,129,0.35)' }}>
-                            🚀 Boshlash
+                            {t('start')}
                         </button>
                     </div>
                     <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-6">
-                        <p className="text-white/50 font-black mb-4">Qo&apos;shilganlar ({racers.length})</p>
+                        <p className="text-white/50 font-black mb-4">{t('joined', { n: racers.length })}</p>
                         <div className="flex flex-wrap gap-2">
                             <AnimatePresence>
                                 {racers.map(r => (
@@ -164,7 +169,7 @@ export default function CodeRaceHostPage() {
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-                            {racers.length === 0 && <p className="text-white/30">Talabalar kutilmoqda...</p>}
+                            {racers.length === 0 && <p className="text-white/30">{t('waitingStudents')}</p>}
                         </div>
                     </div>
                 </div>
@@ -185,19 +190,19 @@ export default function CodeRaceHostPage() {
                             </AnimatePresence>
                         </div>
                     </div>
-                    <Ranking ranked={ranked} taskCount={taskCount} />
+                    <Ranking ranked={ranked} taskCount={taskCount} t={t} />
                 </div>
             )}
 
-            {status === 'ended' && <Podium ranked={ranked} taskCount={taskCount} />}
+            {status === 'ended' && <Podium ranked={ranked} taskCount={taskCount} t={t} />}
         </div>
     );
 }
 
-function Ranking({ ranked, taskCount }: { ranked: RacerView[]; taskCount: number }) {
+function Ranking({ ranked, taskCount, t }: { ranked: RacerView[]; taskCount: number; t: ReturnType<typeof raceT> }) {
     return (
         <div className="rounded-3xl bg-white/[0.04] border border-white/10 p-4 overflow-y-auto">
-            <p className="text-white/50 font-black mb-3">🏆 Reyting</p>
+            <p className="text-white/50 font-black mb-3">{t('ranking')}</p>
             <div className="space-y-2">
                 {ranked.slice(0, 15).map((r, i) => (
                     <motion.div layout key={r.id} className="flex items-center gap-3">
@@ -218,13 +223,13 @@ function Ranking({ ranked, taskCount }: { ranked: RacerView[]; taskCount: number
     );
 }
 
-function Podium({ ranked, taskCount }: { ranked: RacerView[]; taskCount: number }) {
+function Podium({ ranked, taskCount, t }: { ranked: RacerView[]; taskCount: number; t: ReturnType<typeof raceT> }) {
     const places = [ranked[1], ranked[0], ranked[2]];
     const heights = ['h-40', 'h-56', 'h-28'];
     const medals = ['🥈', '🥇', '🥉'];
     return (
         <div className="max-w-4xl mx-auto text-center space-y-8 pt-4">
-            <h2 className="text-4xl font-black">🏁 Musobaqa yakunlandi!</h2>
+            <h2 className="text-4xl font-black">{t('raceOver')}</h2>
             <div className="flex items-end justify-center gap-4">
                 {places.map((r, i) => r && (
                     <motion.div key={r.id} initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: [0.4, 0.8, 0][i] }}
@@ -239,7 +244,7 @@ function Podium({ ranked, taskCount }: { ranked: RacerView[]; taskCount: number 
                     </motion.div>
                 ))}
             </div>
-            <div className="text-left"><Ranking ranked={ranked} taskCount={taskCount} /></div>
+            <div className="text-left"><Ranking ranked={ranked} taskCount={taskCount} t={t} /></div>
         </div>
     );
 }

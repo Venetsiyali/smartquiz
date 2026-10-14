@@ -11,6 +11,7 @@ import { PyRunner, type RunResult } from '@/lib/pyRunner';
 import type { CodeTask } from '@/lib/codeRace';
 import CodeEditor from '@/components/code-race/CodeEditor';
 import EnglishArena, { type EngPublicQuestion } from '@/components/code-race/EnglishArena';
+import { raceT, type RaceLang } from '@/components/code-race/raceI18n';
 import { AVATARS, callRepr, formatClock, pyRepr } from '@/components/code-race/utils';
 
 interface Me { solved: number; rank: number }
@@ -20,6 +21,7 @@ interface RaceState {
     tasks: CodeTask[]; playerCount: number; me: Me | null;
     top: { id: string; nickname: string; avatar: string; solved: number }[];
     kind?: 'code' | 'english';
+    uiLang?: RaceLang;
     question?: EngPublicQuestion | null;
     attempts?: number;
 }
@@ -41,6 +43,14 @@ function CodeRacePlay() {
     const [playerId, setPlayerId] = useState<string | null>(null);
     const [joined, setJoined] = useState(false);
     const [state, setState] = useState<RaceState | null>(null);
+    // Qo'shilishdan oldin ham o'yin tilini bilish uchun (ruscha guruhda qo'shilish formasi ham ruscha)
+    const [preLang, setPreLang] = useState<RaceLang | null>(null);
+    useEffect(() => {
+        if (!pin) return;
+        fetch(`/api/code-race/state?pin=${pin}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+            .then(d => { if (d?.uiLang) setPreLang(d.uiLang); }).catch(() => {});
+    }, [pin]);
+    const t = raceT(state?.uiLang ?? preLang);
     const [pyStatus, setPyStatus] = useState<'loading' | 'ready' | 'error'>('loading');
     const runnerRef = useRef<PyRunner | null>(null);
 
@@ -90,9 +100,9 @@ function CodeRacePlay() {
         };
     }, [joined, playerId, pin, load]);
 
-    if (!pin) return <Centered>PIN ko&apos;rsatilmagan. <a className="text-emerald-300 underline" href="/play">PIN kiritish</a></Centered>;
-    if (!joined || !playerId) return <JoinForm pin={pin} playerId={playerId} onJoined={() => { store.set(`cr-joined-${pin}`, '1'); setJoined(true); }} />;
-    if (!state) return <Centered>⏳ Yuklanmoqda...</Centered>;
+    if (!pin) return <Centered>{t('noPin')} <a className="text-emerald-300 underline" href="/play">{t('enterPin')}</a></Centered>;
+    if (!joined || !playerId) return <JoinForm t={t} pin={pin} playerId={playerId} onJoined={() => { store.set(`cr-joined-${pin}`, '1'); setJoined(true); }} />;
+    if (!state) return <Centered>{t('loading')}</Centered>;
 
     if (state.status === 'lobby') {
         return (
@@ -100,21 +110,21 @@ function CodeRacePlay() {
                 <div className="space-y-5">
                     <p className="text-6xl">{isCode ? '🏔️' : '🏁'}</p>
                     <h1 className="text-3xl font-black">{state.title}</h1>
-                    <p className="text-white/60 font-bold">O&apos;qituvchi boshlashini kuting · 👥 {state.playerCount}</p>
+                    <p className="text-white/60 font-bold">{t('waitTeacher')} · 👥 {state.playerCount}</p>
                     {isCode && <PyBadge status={pyStatus} />}
                     <p className="text-white/40 text-sm max-w-sm">{isCode
                         ? <>{state.taskCount} ta masala. Har bir yechim sizni bir pog&apos;ona yuqoriga ko&apos;taradi — cho&apos;qqiga birinchi chiqing!</>
-                        : <>Har bir to&apos;g&apos;ri javob sizni finishga bir qadam yaqinlashtiradi. {state.taskCount} ta to&apos;g&apos;ri javob — finish!</>}</p>
+                        : t('lobbyHint', { n: state.taskCount })}</p>
                 </div>
             </Centered>
         );
     }
 
     if (state.status === 'ended' || (state.me && state.me.solved >= state.taskCount)) {
-        return <Finished state={state} />;
+        return <Finished state={state} t={t} />;
     }
 
-    if (!isCode) return <EnglishArena state={state} pin={pin} playerId={playerId} onChange={load} />;
+    if (!isCode) return <EnglishArena state={state} pin={pin} playerId={playerId} onChange={load} t={t} />;
 
     return <Arena key={state.me?.solved ?? 0} state={state} pin={pin} playerId={playerId} runner={runnerRef.current} pyStatus={pyStatus} onSolved={load} />;
 }
@@ -272,16 +282,16 @@ function Steps({ solved, total }: { solved: number; total: number }) {
     );
 }
 
-function Finished({ state }: { state: RaceState }) {
+function Finished({ state, t }: { state: RaceState; t: ReturnType<typeof raceT> }) {
     const done = state.me && state.me.solved >= state.taskCount;
     useEffect(() => { if (done) confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } }); }, [done]);
     return (
         <Centered>
             <div className="space-y-4">
                 <p className="text-7xl">{done ? '🏁' : '⛺'}</p>
-                <h1 className="text-3xl font-black">{done ? (state.kind === 'english' ? 'Finishga yetdingiz!' : "Cho'qqiga chiqdingiz!") : 'Musobaqa yakunlandi'}</h1>
-                <p className="text-white/70 font-bold">{state.me?.solved ?? 0}/{state.taskCount} · o&apos;rningiz <span className="text-yellow-300">#{state.me?.rank ?? '–'}</span> / {state.playerCount}</p>
-                {state.status !== 'ended' && <p className="text-white/40 text-sm">Boshqalar hali chiqyapti — proyektorni kuzating 👀</p>}
+                <h1 className="text-3xl font-black">{done ? (state.kind === 'english' ? t('finishedTitle') : "Cho'qqiga chiqdingiz!") : t('raceEnded')}</h1>
+                <p className="text-white/70 font-bold">{state.me?.solved ?? 0}/{state.taskCount} · {t('rank')} <span className="text-yellow-300">#{state.me?.rank ?? '–'}</span> / {state.playerCount}</p>
+                {state.status !== 'ended' && <p className="text-white/40 text-sm">{t('othersRacing')}</p>}
                 <div className="rounded-2xl bg-white/5 p-4 text-left space-y-1 min-w-[260px]">
                     {state.top.slice(0, 5).map((p, i) => (
                         <div key={p.id} className="flex justify-between font-bold text-white/80">
@@ -294,7 +304,7 @@ function Finished({ state }: { state: RaceState }) {
     );
 }
 
-function JoinForm({ pin, playerId, onJoined }: { pin: string; playerId: string | null; onJoined: () => void }) {
+function JoinForm({ pin, playerId, onJoined, t }: { pin: string; playerId: string | null; onJoined: () => void; t: ReturnType<typeof raceT> }) {
     const [nickname, setNickname] = useState(() => store.get('cr-nickname') ?? '');
     const [avatar, setAvatar] = useState(AVATARS[0]);
     const [error, setError] = useState<string | null>(null);
@@ -317,9 +327,9 @@ function JoinForm({ pin, playerId, onJoined }: { pin: string; playerId: string |
         <Centered>
             <div className="w-full max-w-sm space-y-4">
                 <p className="text-6xl">🏁</p>
-                <h1 className="text-3xl font-black">Musobaqaga qo&apos;shilish</h1>
+                <h1 className="text-3xl font-black">{t('joinTitle')}</h1>
                 <p className="text-white/50 font-bold">PIN: {pin}</p>
-                <input value={nickname} onChange={e => setNickname(e.target.value)} maxLength={24} placeholder="Ismingiz" className={field}
+                <input value={nickname} onChange={e => setNickname(e.target.value)} maxLength={24} placeholder={t('yourName')} className={field}
                     onKeyDown={e => e.key === 'Enter' && join()} />
                 <div className="grid grid-cols-8 gap-1.5">
                     {AVATARS.map(a => (
@@ -329,7 +339,7 @@ function JoinForm({ pin, playerId, onJoined }: { pin: string; playerId: string |
                 {error && <p className="text-red-300 font-bold text-sm">⚠️ {error}</p>}
                 <button onClick={join} disabled={loading || nickname.trim().length < 2}
                     className="w-full py-4 rounded-2xl text-lg font-black disabled:opacity-40" style={{ background: 'linear-gradient(135deg,#10b981,#059669)' }}>
-                    {loading ? '⏳' : "🚀 Qo'shilish"}
+                    {loading ? '⏳' : t('join')}
                 </button>
             </div>
         </Centered>
