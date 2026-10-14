@@ -17,6 +17,7 @@ const UI = {
         step1: "1. Promptni nusxalab ChatGPT, Claude yoki Gemini'ga yuboring", copied: '✅ Nusxalandi', copy: '📋 Promptni nusxalash',
         step2: '2. AI javobini (JSON) shu yerga joylang', load: '✅ Savollarni yuklash', min3: 'Kamida 3 ta savol kerak',
         badJson: "JSON o'qilmadi — AI javobini to'liq nusxalang", topicPh: 'Mavzu', uiLang: "O'yin ekranlari tili",
+        levels: ['🟢 Oson', "🟡 O'rtacha", '🔴 Qiyin'], levelHint: "Darajalar — o'yinga qaysi savollar kirishini tanlang:",
     },
     ru: {
         questions: '{n} вопросов', gameName: 'Название игры', minutes: '⏱ {n} мин', finish: '🏁 Финиш: {n} правильных ответов',
@@ -27,6 +28,7 @@ const UI = {
         step1: '1. Скопируйте промпт и отправьте в ChatGPT, Claude или Gemini', copied: '✅ Скопировано', copy: '📋 Скопировать промпт',
         step2: '2. Вставьте ответ ИИ (JSON) сюда', load: '✅ Загрузить вопросы', min3: 'Нужно минимум 3 вопроса',
         badJson: 'Не удалось прочитать JSON — скопируйте ответ ИИ полностью', topicPh: 'Тема', uiLang: 'Язык игровых экранов',
+        levels: ['🟢 Лёгкие', '🟡 Средние', '🔴 Сложные'], levelHint: 'Уровни — выберите, какие вопросы войдут в игру:',
     },
 };
 type Ui = typeof UI.uz;
@@ -61,6 +63,12 @@ export default function QuizRaceCreator({
     const [creating, setCreating] = useState(false);
     const [showAi, setShowAi] = useState(false);
     const [showAdd, setShowAdd] = useState(false);
+    const [levels, setLevels] = useState<(1 | 2 | 3)[]>([1, 2, 3]);
+    const hasLevels = questions.some(q => q.level);
+    const inLevel = (q: EngQuestion) => !hasLevels || levels.includes(q.level ?? 1);
+    const selected = questions.filter(inLevel);
+    const toggleLevel = (l: 1 | 2 | 3) =>
+        setLevels(cur => cur.includes(l) ? (cur.length > 1 ? cur.filter(x => x !== l) : cur) : [...cur, l].sort());
 
     const topics = useMemo(() => Array.from(new Set(questions.map(q => q.topic || ui.other))), [questions, ui.other]);
 
@@ -71,7 +79,7 @@ export default function QuizRaceCreator({
         try {
             const res = await fetch('/api/code-race/create', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ kind: 'english', theme, uiLang: gameLang, title, durationSec: duration * 60, goal, questions }),
+                body: JSON.stringify({ kind: 'english', theme, uiLang: gameLang, title, durationSec: duration * 60, goal, questions: selected }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || ui.error);
@@ -82,7 +90,7 @@ export default function QuizRaceCreator({
         }
     };
 
-    const shown = questions.map((q, i) => ({ q, i })).filter(({ q }) => !topicFilter || (q.topic || ui.other) === topicFilter);
+    const shown = questions.map((q, i) => ({ q, i })).filter(({ q }) => inLevel(q) && (!topicFilter || (q.topic || ui.other) === topicFilter));
 
     return (
         <div className="min-h-screen bg-[#0a0f1e] text-white px-4 py-8">
@@ -129,11 +137,25 @@ export default function QuizRaceCreator({
 
                 {showAdd && <AddQuestion ui={ui} onAdd={q => { setQuestions(x => [...x, q]); setShowAdd(false); }} />}
 
+                {hasLevels && (
+                    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 space-y-2">
+                        <p className="text-white/50 text-xs font-black">{ui.levelHint}</p>
+                        <div className="flex flex-wrap gap-2">
+                            {([1, 2, 3] as const).map(l => (
+                                <button key={l} onClick={() => toggleLevel(l)}
+                                    className={`px-4 py-2 rounded-xl text-sm font-black border-2 transition-colors ${levels.includes(l) ? 'border-white/40 bg-white/10 text-white' : 'border-white/5 bg-transparent text-white/30 line-through'}`}>
+                                    {ui.levels[l - 1]} ({questions.filter(q => (q.level ?? 1) === l).length})
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => setTopicFilter(null)} className={`px-3 py-1 rounded-full text-xs font-black ${!topicFilter ? 'bg-sky-500/30 text-sky-200' : 'bg-white/5 text-white/50'}`}>{fill(ui.all, questions.length)}</button>
+                    <button onClick={() => setTopicFilter(null)} className={`px-3 py-1 rounded-full text-xs font-black ${!topicFilter ? 'bg-sky-500/30 text-sky-200' : 'bg-white/5 text-white/50'}`}>{fill(ui.all, selected.length)}</button>
                     {topics.map(t => (
                         <button key={t} onClick={() => setTopicFilter(t)} className={`px-3 py-1 rounded-full text-xs font-black ${topicFilter === t ? 'bg-sky-500/30 text-sky-200' : 'bg-white/5 text-white/50'}`}>
-                            {t} ({questions.filter(q => (q.topic || ui.other) === t).length})
+                            {t} ({selected.filter(q => (q.topic || ui.other) === t).length})
                         </button>
                     ))}
                 </div>
@@ -143,7 +165,7 @@ export default function QuizRaceCreator({
                         <div key={i} className="flex items-start gap-3 px-4 py-2.5 text-sm">
                             <span className="text-white/30 font-black w-6 shrink-0">{i + 1}</span>
                             <div className="flex-1 min-w-0">
-                                <p className="font-bold">{q.q}</p>
+                                <p className="font-bold">{hasLevels && <span className="mr-1.5" title={ui.levels[(q.level ?? 1) - 1]}>{['🟢', '🟡', '🔴'][(q.level ?? 1) - 1]}</span>}{q.q}</p>
                                 <p className="text-xs text-white/40 mt-0.5">
                                     {q.options ? q.options.map(o => <span key={o} className={o === q.answer ? 'text-emerald-300 font-black' : ''}>{o}{'  ·  '}</span>) : <span className="text-emerald-300 font-black">✍️ {q.answer}</span>}
                                 </p>
@@ -155,10 +177,10 @@ export default function QuizRaceCreator({
 
                 {error && <p className="rounded-xl px-4 py-3 text-sm font-bold text-red-300 bg-red-500/10">⚠️ {error}</p>}
 
-                <button onClick={create} disabled={creating || questions.length < 3}
+                <button onClick={create} disabled={creating || selected.length < 3}
                     className="w-full py-4 rounded-2xl text-lg font-black disabled:opacity-40"
                     style={{ background: gradient, boxShadow: '0 10px 40px rgba(14,165,233,0.3)' }}>
-                    {creating ? ui.creating : fill(ui.create, questions.length)}
+                    {creating ? ui.creating : fill(ui.create, selected.length)}
                 </button>
             </div>
 
@@ -215,6 +237,7 @@ function AiModal({ onClose, onImport, buildPrompt, promptLangs, defaultTopic, ui
             onImport(arr.map((x: any) => ({
                 q: String(x.q ?? ''), answer: String(x.answer ?? ''), options: Array.isArray(x.options) ? x.options.map(String) : undefined,
                 explain: x.explain ? String(x.explain) : undefined, topic: x.topic ? String(x.topic) : undefined,
+                level: [1, 2, 3].includes(Number(x.level)) ? Number(x.level) as 1 | 2 | 3 : undefined,
             })), lang);
         } catch (err: any) {
             setError(err?.message === ui.min3 ? err.message : ui.badJson);

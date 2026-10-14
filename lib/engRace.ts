@@ -10,6 +10,7 @@ export interface EngQuestion {
     accept?: string[];    // yozma javobda qabul qilinadigan boshqa variantlar (masalan, qisqartma)
     explain?: string;     // xato bo'lsa ko'rsatiladigan qisqa izoh
     topic?: string;
+    level?: 1 | 2 | 3;    // 1 — oson, 2 — o'rtacha, 3 — qiyin
 }
 
 export const normalize = (s: string) => s.trim().toLowerCase()
@@ -68,6 +69,7 @@ export function sanitizeQuestions(input: unknown): { questions: EngQuestion[]; e
             accept: Array.isArray(x.accept) ? x.accept.map(String).slice(0, 5) : undefined,
             explain: x.explain ? String(x.explain).slice(0, 300) : undefined,
             topic: x.topic ? String(x.topic).slice(0, 40) : undefined,
+            level: [1, 2, 3].includes(Number(x.level)) ? Number(x.level) as 1 | 2 | 3 : undefined,
         });
     }
     return { questions };
