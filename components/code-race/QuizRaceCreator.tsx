@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { EngQuestion } from '@/lib/engRace';
 
@@ -17,6 +17,9 @@ const UI = {
         step1: "1. Promptni nusxalab ChatGPT, Claude yoki Gemini'ga yuboring", copied: '✅ Nusxalandi', copy: '📋 Promptni nusxalash',
         step2: '2. AI javobini (JSON) shu yerga joylang', load: '✅ Savollarni yuklash', min3: 'Kamida 3 ta savol kerak',
         badJson: "JSON o'qilmadi — AI javobini to'liq nusxalang", topicPh: 'Mavzu', uiLang: "O'yin ekranlari tili",
+        community: '👥 Boshqalarning savollari', communitySub: "Boshqa o'qituvchilar AI orqali qo'shgan savollar · {n} ta",
+        communityEmpty: "Hozircha bu omborda savol yo'q — birinchi bo'lib qo'shing!", saved: "✅ {n} ta yangi savol umumiy omborga qo'shildi",
+        shareNote: "AI'dan va qo'lda qo'shilgan savollar \"Boshqalarning savollari\" omboriga ham yig'iladi.",
         levels: ['🟢 Oson', "🟡 O'rtacha", '🔴 Qiyin'], levelHint: "Darajalar — o'yinga qaysi savollar kirishini tanlang:",
     },
     ru: {
@@ -28,6 +31,9 @@ const UI = {
         step1: '1. Скопируйте промпт и отправьте в ChatGPT, Claude или Gemini', copied: '✅ Скопировано', copy: '📋 Скопировать промпт',
         step2: '2. Вставьте ответ ИИ (JSON) сюда', load: '✅ Загрузить вопросы', min3: 'Нужно минимум 3 вопроса',
         badJson: 'Не удалось прочитать JSON — скопируйте ответ ИИ полностью', topicPh: 'Тема', uiLang: 'Язык игровых экранов',
+        community: '👥 Вопросы коллег', communitySub: 'Вопросы, добавленные другими преподавателями через ИИ · {n}',
+        communityEmpty: 'В этой базе пока нет вопросов — добавьте первыми!', saved: '✅ {n} новых вопросов добавлено в общую базу',
+        shareNote: 'Вопросы из ИИ и добавленные вручную также попадают в общую базу «Вопросы коллег».',
         levels: ['🟢 Лёгкие', '🟡 Средние', '🔴 Сложные'], levelHint: 'Уровни — выберите, какие вопросы войдут в игру:',
     },
 };
@@ -71,6 +77,36 @@ export default function QuizRaceCreator({
         setLevels(cur => cur.includes(l) ? (cur.length > 1 ? cur.filter(x => x !== l) : cur) : [...cur, l].sort());
 
     const topics = useMemo(() => Array.from(new Set(questions.map(q => q.topic || ui.other))), [questions, ui.other]);
+
+    // ── "Boshqalarning savollari" — umumiy ombor (yo'nalish va til bo'yicha alohida) ──
+    const [communityCount, setCommunityCount] = useState<number | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
+    useEffect(() => {
+        fetch(`/api/community-questions?theme=${theme}&lang=${gameLang}&count=1`, { cache: 'no-store' })
+            .then(r => r.json()).then(d => setCommunityCount(typeof d.count === 'number' ? d.count : 0)).catch(() => setCommunityCount(null));
+    }, [theme, gameLang]);
+
+    const loadCommunity = async () => {
+        setError(null);
+        try {
+            const d = await fetch(`/api/community-questions?theme=${theme}&lang=${gameLang}`, { cache: 'no-store' }).then(r => r.json());
+            if (!d.questions?.length) { setNotice(ui.communityEmpty); return; }
+            setQuestions(d.questions); setSetId('community'); setTopicFilter(null); setCommunityCount(d.count);
+        } catch { setError(ui.error); }
+    };
+
+    /** Yangi savollarni umumiy omborga yuboradi (fon rejimida; xato o'yin yaratishga xalaqit bermaydi). */
+    const share = useCallback((qs: EngQuestion[], lang: string) => {
+        fetch('/api/community-questions', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme, lang: lang === 'ru' ? 'ru' : 'uz', questions: qs }),
+        }).then(r => r.json()).then(d => {
+            if (d.added > 0) {
+                setNotice(fill(ui.saved, d.added));
+                if (lang === gameLang) setCommunityCount(c => (c ?? 0) + d.added);
+            }
+        }).catch(() => {});
+    }, [theme, gameLang, ui.saved]);
 
     const pickSet = (s: SampleSet) => { setSetId(s.id); setQuestions(s.questions); setTitle(s.title); setTopicFilter(null); if (s.lang) setGameLang(s.lang); };
 
@@ -135,7 +171,15 @@ export default function QuizRaceCreator({
                     </select>
                 </div>
 
-                {showAdd && <AddQuestion ui={ui} onAdd={q => { setQuestions(x => [...x, q]); setShowAdd(false); }} />}
+                <button onClick={loadCommunity}
+                    className={`w-full px-4 py-3 rounded-2xl text-left border-2 border-dashed transition-colors ${setId === 'community' ? 'border-violet-400 bg-violet-500/15' : 'border-violet-400/30 bg-violet-500/5 hover:bg-violet-500/10'}`}>
+                    <span className="font-black text-violet-200">{ui.community} · {gameLang === 'ru' ? 'Русский' : "O'zbekcha"}</span>
+                    <span className="block text-xs font-bold text-white/40 mt-0.5">{fill(ui.communitySub, communityCount ?? '…')}</span>
+                </button>
+                <p className="text-white/30 text-xs font-semibold -mt-3">ℹ️ {ui.shareNote}</p>
+                {notice && <p className="rounded-xl px-4 py-2 text-sm font-bold text-violet-200 bg-violet-500/10">{notice}</p>}
+
+                {showAdd && <AddQuestion ui={ui} onAdd={q => { setQuestions(x => [...x, q]); setShowAdd(false); share([q], gameLang); }} />}
 
                 {hasLevels && (
                     <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 space-y-2">
@@ -186,7 +230,12 @@ export default function QuizRaceCreator({
 
             {showAi && (
                 <AiModal ui={ui} buildPrompt={buildPrompt} promptLangs={promptLangs} defaultTopic={defaultTopic}
-                    onClose={() => setShowAi(false)} onImport={(qs, lang) => { setQuestions(qs); setShowAi(false); setTopicFilter(null); setSetId(''); if (lang === 'uz' || lang === 'ru') setGameLang(lang); }} />
+                    onClose={() => setShowAi(false)} onImport={(qs, lang) => {
+                        setQuestions(qs); setShowAi(false); setTopicFilter(null); setSetId('');
+                        const l = lang === 'ru' || lang === 'uz' ? lang : gameLang;
+                        setGameLang(l);
+                        share(qs, l);
+                    }} />
             )}
         </div>
     );

@@ -197,15 +197,64 @@ const TOUR_RU_MORE: Row[] = [
     ['Системы бронирования', 'Что делают метапоисковики вроде Skyscanner и Trivago?', ['Сравнивают цены разных сайтов и агентств', 'Выдают визы', 'Строят отели', 'Управляют самолётами'], 0, 'Метапоиск сам не продаёт — направляет клиента к самому выгодному предложению.', 3],
 ];
 
+const ECON_UZ_EXTRA: Row[] = [
+    ['Excel', 'Bir nechta katakni bitta katta katakka aylantiradigan buyruq?', ['Birlashtirish va markazlash (Merge & Center)', 'Saralash', 'Filtr', 'Sohani muzlatish'], 0, 'Merge & Center jadval sarlavhalarini chiroyli joylashtirish uchun ishlatiladi.', 1],
+    ['Fayllar', 'Excel ishchi kitobi qaysi kengaytmada saqlanadi?', ['.xlsx', '.docx', '.pptx', '.mp3'], 0, '.docx — Word, .pptx — PowerPoint, .xlsx — Excel.', 1],
+    ['Raqamli moliya', "O'zbekistonda keng tarqalgan mobil to'lov ilovasi qaysi?", ['Click', 'Photoshop', 'Excel', 'Zoom'], 0, "Click, Payme — kommunal, telefon va xaridlar uchun onlayn to'lov xizmatlari.", 1],
+    ['Raqamli moliya', "O'zbekistonning milliy bank kartalari to'lov tizimlari?", ['Uzcard va Humo', 'Visa va Amazon', 'Gmail va Yandex', 'Click va Excel'], 0, "Uzcard va Humo — mahalliy to'lov tizimlari; Visa, Mastercard — xalqaro.", 1],
+    ['Excel', '=MAX(B2:B10)-MIN(B2:B10) formulasi nimani beradi?', ["Qiymatlar oralig'ini (eng katta − eng kichik)", "O'rtacha qiymatni", "Yig'indini", 'Kataklar sonini'], 0, "Oraliq (размах) — narxlar yoki daromadlar qanchalik tarqoqligini ko'rsatadi.", 2],
+    ['Excel', 'Qiymatga qarab katak rangini avtomatik o\'zgartiradigan vosita (masalan, zarar — qizil)?', ['Shartli formatlash', 'Filtr', 'Goal Seek', 'Makros'], 0, "Shartli formatlash muhim qiymatlarni ko'zga tashlanadigan qiladi.", 2],
+    ['Elektron hukumat', 'Elektron hisob-fakturaning (e-faktura) asosiy afzalligi?', ["Qog'ozsiz, tez va soliq organi bilan avtomatik bog'lanadi", 'Faqat qog\'ozda chop etiladi', 'Imzo talab qilmaydi', 'Internet kerak emas'], 0, "E-faktura ERI bilan imzolanadi va soliq tizimida darhol aks etadi.", 2],
+    ['Excel', '=INDEX(C2:C10;MATCH("A12";A2:A10;0)) formulasi nima qiladi?', ['A ustunidan "A12" ni topib, C ustunidagi mos qiymatni qaytaradi', 'A12 katakni o\'chiradi', 'C ustunini saralaydi', 'A va C ustunlarini qo\'shadi'], 0, "INDEX+MATCH — VLOOKUP'ning moslashuvchan muqobili (chapga ham qidiradi).", 3],
+    ['Excel', 'Takrorlanuvchi amallarni avtomatlashtirish uchun Excel\'da yoziladigan dastur?', ['Makros (VBA)', 'Gistogramma', 'Shrift', 'Sahifa raqami'], 0, "Makros VBA tilida yoziladi va bir tugma bilan ko'p amalni bajaradi.", 3],
+    ['Biznes-tahlil', "ABC tahlilida qo'llaniladigan Pareto qoidasi nimani aytadi?", ["Taxminan 20% tovar daromadning ~80% ini beradi", 'Barcha tovarlar teng daromad beradi', 'Har doim 50/50 bo\'ladi', 'Eng arzon tovar eng foydali'], 0, "A guruh — kam sonli, lekin eng daromadli tovarlar; ularga birinchi e'tibor beriladi.", 3],
+];
+const ECON_RU_EXTRA: Row[] = [
+    ['Excel', 'Команда, превращающая несколько ячеек в одну большую?', ['Объединить и поместить в центре (Merge & Center)', 'Сортировка', 'Фильтр', 'Закрепление областей'], 0, 'Объединение ячеек используют для оформления заголовков таблиц.', 1],
+    ['Файлы', 'С каким расширением сохраняется книга Excel?', ['.xlsx', '.docx', '.pptx', '.mp3'], 0, '.docx — Word, .pptx — PowerPoint, .xlsx — Excel.', 1],
+    ['Цифровые финансы', 'Популярное в Узбекистане мобильное приложение для платежей?', ['Click', 'Photoshop', 'Excel', 'Zoom'], 0, 'Click, Payme — онлайн-оплата коммунальных услуг, связи и покупок.', 1],
+    ['Цифровые финансы', 'Национальные платёжные системы банковских карт Узбекистана?', ['Uzcard и Humo', 'Visa и Amazon', 'Gmail и Yandex', 'Click и Excel'], 0, 'Uzcard и Humo — местные платёжные системы; Visa, Mastercard — международные.', 1],
+    ['Excel', 'Что даёт формула =MAX(B2:B10)-MIN(B2:B10)?', ['Размах значений (наибольшее − наименьшее)', 'Среднее значение', 'Сумму', 'Количество ячеек'], 0, 'Размах показывает, насколько разбросаны цены или доходы.', 2],
+    ['Excel', 'Инструмент, автоматически меняющий цвет ячейки по значению (например, убыток — красным)?', ['Условное форматирование', 'Фильтр', 'Подбор параметра', 'Макрос'], 0, 'Условное форматирование выделяет важные значения.', 2],
+    ['Электронное правительство', 'Главное преимущество электронного счёта-фактуры?', ['Без бумаги, быстро и автоматически связан с налоговой', 'Печатается только на бумаге', 'Не требует подписи', 'Не нужен интернет'], 0, 'Электронный счёт-фактура подписывается ЭЦП и сразу отражается в налоговой системе.', 2],
+    ['Excel', 'Что делает формула =INDEX(C2:C10;MATCH("A12";A2:A10;0))?', ['Находит «A12» в столбце A и возвращает соответствующее значение из столбца C', 'Удаляет ячейку A12', 'Сортирует столбец C', 'Складывает столбцы A и C'], 0, 'ИНДЕКС+ПОИСКПОЗ — гибкая альтернатива ВПР (ищет и влево).', 3],
+    ['Excel', 'Программа в Excel для автоматизации повторяющихся действий?', ['Макрос (VBA)', 'Гистограмма', 'Шрифт', 'Номер страницы'], 0, 'Макрос пишется на VBA и выполняет много действий одной кнопкой.', 3],
+    ['Бизнес-аналитика', 'Что утверждает правило Парето, применяемое в ABC-анализе?', ['Примерно 20% товаров дают ~80% дохода', 'Все товары дают одинаковый доход', 'Всегда соотношение 50/50', 'Самый дешёвый товар — самый прибыльный'], 0, 'Группа A — немногие, но самые доходные товары; им уделяют внимание в первую очередь.', 3],
+];
+const TOUR_UZ_EXTRA: Row[] = [
+    ['Chiptalar', 'Samolyotga chiqish talonini uydan turib telefonda olish?', ["Onlayn ro'yxatdan o'tish (online check-in)", 'Overbooking', 'Housekeeping', 'Catering'], 0, "Online check-in odatda reysdan 24 soat oldin ochiladi.", 1],
+    ['Bron qilish tizimlari', 'Mehmonxona bron qilish uchun mashhur xalqaro sayt?', ['Booking.com', 'Wikipedia', 'GitHub', 'Canva'], 0, 'Booking.com — dunyodagi eng yirik OTA saytlaridan biri.', 1],
+    ['Raqamli marketing', 'Sayyohlik kompaniyasi video-obzorlarini joylash uchun eng mos platforma?', ['YouTube', 'Excel', '1C', 'Bloknot'], 0, "Video marketing yo'nalishni jonli ko'rsatadi va ishonch uyg'otadi.", 1],
+    ['Elektron hukumat', "O'zbekiston turizmining rasmiy milliy sayyohlik portali?", ['uzbekistan.travel', 'olx.uz', 'soliq.uz', 'lex.uz'], 0, "uzbekistan.travel — mamlakat bo'yicha rasmiy turistik ma'lumotlar sayti.", 1],
+    ['Mijozlar bilan ishlash', "Sayohatdan keyin mijozga fikr so'rab avtomatik xat yuborish?", ['E-mail marketing (avtomatik xabarnoma)', 'Overbooking', 'PMS', 'GDS'], 0, "Avtomatik xatlar sharhlar sonini va qayta buyurtmalarni oshiradi.", 2],
+    ['Navigatsiya', "Internet bo'lmaganda ham xaritadan foydalanish uchun nima qilish kerak?", ["Oflayn xaritalarni oldindan yuklab olish", "Wi-Fi'ni o'chirish", 'Telefonni qayta yoqish', 'Ekranni yorqinlashtirish'], 0, "Google Maps va Maps.me oflayn xaritalarni qo'llab-quvvatlaydi.", 2],
+    ['Raqamli marketing', "SEO'da \"long tail\" (uzun quyruq) kalit so'zlar qanday bo'ladi?", ["Uzun va aniq so'rovlar (\"Samarqandda arzon oilaviy mehmonxona\")", "Qisqa umumiy so'zlar (\"mehmonxona\")", 'Faqat raqamlar', 'Reklama bannerlari'], 0, "Raqobat kam, xaridga tayyor mijozlar ko'p — kichik firmalar uchun foydali.", 3],
+    ['Mehmonxona ko\'rsatkichlari', "Mehmonxona uchun o'z sayti orqali to'g'ridan-to'g'ri bronlarni ko'paytirish nega foydali?", ['OTA komissiyasi (15–25%) tejaladi', "Soliq to'lanmaydi", "Xonalar soni ko'payadi", 'Elektr arzonlashadi'], 0, "Booking, Expedia har bron uchun komissiya oladi; to'g'ridan-to'g'ri bron foydaliroq.", 3],
+    ['Narxlash', "Aviakompaniyalarda o'rindiqlarni narx klasslariga bo'lib, bandlikka qarab sotish?", ['Yield management', 'Housekeeping', 'SMM', 'POS'], 0, "Yield management — revenue management'ning aviatsiyadagi ko'rinishi.", 3],
+    ['Texnologiyalar', 'Turizmda API nima uchun kerak?', ["Turli tizimlar (GDS, sayt, PMS) o'rtasida avtomatik ma'lumot almashish uchun", 'Rasm chizish uchun', 'Matn terish uchun', 'Printerni ulash uchun'], 0, "API orqali sayt real vaqtda reys va mehmonxona narxlarini oladi.", 3],
+];
+const TOUR_RU_EXTRA: Row[] = [
+    ['Билеты', 'Получение посадочного талона на телефон, не выходя из дома?', ['Онлайн-регистрация (online check-in)', 'Овербукинг', 'Housekeeping', 'Кейтеринг'], 0, 'Онлайн-регистрация обычно открывается за 24 часа до рейса.', 1],
+    ['Системы бронирования', 'Популярный международный сайт для бронирования отелей?', ['Booking.com', 'Wikipedia', 'GitHub', 'Canva'], 0, 'Booking.com — одна из крупнейших OTA в мире.', 1],
+    ['Цифровой маркетинг', 'Самая подходящая платформа для видеообзоров туркомпании?', ['YouTube', 'Excel', '1С', 'Блокнот'], 0, 'Видеомаркетинг наглядно показывает направление и вызывает доверие.', 1],
+    ['Электронное правительство', 'Официальный национальный туристический портал Узбекистана?', ['uzbekistan.travel', 'olx.uz', 'soliq.uz', 'lex.uz'], 0, 'uzbekistan.travel — официальный сайт туристической информации о стране.', 1],
+    ['Работа с клиентами', 'Автоматическое письмо клиенту после поездки с просьбой об отзыве?', ['E-mail маркетинг (автоматическая рассылка)', 'Овербукинг', 'PMS', 'GDS'], 0, 'Автоматические письма увеличивают число отзывов и повторных заказов.', 2],
+    ['Навигация', 'Что сделать, чтобы пользоваться картой без интернета?', ['Заранее скачать офлайн-карты', 'Выключить Wi-Fi', 'Перезагрузить телефон', 'Увеличить яркость экрана'], 0, 'Google Maps и Maps.me поддерживают офлайн-карты.', 2],
+    ['Цифровой маркетинг', 'Какими бывают ключевые слова «long tail» (длинный хвост) в SEO?', ['Длинные точные запросы («недорогой семейный отель в Самарканде»)', 'Короткие общие слова («отель»)', 'Только цифры', 'Рекламные баннеры'], 0, 'Конкуренция ниже, а клиенты готовы к покупке — выгодно малым компаниям.', 3],
+    ['Показатели отеля', 'Почему отелю выгодно увеличивать долю прямых бронирований через свой сайт?', ['Экономится комиссия OTA (15–25%)', 'Не нужно платить налоги', 'Увеличивается число номеров', 'Дешевеет электричество'], 0, 'Booking, Expedia берут комиссию с каждой брони; прямая бронь выгоднее.', 3],
+    ['Ценообразование', 'Деление мест в самолёте на ценовые классы с продажей по загрузке — это…', ['Yield management', 'Housekeeping', 'SMM', 'POS'], 0, 'Yield management — revenue management в авиации.', 3],
+    ['Технологии', 'Зачем в туризме нужен API?', ['Для автоматического обмена данными между системами (GDS, сайт, PMS)', 'Для рисования', 'Для набора текста', 'Для подключения принтера'], 0, 'Через API сайт в реальном времени получает цены на рейсы и отели.', 3],
+];
+
 // Asosiy to'plamdagi o'rtacha savollar (tartib raqami 0 dan): VLOOKUP, PivotTable, ROUND, ERP, SQL, blokcheyn, Big Data
 const ECON_MEDIUM = [4, 5, 6, 10, 12, 19, 23];
 // PMS, channel manager, revenue management, dinamik narxlash, CTR, Big Data
 const TOUR_MEDIUM = [3, 4, 6, 7, 14, 23];
 
-export const IT_ECON_UZ = [...withMedium(ECON_UZ_BASE, ECON_MEDIUM), ...build(ECON_UZ_MORE)];
-export const IT_ECON_RU = [...withMedium(ECON_RU_BASE, ECON_MEDIUM), ...build(ECON_RU_MORE)];
-export const IT_TOUR_UZ = [...withMedium(TOUR_UZ_BASE, TOUR_MEDIUM), ...build(TOUR_UZ_MORE)];
-export const IT_TOUR_RU = [...withMedium(TOUR_RU_BASE, TOUR_MEDIUM), ...build(TOUR_RU_MORE)];
+export const IT_ECON_UZ = [...withMedium(ECON_UZ_BASE, ECON_MEDIUM), ...build(ECON_UZ_MORE), ...build(ECON_UZ_EXTRA)];
+export const IT_ECON_RU = [...withMedium(ECON_RU_BASE, ECON_MEDIUM), ...build(ECON_RU_MORE), ...build(ECON_RU_EXTRA)];
+export const IT_TOUR_UZ = [...withMedium(TOUR_UZ_BASE, TOUR_MEDIUM), ...build(TOUR_UZ_MORE), ...build(TOUR_UZ_EXTRA)];
+export const IT_TOUR_RU = [...withMedium(TOUR_RU_BASE, TOUR_MEDIUM), ...build(TOUR_RU_MORE), ...build(TOUR_RU_EXTRA)];
 
 const LANG_NAMES: Record<string, string> = { uz: "o'zbek", ru: 'rus' };
 
