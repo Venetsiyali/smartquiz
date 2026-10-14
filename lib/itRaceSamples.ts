@@ -300,7 +300,9 @@ const TOUR_MEDIUM = [3, 4, 6, 7, 14, 23];
 export const IT_ECON_UZ = [...withMedium(ECON_UZ_BASE, ECON_MEDIUM), ...build(ECON_UZ_MORE), ...build(ECON_UZ_EXTRA)];
 export const IT_ECON_RU = [...withMedium(ECON_RU_BASE, ECON_MEDIUM), ...build(ECON_RU_MORE), ...build(ECON_RU_EXTRA)];
 export const IT_TOUR_UZ = [...withMedium(TOUR_UZ_BASE, TOUR_MEDIUM), ...build(TOUR_UZ_MORE), ...build(TOUR_UZ_EXTRA)];
-export const IT_TOUR_RU = [...withMedium(TOUR_RU_BASE, TOUR_MEDIUM), ...build(TOUR_RU_MORE), ...build(TOUR_RU_EXTRA), ...build(TOUR_RU_NEW)];
+export const IT_TOUR_RU = [...withMedium(TOUR_RU_BASE, TOUR_MEDIUM), ...build(TOUR_RU_MORE), ...build(TOUR_RU_EXTRA)];
+/** Turizm (ruscha) — yangi 40 ta savol, alohida to'plam. */
+export const IT_TOUR_RU_NEW = build(TOUR_RU_NEW);
 
 const LANG_NAMES: Record<string, string> = { uz: "o'zbek", ru: 'rus' };
 
