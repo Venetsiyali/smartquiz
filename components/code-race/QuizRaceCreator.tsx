@@ -18,6 +18,8 @@ const UI = {
         step1: "1. Promptni nusxalab ChatGPT, Claude yoki Gemini'ga yuboring", copied: '✅ Nusxalandi', copy: '📋 Promptni nusxalash',
         step2: '2. AI javobini (JSON) shu yerga joylang', load: '✅ Savollarni yuklash', min3: 'Kamida 3 ta savol kerak',
         badJson: "JSON o'qilmadi — AI javobini to'liq nusxalang", topicPh: 'Mavzu', uiLang: "O'yin ekranlari tili",
+        mySets: "💾 Mening to'plamlarim", saveSet: "💾 To'plamni saqlash", savedSet: "✅ \"{n}\" to'plami saqlandi — keyingi safar \"Mening to'plamlarim\" bo'limidan oching",
+        delSet: "Bu to'plamni o'chirasizmi?", mySetsHint: "Bu kompyuter/brauzerda saqlanadi",
         community: '👥 Boshqalarning savollari', communitySub: "Boshqa o'qituvchilar AI orqali qo'shgan savollar · {n} ta",
         communityEmpty: "Hozircha bu omborda savol yo'q — birinchi bo'lib qo'shing!", saved: "✅ {n} ta yangi savol umumiy omborga qo'shildi",
         shareNote: "AI'dan va qo'lda qo'shilgan savollar \"Boshqalarning savollari\" omboriga ham yig'iladi.",
@@ -32,6 +34,8 @@ const UI = {
         step1: '1. Скопируйте промпт и отправьте в ChatGPT, Claude или Gemini', copied: '✅ Скопировано', copy: '📋 Скопировать промпт',
         step2: '2. Вставьте ответ ИИ (JSON) сюда', load: '✅ Загрузить вопросы', min3: 'Нужно минимум 3 вопроса',
         badJson: 'Не удалось прочитать JSON — скопируйте ответ ИИ полностью', topicPh: 'Тема', uiLang: 'Язык игровых экранов',
+        mySets: '💾 Мои наборы', saveSet: '💾 Сохранить набор', savedSet: '✅ Набор «{n}» сохранён — откройте его в разделе «Мои наборы»',
+        delSet: 'Удалить этот набор?', mySetsHint: 'Сохраняется в этом браузере на этом компьютере',
         community: '👥 Вопросы коллег', communitySub: 'Вопросы, добавленные другими преподавателями через ИИ · {n}',
         communityEmpty: 'В этой базе пока нет вопросов — добавьте первыми!', saved: '✅ {n} новых вопросов добавлено в общую базу',
         shareNote: 'Вопросы из ИИ и добавленные вручную также попадают в общую базу «Вопросы коллег».',
@@ -109,6 +113,24 @@ export default function QuizRaceCreator({
         }).catch(() => {});
     }, [theme, gameLang, ui.saved]);
 
+    // ── "Mening to'plamlarim" — o'qituvchining o'z savollari (shu brauzerda, localStorage) ──
+    interface MySet { id: string; title: string; lang: 'uz' | 'ru'; questions: EngQuestion[]; savedAt: number }
+    const myKey = `race-mysets-${theme}`;
+    const [mySets, setMySets] = useState<MySet[]>([]);
+    useEffect(() => {
+        try { setMySets(JSON.parse(localStorage.getItem(myKey) || '[]')); } catch { setMySets([]); }
+    }, [myKey]);
+    const persist = (list: MySet[]) => {
+        setMySets(list);
+        try { localStorage.setItem(myKey, JSON.stringify(list)); } catch { /* joy tugagan bo'lsa ham o'yin ishlayversin */ }
+    };
+    const saveMySet = (qs: EngQuestion[], name: string, lang: 'uz' | 'ru') => {
+        const clean = name.trim() || new Date().toLocaleString();
+        const others = mySets.filter(m => m.title !== clean);
+        persist([{ id: `my-${Date.now()}`, title: clean, lang, questions: qs, savedAt: Date.now() }, ...others].slice(0, 30));
+        setNotice(fill(ui.savedSet, clean));
+    };
+
     const pickSet = (s: SampleSet) => { setSetId(s.id); setQuestions(s.questions); setTitle(s.title); setTopicFilter(null); if (s.lang) setGameLang(s.lang); };
 
     const create = async () => {
@@ -172,6 +194,24 @@ export default function QuizRaceCreator({
                     </select>
                 </div>
 
+                {mySets.length > 0 && (
+                    <div className="space-y-2">
+                        <p className="text-white/50 text-xs font-black">{ui.mySets} <span className="font-semibold text-white/30">· {ui.mySetsHint}</span></p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {mySets.map(m => (
+                                <div key={m.id} className={`relative rounded-2xl border-2 transition-colors ${setId === m.id ? 'border-emerald-400 bg-emerald-500/15' : 'border-emerald-400/20 bg-emerald-500/5'}`}>
+                                    <button onClick={() => { setSetId(m.id); setQuestions(m.questions); setTitle(m.title); setTopicFilter(null); setGameLang(m.lang); }}
+                                        className="w-full px-3 py-3 pr-8 text-left text-sm font-black">
+                                        💾 {m.title}<span className="block text-xs font-bold text-white/40 mt-0.5">{fill(ui.questions, m.questions.length)}</span>
+                                    </button>
+                                    <button onClick={() => { if (confirm(ui.delSet)) persist(mySets.filter(x => x.id !== m.id)); }}
+                                        className="absolute right-2 top-2 text-white/30 hover:text-red-300" title={ui.del}>✕</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <button onClick={loadCommunity}
                     className={`w-full px-4 py-3 rounded-2xl text-left border-2 border-dashed transition-colors ${setId === 'community' ? 'border-violet-400 bg-violet-500/15' : 'border-violet-400/30 bg-violet-500/5 hover:bg-violet-500/10'}`}>
                     <span className="font-black text-violet-200">{ui.community} · {gameLang === 'ru' ? 'Русский' : "O'zbekcha"}</span>
@@ -222,6 +262,10 @@ export default function QuizRaceCreator({
 
                 {error && <p className="rounded-xl px-4 py-3 text-sm font-bold text-red-300 bg-red-500/10">⚠️ {error}</p>}
 
+                <button onClick={() => saveMySet(questions, title, gameLang)} disabled={questions.length < 3}
+                    className="w-full py-3 rounded-2xl text-sm font-black bg-emerald-500/10 text-emerald-200 border border-emerald-400/30 disabled:opacity-40">
+                    {ui.saveSet}
+                </button>
                 <button onClick={create} disabled={creating || selected.length < 3}
                     className="w-full py-4 rounded-2xl text-lg font-black disabled:opacity-40"
                     style={{ background: gradient, boxShadow: '0 10px 40px rgba(14,165,233,0.3)' }}>
@@ -233,6 +277,8 @@ export default function QuizRaceCreator({
                 <AiModal ui={ui} buildPrompt={buildPrompt} promptLangs={promptLangs} defaultTopic={defaultTopic}
                     onClose={() => setShowAi(false)} onImport={(qs, lang) => {
                         setQuestions(qs); setShowAi(false); setTopicFilter(null); setSetId('');
+                        // Joylangan savollar yo'qolmasin — avtomatik "Mening to'plamlarim"ga saqlanadi
+                        saveMySet(qs, `${qs[0]?.topic ?? 'Import'} · ${new Date().toLocaleDateString()}`, lang === 'ru' ? 'ru' : lang === 'uz' ? 'uz' : gameLang);
                         const l = lang === 'ru' || lang === 'uz' ? lang : gameLang;
                         setGameLang(l);
                         share(qs, l);
