@@ -11,6 +11,7 @@ import MatchGame, { type MatchPair, type MatchResult } from '@/components/MatchG
 import BlitzGame from '@/components/BlitzGame';
 import AnagramGame from '@/components/AnagramGame';
 import TeamHUD, { type TeamData } from '@/components/TeamHUD';
+import { playerOrder } from '@/lib/engRace';
 
 
 interface QuestionPayload {
@@ -56,7 +57,7 @@ function vibrate(pattern: number | number[]) {
     try { if ('vibrate' in navigator) navigator.vibrate(pattern); } catch { }
 }
 
-type PagePhase = 'loading' | 'question' | 'feedback' | 'review' | 'between' | 'ended';
+type PagePhase = 'loading' | 'question' | 'locked' | 'feedback' | 'review' | 'between' | 'ended';
 
 export default function StudentGamePage() {
     const t = useTranslations('GameSession');
@@ -101,6 +102,16 @@ export default function StudentGamePage() {
     const resultShownRef = useRef<number | null>(null);
     const applyResultRef = useRef<(r: AnswerResult) => void>(() => {});
     const answeredRef = useRef(false);
+    // Ko'chirishga qarshi: natija savol yopilguncha shu yerda kutadi va keyin hammaga bir vaqtda ko'rsatiladi
+    const pendingResultRef = useRef<AnswerResult | null>(null);
+    const revealRef = useRef<() => boolean>(() => false);
+    const questionEndedRef = useRef<number>(-1); // qaysi savol yopilgani (natija keyin kelsa — darhol ochiladi)
+
+    /** Har bir o'quvchida variantlar o'z tartibida (ID + savol raqami bo'yicha barqaror) — yonidagining "B"si yordam bermaydi. */
+    const optionOrder = (len: number, type?: string | null) =>
+        (type ?? 'multiple') === 'multiple' && len > 2
+            ? playerOrder(`${playerIdRef.current}:${questionIndexRef.current}`, len)
+            : Array.from({ length: len }, (_, i) => i);
 
     useEffect(() => { phaseRef.current = phase; }, [phase]);
 
@@ -123,6 +134,7 @@ export default function StudentGamePage() {
         if (sameQuestion && (answeredRef.current || (phaseRef.current !== 'loading' && phaseRef.current !== 'between'))) return;
         questionIndexRef.current = payload.questionIndex;
         answeredRef.current = false;
+        pendingResultRef.current = null;
         clearTimer(); if (reviewRef.current) clearInterval(reviewRef.current);
         setQuestion(payload); setSelected(null); setResult(null); setPhase('question');
         phaseRef.current = 'question';
@@ -203,6 +215,12 @@ export default function StudentGamePage() {
                     }
                 } else if (data.status === 'leaderboard') {
                     if (data.leaderboard) setLeaderboard(data.leaderboard);
+                    // question-end xabari yo'qolgan bo'lsa ham kutib turgan natija ochiladi
+                    if (phaseRef.current === 'locked' && !isNewQuestion) {
+                        clearTimer();
+                        if (!revealRef.current()) setPhase('between');
+                        return;
+                    }
                     // Savol yopilgan, o'quvchi esa hali savol ekranida (yoki eski savolda) qolgan
                     if (phaseRef.current === 'loading' || (phaseRef.current === 'question' && !isNewQuestion) || isNewQuestion) {
                         questionIndexRef.current = q.questionIndex;
@@ -223,7 +241,7 @@ export default function StudentGamePage() {
         // Zaxira: kutish ekranida yoki taymer tugab qolganda — har 5 soniyada tekshiramiz
         const poll = setInterval(() => {
             const p = phaseRef.current;
-            if (p === 'loading' || p === 'between' || (p === 'question' && timerDoneRef.current)) resync();
+            if (p === 'loading' || p === 'between' || p === 'locked' || (p === 'question' && timerDoneRef.current)) resync();
         }, 5000);
 
         const gameCh = pusher.subscribe(`game-${pin}`);
@@ -235,8 +253,14 @@ export default function StudentGamePage() {
             setPhase('between');
         });
         gameCh.bind('question-end', (payload: QuestionEndPayload) => {
+            questionEndedRef.current = questionIndexRef.current;
             clearTimer();
             setLeaderboard(payload.leaderboard);
+            // Savol yopildi — kutib turgan natijani endi ko'rsatamiz
+            if (phaseRef.current === 'locked') {
+                if (!revealRef.current()) setPhase('between');
+                return;
+            }
             // Feedback/review'da bo'lsa — review o'zi 'between'ga o'tadi
             if (phaseRef.current === 'question' || phaseRef.current === 'loading') {
                 setPhase('between');
@@ -260,6 +284,14 @@ export default function StudentGamePage() {
             if (resultShownRef.current === questionIndexRef.current) return;
             resultShownRef.current = questionIndexRef.current;
             answeredRef.current = true;
+            if (r.questionType !== 'blitz' && r.questionType !== 'anagram') {
+                // To'g'ri javob hozir ko'rsatilmaydi — savol yopilganda hammaga birdaniga (revealRef)
+                pendingResultRef.current = r;
+                // Savol allaqachon yopilgan bo'lsa (oxirgi javob bergan o'quvchi) — kutmasdan ko'rsatamiz
+                if (questionEndedRef.current === questionIndexRef.current) { revealRef.current(); return; }
+                setPhase('locked');
+                return;
+            }
             clearTimer(); setResult(r); setTotalScore(r.totalScore);
             setStreak(r.streak);
             // Blitz: just flash result inline, stay in question phase (auto-advance from server)
@@ -276,9 +308,16 @@ export default function StudentGamePage() {
                 setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 3000);
                 return;
             }
+        };
+        revealRef.current = () => {
+            const r = pendingResultRef.current;
+            if (!r) return false;
+            pendingResultRef.current = null;
+            clearTimer(); setResult(r); setTotalScore(r.totalScore); setStreak(r.streak);
             setPhase('feedback');
             vibrate(r.correct ? [80, 40, 80] : 300);
             setTimeout(() => { setPhase('review'); startReviewTimer('between'); }, 2000);
+            return true;
         };
         // Team mode: assign my team and listen for updates
         const myPlayerId = pid;
@@ -336,10 +375,11 @@ export default function StudentGamePage() {
         resyncRef.current?.();
     };
 
-    const handleAnswer = async (i: number) => {
+    /** displayIdx — ekrandagi o'rni, optionIndex — asl variant raqami (server shu bilan tekshiradi). */
+    const handleAnswer = async (displayIdx: number, optionIndex: number) => {
         if (selected !== null || phase !== 'question') return;
-        setSelected(i); vibrate(40);
-        await postAnswer({ optionIndex: i });
+        setSelected(displayIdx); vibrate(40);
+        await postAnswer({ optionIndex });
     };
 
     // Submit sorted order
@@ -528,8 +568,8 @@ export default function StudentGamePage() {
                 /* ── MCQ / TrueFalse ── */
                 <>
                     <div className={`grid gap-3 flex-1 ${question.options.length === 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                        {question.options.map((opt, i) => (
-                            <button key={i} onClick={() => handleAnswer(i)} disabled={selected !== null}
+                        {optionOrder(question.options.length, question.type).map((ci, i) => ({ opt: question.options[ci], ci, i })).map(({ opt, ci, i }) => (
+                            <button key={ci} onClick={() => handleAnswer(i, ci)} disabled={selected !== null}
                                 className={`btn-answer flex-col h-full min-h-24 rounded-2xl gap-2
                   ${selected === i ? 'ring-4 ring-white scale-95 brightness-125' : ''}
                   ${selected !== null && selected !== i ? 'opacity-50' : ''}`}
@@ -547,6 +587,16 @@ export default function StudentGamePage() {
                     )}
                 </>
             )}
+        </div>
+    );
+
+    /* ── Javob qabul qilindi: natija savol yopilguncha yashirin (ko'chirishga qarshi) ── */
+    if (phase === 'locked') return (
+        <div className="bg-player min-h-screen flex flex-col items-center justify-center p-6 text-center space-y-4">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-7xl">🔒</motion.div>
+            <h2 className="text-2xl font-black text-white">{t('lockedTitle')}</h2>
+            <p className="text-white/50 font-bold max-w-xs">{t('lockedHint')}</p>
+            {timeLeft > 0 && <p className="text-4xl font-black text-white/80 tabular-nums">{timeLeft}s</p>}
         </div>
     );
 
@@ -589,9 +639,10 @@ export default function StudentGamePage() {
 
                     {/* Options with highlight */}
                     <div className="space-y-2">
-                        {result.options.map((opt, i) => {
-                            const isCorrect = result.correctOptions.includes(i);
-                            const isSelected = i === result.selectedOption;
+                        {optionOrder(result.options.length, result.questionType).map((ci, i) => {
+                            const opt = result.options[ci];
+                            const isCorrect = result.correctOptions.includes(ci);
+                            const isSelected = ci === result.selectedOption;
                             let bg = 'rgba(255,255,255,0.06)'; let border = 'transparent'; let textColor = 'rgba(255,255,255,0.4)';
                             if (isCorrect) { bg = 'rgba(0,230,118,0.15)'; border = '#00E676'; textColor = '#00E676'; }
                             if (isSelected && !isCorrect) { bg = 'rgba(255,23,68,0.15)'; border = '#FF1744'; textColor = '#FF1744'; }

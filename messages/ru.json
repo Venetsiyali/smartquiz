@@ -160,7 +160,9 @@
     "home": "🏠 На главную",
     "orderGameBadge": "ЦЕПЬ",
     "matchGameBadge": "MATCH",
-    "pairsLoading": "Загрузка пар..."
+    "pairsLoading": "Загрузка пар...",
+    "lockedTitle": "✅ Ваш ответ принят",
+    "lockedHint": "Правильный ответ покажут всем одновременно, когда время закончится. Не подсматривайте 😉"
   },
   "WaitingRoom": {
     "welcome": "ДОБРО ПОЖАЛОВАТЬ",

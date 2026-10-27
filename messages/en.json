@@ -160,7 +160,9 @@
     "home": "🏠 Home Page",
     "orderGameBadge": "CHAIN",
     "matchGameBadge": "MATCH",
-    "pairsLoading": "Loading pairs..."
+    "pairsLoading": "Loading pairs...",
+    "lockedTitle": "✅ Your answer is locked in",
+    "lockedHint": "The correct answer will be shown to everyone when time is up. No peeking 😉"
   },
   "WaitingRoom": {
     "welcome": "WELCOME",

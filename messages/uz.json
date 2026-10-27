@@ -166,7 +166,9 @@
     "home": "🏠 Bosh sahifa",
     "orderGameBadge": "ZANJIR",
     "matchGameBadge": "MATCH",
-    "pairsLoading": "Juftliklar yuklanmoqda..."
+    "pairsLoading": "Juftliklar yuklanmoqda...",
+    "lockedTitle": "✅ Javobingiz qabul qilindi",
+    "lockedHint": "To'g'ri javob vaqt tugagach hammaga birdaniga ko'rsatiladi. Boshqalarning telefoniga qaramang 😉"
   },
   "WaitingRoom": {
     "welcome": "XUSH KELIBSIZ",
