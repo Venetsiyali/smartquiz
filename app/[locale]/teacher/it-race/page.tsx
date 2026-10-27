@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import QuizRaceCreator, { type SampleSet } from '@/components/code-race/QuizRaceCreator';
+import { IT_EXAM_ECON_RU } from '@/lib/itRaceExam';
 import { IT_ECON_RU, IT_ECON_UZ, IT_PROMPT, IT_TOUR_RU, IT_TOUR_RU_NEW, IT_TOUR_UZ } from '@/lib/itRaceSamples';
 
 const TEXT = {
@@ -31,6 +32,7 @@ export default function ItRaceCreatePage() {
             sampleSets={([
                 { id: 'econ-uz', label: "📊 Iqtisodiyot · O'zbekcha", title: 'Iqtisodiyotda AKT', questions: IT_ECON_UZ, lang: 'uz' },
                 { id: 'econ-ru', label: '📊 Экономика · Русский', title: 'ИКТ в экономике', questions: IT_ECON_RU, lang: 'ru' },
+                { id: 'exam-econ-ru', label: '📝 Промежуточный контроль · Экономика', title: 'Подготовка к промежуточному контролю', questions: IT_EXAM_ECON_RU, lang: 'ru' },
                 { id: 'tour-uz', label: "✈️ Turizm · O'zbekcha", title: 'Turizmda AKT', questions: IT_TOUR_UZ, lang: 'uz' },
                 { id: 'tour-ru', label: '✈️ Туризм · Русский', title: 'ИКТ в туризме', questions: IT_TOUR_RU, lang: 'ru' },
                 { id: 'tour-ru-new', label: '✈️ Туризм · Русский · Новые', title: 'ИКТ в туризме — новые вопросы', questions: IT_TOUR_RU_NEW, lang: 'ru' },

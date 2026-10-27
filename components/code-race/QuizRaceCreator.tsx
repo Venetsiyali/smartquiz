@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { EngQuestion } from '@/lib/engRace';
+import { textToQuestions } from '@/lib/textQuestions';
 
 export interface SampleSet { id: string; label: string; title: string; questions: EngQuestion[]; lang?: 'uz' | 'ru' }
 export interface PromptLang { id: string; label: string }
@@ -280,6 +281,13 @@ function AiModal({ onClose, onImport, buildPrompt, promptLangs, defaultTopic, ui
 
     const load = () => {
         setError(null);
+        // JSON emas bo'lsa — o'qituvchi formati (1. Savol / A) … / Javob: B / Izoh: …)
+        if (!text.trim().startsWith('[') && !text.includes('"options"')) {
+            const { questions, errors } = textToQuestions(text);
+            if (questions.length >= 3) { onImport(questions, lang); return; }
+            setError(errors[0] ? `${errors[0].ref}: ${errors[0].reason}` : ui.badJson);
+            return;
+        }
         try {
             const arr = JSON.parse(text.slice(text.indexOf('['), text.lastIndexOf(']') + 1));
             if (!Array.isArray(arr) || arr.length < 3) throw new Error(ui.min3);
