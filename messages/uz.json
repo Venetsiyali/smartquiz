@@ -130,6 +130,12 @@
       "sub": "Pedagogika. Psixologiya",
       "badge": "YANGI",
       "desc": "Xotira sinovi, Psixolog-detektiv va Moslashtir: psixologiyani oʻyin orqali oʻrganish. Talabalar telefondan qatnashadi."
+    },
+    "masofalab": {
+      "name": "MasofaLab",
+      "sub": "Masofaviy taʼlim texnologiyalari",
+      "badge": "YANGI" ,
+      "desc": "Qadam-baqadam missiyalar: Google Classroom, Teams, Meet, Padlet, portfolio. Oʻqituvchi qadamlarni boshqaradi, talabalar telefondan bajaradi."
     }
   },
   "GamePlay": {

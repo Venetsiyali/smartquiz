@@ -124,6 +124,12 @@
       "sub": "Pedagogy & Psychology",
       "badge": "NEW",
       "desc": "Memory test, Psychologist-detective and Match: learn psychology through play. Students join from their phones."
+    },
+    "masofalab": {
+      "name": "MasofaLab",
+      "sub": "Distance learning technologies",
+      "badge": "NEW" ,
+      "desc": "Step-by-step missions (in Uzbek): Google Classroom, Teams, Meet, Padlet, portfolios."
     }
   },
   "GamePlay": {

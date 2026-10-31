@@ -26,7 +26,8 @@ export interface CodeRace {
     title: string;
     hostKey: string;       // o'yinni boshqarish huquqi (faqat o'qituvchi brauzerida saqlanadi)
     tasks: CodeTask[];
-    kind?: 'code' | 'english' | 'memory' | 'match';
+    kind?: 'code' | 'english' | 'memory' | 'match' | 'mission';
+    mission?: { code: string; step: number };        // MasofaLab: missiya kodi va joriy qadam (steps.length — test bosqichi)
     match?: import('./psixolab/match').MatchConfig;   // PsixoLab: Moslashtir
     memory?: import('./psixolab/memory').MemoryConfig; // PsixoLab: Xotira sinovi   // yo'q bo'lsa — 'code' (Kod Cho'qqisi)
     questions?: import('./engRace').EngQuestion[];
@@ -50,6 +51,11 @@ export interface CodeRacer {
     attempts: number;
     joinedAt: number;
     matched?: string[];    // Moslashtir: toʻgʻri topilgan juftliklar ("raund:indeks")
+    group?: string;        // MasofaLab: talaba guruhi
+    msteps?: Record<string, { at: number; link?: string }>;   // MasofaLab: bajarilgan qadamlar (indeks → vaqt, dalil havolasi)
+    help?: number | null;  // MasofaLab: yordam soʻralgan qadam
+    helpCount?: number;
+    test?: { answers: number[]; correct: number; max: number };
     mistakes?: number;     // Moslashtir: xatolar soni (har biri jarima soniyasi)
     recalled?: number[];   // Xotira sinovi: eslangan elementlarning pozitsiyalari (0 dan)
 }

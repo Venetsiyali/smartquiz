@@ -142,6 +142,15 @@ const GAME_STYLES = [
         route: '/teacher/psixolab',
         pro: false,
     },
+    {
+        id: 'masofalab',
+        image: '/images/games/masofalab.webp',
+        gradient: 'linear-gradient(135deg, #062a30 0%, #0f766e 60%, #2dd4bf 100%)',
+        glowColor: 'rgba(45,212,191,0.5)',
+        badgeStyle: { background: 'rgba(45,212,191,0.2)', color: '#99f6e4', border: '1px solid rgba(45,212,191,0.5)' },
+        route: '/teacher/masofa',
+        pro: false,
+    },
 ];
 
 function getGreetingKey() {
