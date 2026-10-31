@@ -11,6 +11,7 @@ import { PyRunner, type RunResult } from '@/lib/pyRunner';
 import type { CodeTask } from '@/lib/codeRace';
 import CodeEditor from '@/components/code-race/CodeEditor';
 import EnglishArena, { type EngPublicQuestion } from '@/components/code-race/EnglishArena';
+import MemoryPlayer from '@/components/psixolab/MemoryPlayer';
 import { raceT, type RaceLang } from '@/components/code-race/raceI18n';
 import { AVATARS, callRepr, formatClock, pyRepr } from '@/components/code-race/utils';
 
@@ -20,8 +21,9 @@ interface RaceState {
     startedAt: number | null; durationSec: number; taskCount: number;
     tasks: CodeTask[]; playerCount: number; me: Me | null;
     top: { id: string; nickname: string; avatar: string; solved: number }[];
-    kind?: 'code' | 'english';
+    kind?: 'code' | 'english' | 'memory';
     uiLang?: RaceLang;
+    memory?: { kind: 'words' | 'numbers' | 'sentence'; count: number; intervalMs: number; recallSec: number; items?: string[] };
     question?: EngPublicQuestion | null;
     attempts?: number;
 }
@@ -108,16 +110,21 @@ function CodeRacePlay() {
         return (
             <Centered>
                 <div className="space-y-5">
-                    <p className="text-6xl">{isCode ? '🏔️' : '🏁'}</p>
+                    <p className="text-6xl">{isCode ? '🏔️' : state.kind === 'memory' ? '🧠' : '🏁'}</p>
                     <h1 className="text-3xl font-black">{state.title}</h1>
                     <p className="text-white/60 font-bold">{t('waitTeacher')} · 👥 {state.playerCount}</p>
                     {isCode && <PyBadge status={pyStatus} />}
                     <p className="text-white/40 text-sm max-w-sm">{isCode
                         ? <>{state.taskCount} ta masala. Har bir yechim sizni bir pog&apos;ona yuqoriga ko&apos;taradi — cho&apos;qqiga birinchi chiqing!</>
-                        : t('lobbyHint', { n: state.taskCount })}</p>
+                        : state.kind === 'memory' ? t('memLobbyHint', { n: state.taskCount }) : t('lobbyHint', { n: state.taskCount })}</p>
                 </div>
             </Centered>
         );
+    }
+
+    // PsixoLab: Xotira sinovi — oʻz ekrani (natija ham shu yerda)
+    if (state.kind === 'memory') {
+        return <MemoryPlayer state={state as Parameters<typeof MemoryPlayer>[0]['state']} pin={pin} playerId={playerId} onChange={load} t={t} />;
     }
 
     if (state.status === 'ended' || (state.me && state.me.solved >= state.taskCount)) {

@@ -26,7 +26,8 @@ export interface CodeRace {
     title: string;
     hostKey: string;       // o'yinni boshqarish huquqi (faqat o'qituvchi brauzerida saqlanadi)
     tasks: CodeTask[];
-    kind?: 'code' | 'english';   // yo'q bo'lsa — 'code' (Kod Cho'qqisi)
+    kind?: 'code' | 'english' | 'memory';
+    memory?: import('./psixolab/memory').MemoryConfig; // PsixoLab: Xotira sinovi   // yo'q bo'lsa — 'code' (Kod Cho'qqisi)
     questions?: import('./engRace').EngQuestion[];
     goal?: number;               // english: finishga yetish uchun nechta to'g'ri javob kerak
     theme?: 'grammar' | 'it';
@@ -47,6 +48,7 @@ export interface CodeRacer {
     solvedAt: number[];    // har bir masala yechilgan vaqt (ms, o'yin boshidan)
     attempts: number;
     joinedAt: number;
+    recalled?: number[];   // Xotira sinovi: eslangan elementlarning pozitsiyalari (0 dan)
 }
 
 const raceKey = (pin: string) => `cr:${pin}`;
@@ -98,13 +100,15 @@ export function rankRacers(racers: CodeRacer[]): CodeRacer[] {
 export const publicRacer = (r: CodeRacer) => ({
     id: r.id, nickname: r.nickname, avatar: r.avatar, solved: r.solved,
     lastSolvedAt: r.solvedAt[r.solved - 1] ?? null, attempts: r.attempts,
+    ...(r.recalled ? { recalled: r.recalled } : {}),
 });
 
 /** Finishgacha nechta pog'ona: kod — masalalar soni, ingliz tili — maqsad (goal). */
-export const raceSteps = (race: CodeRace) => race.kind === 'english' ? (race.goal ?? 15) : race.tasks.length;
+export const raceSteps = (race: CodeRace) =>
+    race.kind === 'english' ? (race.goal ?? 15) : race.kind === 'memory' ? (race.memory?.items.length ?? 0) : race.tasks.length;
 
 /** O'quvchiga yuboriladigan masala: kodni tekshirish uchun testlar ham kerak (tekshiruv brauzerda). */
-export const publicTasks = (race: CodeRace) => race.status === 'lobby' || race.kind === 'english' ? [] : race.tasks;
+export const publicTasks = (race: CodeRace) => race.status === 'lobby' || race.kind === 'english' || race.kind === 'memory' ? [] : race.tasks;
 
 export async function generateRacePin(): Promise<string> {
     for (let i = 0; i < 20; i++) {

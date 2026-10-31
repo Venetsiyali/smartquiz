@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { pusherServer } from '@/lib/pusher';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { matchRecall, memoryDurationSec, memoryPhase, SUBMIT_GRACE_MS, type MemoryConfig } from '@/lib/psixolab/memory';
 import { currentQuestion, isCorrect, publicQuestion, sanitizeQuestions } from '@/lib/engRace';
 import { redis } from '@/lib/gameState';
 import { awardGameXP, XP_REWARDS } from '@/lib/gamification/xp';
@@ -71,6 +72,11 @@ export async function GET(req: Request, { params }: { params: { action: string }
         taskCount: raceSteps(race),
         questionCount: race.questions?.length ?? 0,
         // Ingliz tili: o'quvchiga faqat navbatdagi savol (javobsiz) yuboriladi
+        // Xotira sinovi: soʻzlar talabaga faqat oʻyin tugagach koʻrsatiladi (oʻqituvchi ekranida — doim)
+        memory: race.memory ? {
+            kind: race.memory.kind, count: race.memory.items.length, intervalMs: race.memory.intervalMs, recallSec: race.memory.recallSec,
+            items: isHost || race.status === 'ended' ? race.memory.items : undefined,
+        } : undefined,
         question: race.kind === 'english' && me && race.status === 'running' ? publicQuestion(currentQuestion(race, me), me.id) : undefined,
         attempts: me?.attempts,
         tasks: isHost ? race.tasks : publicTasks(race),
@@ -89,6 +95,26 @@ export async function POST(req: Request, { params }: { params: { action: string 
         case 'create': {
             // Login shart emas — faqat IP bo'yicha cheklov (bir daqiqada 10 ta o'yin)
             if (!createLimiter(getClientIp(req)).success) return json({ error: "Juda ko'p urinish, bir daqiqadan keyin qayta urining" }, 429);
+            if (body.kind === 'memory') {
+                const items: string[] = Array.isArray(body.items)
+                    ? body.items.map((x: unknown) => String(x).trim().slice(0, 40)).filter(Boolean).slice(0, 20) : [];
+                if (items.length < 3) return json({ error: 'Kamida 3 ta soʻz kerak' }, 400);
+                const memory: MemoryConfig = {
+                    items,
+                    kind: ['words', 'numbers', 'sentence'].includes(body.memoryKind) ? body.memoryKind : 'words',
+                    intervalMs: Math.min(Math.max(Number(body.intervalMs) || 2000, 1000), 5000),
+                    recallSec: Math.min(Math.max(Number(body.recallSec) || 60, 20), 180),
+                    setId: body.setId ? String(body.setId).slice(0, 40) : undefined,
+                };
+                const race: CodeRace = {
+                    pin: await generateRacePin(), title: String(body.title || 'Xotira sinovi').slice(0, 80),
+                    hostKey: crypto.randomUUID(), tasks: [], kind: 'memory', memory,
+                    uiLang: body.uiLang === 'ru' ? 'ru' : 'uz',
+                    durationSec: memoryDurationSec(memory), status: 'lobby',
+                };
+                await saveRace(race);
+                return json({ pin: race.pin, hostKey: race.hostKey });
+            }
             const english = body.kind === 'english';
             const { tasks, error } = english ? { tasks: [], error: undefined } : sanitizeTasks(body.tasks);
             const { questions, error: qError } = english ? sanitizeQuestions(body.questions) : { questions: undefined, error: undefined };
@@ -178,6 +204,29 @@ export async function POST(req: Request, { params }: { params: { action: string 
                 solved: racer.solved, attempts: racer.attempts, finished,
                 question: finished ? null : publicQuestion(currentQuestion(race, racer), racer.id),
             });
+        }
+
+        case 'recall': {
+            const race = await getRace(pin);
+            if (!race || race.kind !== 'memory' || !race.memory) return json({ error: "O'yin topilmadi" }, 404);
+            if (race.status !== 'running' || !race.startedAt) return json({ error: 'Vaqt tugadi' }, 400);
+            const p = memoryPhase(race.memory, race.startedAt, Date.now());
+            if (Date.now() - race.startedAt > p.recallEnd + SUBMIT_GRACE_MS) return json({ error: 'Vaqt tugadi' }, 400);
+            if (p.phase === 'ready' || p.phase === 'show') return json({ error: 'Hali erta' }, 400);
+            const racer = await getRacer(pin, String(body.playerId ?? ''));
+            if (!racer) return json({ error: "Avval o'yinga qo'shiling" }, 400);
+            // Har bir talaba bir marta yuboradi — takroriy yuborish natijani oʻzgartirmaydi
+            if (racer.attempts > 0) return json({ recalled: racer.recalled ?? [], total: race.memory.items.length });
+
+            const recalled = matchRecall(race.memory.items, String(body.answer ?? '').slice(0, 2000));
+            const at = Date.now() - race.startedAt;
+            racer.recalled = recalled;
+            racer.solved = recalled.length;
+            racer.solvedAt = recalled.map(() => at);
+            racer.attempts = 1;
+            await saveRacer(pin, racer);
+            await notify(hostChannel(pin), 'cr-progress', { player: publicRacer(racer), finished: false });
+            return json({ recalled, total: race.memory.items.length });
         }
 
         case 'start':

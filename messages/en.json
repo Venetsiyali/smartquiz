@@ -118,6 +118,12 @@
       "sub": "Economics & tourism",
       "badge": "NEW",
       "desc": "Live IT race: Excel, 1C, e-commerce, booking systems. Questions in Uzbek and Russian."
+    },
+    "psixolab": {
+      "name": "PsixoLab",
+      "sub": "Pedagogy & Psychology",
+      "badge": "NEW",
+      "desc": "Memory test, Psychologist-detective and Match: learn psychology through play. Students join from their phones."
     }
   },
   "GamePlay": {

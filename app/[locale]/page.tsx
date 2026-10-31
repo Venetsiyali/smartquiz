@@ -133,6 +133,15 @@ const GAME_STYLES = [
         route: '/teacher/it-race',
         pro: false,
     },
+    {
+        id: 'psixolab',
+        image: '/images/games/psixolab.webp',
+        gradient: 'linear-gradient(135deg, #1e0b3a 0%, #5b21b6 60%, #8b5cf6 100%)',
+        glowColor: 'rgba(139,92,246,0.5)',
+        badgeStyle: { background: 'rgba(139,92,246,0.2)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.5)' },
+        route: '/teacher/psixolab',
+        pro: false,
+    },
 ];
 
 function getGreetingKey() {
