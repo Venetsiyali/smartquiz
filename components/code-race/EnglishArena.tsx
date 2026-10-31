@@ -13,6 +13,7 @@ interface ArenaState {
     startedAt: number | null; durationSec: number; taskCount: number; playerCount: number;
     me: { solved: number; rank: number } | null;
     question?: EngPublicQuestion | null; attempts?: number;
+    theme?: 'grammar' | 'it' | 'psixo' | null;
 }
 
 type Feedback = { correct: boolean; answer: string; explain: string | null; given: string } | null;
@@ -22,6 +23,8 @@ const OPTION_STYLES = [
     'linear-gradient(135deg,#f59e0b,#b45309)', 'linear-gradient(135deg,#22c55e,#15803d)',
 ];
 const WRONG_PAUSE_MS = 2500;
+/** PsixoLab detektivi: izohni oʻqib olishga vaqt. */
+const DETECTIVE_OK_MS = 3000, DETECTIVE_WRONG_MS = 5000;
 
 /** Gapdagi "___" ni ajratib ko'rsatadi. */
 function Sentence({ text, fill, ok }: { text: string; fill?: string; ok?: boolean }) {
@@ -55,6 +58,7 @@ export default function EnglishArena({ state, pin, playerId, onChange, t = raceT
     const [streak, setStreak] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const goal = state.taskCount;
+    const detective = state.theme === 'psixo';
 
     useEffect(() => { const t = setInterval(() => setNow(serverNow()), 500); return () => clearInterval(t); }, []);
 
@@ -100,19 +104,19 @@ export default function EnglishArena({ state, pin, playerId, onChange, t = raceT
                     confetti({ particleCount: 160, spread: 100, origin: { y: 0.6 } });
                     setTimeout(onChange, 1200);
                 } else {
-                    setTimeout(next, 650);
+                    setTimeout(next, detective && data.explain ? DETECTIVE_OK_MS : 650);
                 }
             } else {
                 setStreak(0);
                 if (navigator.vibrate) navigator.vibrate(250);
-                setTimeout(next, WRONG_PAUSE_MS);
+                setTimeout(next, detective ? DETECTIVE_WRONG_MS : WRONG_PAUSE_MS);
             }
         } catch {
             /* tarmoq uzildi — tugma qayta bosilishi mumkin */
         } finally {
             setBusy(false);
         }
-    }, [busy, feedback, question, pin, playerId, attempt, onChange]);
+    }, [busy, feedback, question, pin, playerId, attempt, onChange, detective]);
 
     // Klaviatura: 1–4 variant tanlaydi
     useEffect(() => {
@@ -137,7 +141,7 @@ export default function EnglishArena({ state, pin, playerId, onChange, t = raceT
                         <motion.div className="absolute inset-y-0 left-0 rounded-full" style={{ background: 'linear-gradient(90deg,#0ea5e9,#22c55e)' }}
                             animate={{ width: `${progress * 100}%` }} transition={{ type: 'spring', stiffness: 120, damping: 18 }} />
                         <motion.span className="absolute top-1/2 text-2xl" style={{ y: '-50%', x: '-50%' }}
-                            animate={{ left: `${Math.max(progress * 100, 4)}%` }} transition={{ type: 'spring', stiffness: 120, damping: 18 }}>🏎️</motion.span>
+                            animate={{ left: `${Math.max(progress * 100, 4)}%` }} transition={{ type: 'spring', stiffness: 120, damping: 18 }}>{detective ? '🕵️' : '🏎️'}</motion.span>
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xl">🏁</span>
                     </div>
                     <div className={`px-3 py-2 rounded-xl font-black tabular-nums ${remaining < 60_000 ? 'bg-red-500/20 text-red-300' : 'bg-white/5'}`}>⏱ {formatClock(remaining)}</div>
@@ -155,12 +159,18 @@ export default function EnglishArena({ state, pin, playerId, onChange, t = raceT
                             transition={{ duration: 0.2 }}
                             className={`relative rounded-3xl p-6 md:p-8 border-2 transition-colors ${feedback ? (feedback.correct ? 'border-emerald-400 bg-emerald-500/10' : 'border-red-400 bg-red-500/10') : 'border-white/10 bg-white/[0.04]'}`}>
                             {question.topic && <p className="text-sky-400 text-xs font-black uppercase tracking-widest mb-3">{question.topic}</p>}
-                            <p className="text-2xl md:text-3xl font-bold leading-relaxed">
+                            <p className={`${detective ? 'text-lg md:text-2xl' : 'text-2xl md:text-3xl'} font-bold leading-relaxed`}>
                                 <Sentence text={question.q} fill={feedback ? (feedback.correct ? feedback.given : feedback.answer) : undefined} ok={!!feedback} />
                             </p>
                             {feedback && !feedback.correct && (
                                 <div className="mt-4 rounded-xl bg-black/30 p-3 text-sm">
                                     <p className="font-black text-red-300">❌ {t('yourAnswer')}: <s>{feedback.given}</s> → {t('correctIs')}: <span className="text-emerald-300">{feedback.answer}</span></p>
+                                    {feedback.explain && <p className="text-white/70 mt-1">💡 {feedback.explain}</p>}
+                                </div>
+                            )}
+                            {feedback?.correct && detective && (
+                                <div className="mt-4 rounded-xl bg-black/30 p-3 text-sm">
+                                    <p className="font-black text-emerald-300">✅ {feedback.answer}</p>
                                     {feedback.explain && <p className="text-white/70 mt-1">💡 {feedback.explain}</p>}
                                 </div>
                             )}

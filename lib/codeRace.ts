@@ -30,7 +30,7 @@ export interface CodeRace {
     memory?: import('./psixolab/memory').MemoryConfig; // PsixoLab: Xotira sinovi   // yo'q bo'lsa — 'code' (Kod Cho'qqisi)
     questions?: import('./engRace').EngQuestion[];
     goal?: number;               // english: finishga yetish uchun nechta to'g'ri javob kerak
-    theme?: 'grammar' | 'it';
+    theme?: 'grammar' | 'it' | 'psixo';
     uiLang?: 'uz' | 'ru';        // o'yin ekranlari tili (savollar to'plamiga qarab)    // english mexanizmidagi o'yin ko'rinishi: Grammar Race yoki AKT Poygasi
     durationSec: number;
     status: 'lobby' | 'running' | 'ended';

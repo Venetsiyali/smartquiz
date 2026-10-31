@@ -28,7 +28,7 @@ export default function CodeRaceHostPage() {
     const [kind, setKind] = useState<'code' | 'english' | 'memory'>('code');
     const [memory, setMemory] = useState<MemoryConfig | null>(null);
     const kindRef = useRef<'code' | 'english' | 'memory'>('code');
-    const [theme, setTheme] = useState<'grammar' | 'it' | null>(null);
+    const [theme, setTheme] = useState<'grammar' | 'it' | 'psixo' | null>(null);
     const [uiLang, setUiLang] = useState<RaceLang>('uz');
     const uiLangRef = useRef<RaceLang>('uz');
     const t = raceT(uiLang);
@@ -135,7 +135,7 @@ export default function CodeRaceHostPage() {
         <div className="min-h-screen bg-[#070b18] text-white p-4 md:p-6">
             <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
-                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'memory' ? <>{t('memTitle')} · PsixoLab</> : kind === 'english' ? (theme === 'it' ? (uiLang === 'ru' ? '💼 Гонка ИКТ' : '💼 AKT Poygasi') : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
+                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'memory' ? <>{t('memTitle')} · PsixoLab</> : kind === 'english' ? (theme === 'psixo' ? <>{uiLang === 'ru' ? '🕵️ Психолог-детектив' : '🕵️ Psixolog-detektiv'} · PsixoLab</> : theme === 'it' ? (uiLang === 'ru' ? '💼 Гонка ИКТ' : '💼 AKT Poygasi') : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
                     <h1 className="text-2xl md:text-3xl font-black">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
@@ -191,7 +191,7 @@ export default function CodeRaceHostPage() {
                 <div className="grid lg:grid-cols-[1fr_320px] gap-4" style={{ height: 'calc(100vh - 120px)' }}>
                     <div className="relative min-h-[420px]">
                         {kind === 'english'
-                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} badge={theme === 'it' ? '💼' : '🇬🇧'} />
+                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} badge={theme === 'psixo' ? '🕵️' : theme === 'it' ? '💼' : '🇬🇧'} />
                             : <Mountain racers={racers} steps={taskCount} leaders={leaders} />}
                         <div className="absolute left-4 top-4 space-y-2 max-w-[60%]">
                             <AnimatePresence initial={false}>

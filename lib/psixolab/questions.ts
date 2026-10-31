@@ -2,11 +2,13 @@
 // Savollar bitta ID ostida ikki tilda saqlanadi; ruscha matni yoʻq savol ruscha oʻyinga tushmaydi.
 // Imlo: oʻ, gʻ uchun ʻ (U+02BB), tutuq belgisi uchun ʼ (U+02BC).
 
+import { DETECTIVE_QUESTIONS } from './detective';
+
 export type PsixoLang = 'uz' | 'ru';
 export type PsixoLevel = 1 | 2 | 3;
 export type PsixoTopic =
     | 'xotira' | 'diqqat' | 'tafakkur' | 'temperament' | 'motivatsiya'
-    | 'didaktika' | 'metodlar' | 'tarbiya';
+    | 'didaktika' | 'metodlar' | 'tarbiya' | 'himoya';
 
 export const TOPIC_NAMES: Record<PsixoTopic, Record<PsixoLang, string>> = {
     xotira: { uz: 'Xotira', ru: 'Память' },
@@ -17,6 +19,7 @@ export const TOPIC_NAMES: Record<PsixoTopic, Record<PsixoLang, string>> = {
     didaktika: { uz: 'Didaktika tamoyillari', ru: 'Принципы дидактики' },
     metodlar: { uz: 'Oʻqitish metodlari', ru: 'Методы обучения' },
     tarbiya: { uz: 'Tarbiya usullari', ru: 'Методы воспитания' },
+    himoya: { uz: 'Himoya mexanizmlari', ru: 'Защитные механизмы' },
 };
 
 /** Bitta matn ikki tilda; ru boʻlmasa — savol faqat oʻzbekcha oʻyinda chiqadi. */
@@ -81,7 +84,7 @@ export const MEMORY_SETS: MemorySet[] = [
 ];
 
 /** "Psixolog-detektiv" va "Moslashtir" — 4–5-bosqichlarda toʻldiriladi. */
-export const PSIXO_QUESTIONS: PsixoQuestion[] = [];
+export const PSIXO_QUESTIONS: PsixoQuestion[] = [...DETECTIVE_QUESTIONS];
 
 /** Tanlangan tildagi savollar: ruscha oʻyinga faqat ruscha matni toʻliq boʻlgan savollar tushadi. */
 export function questionsFor(lang: PsixoLang, filter: { mode?: PsixoQuestion['mode']; topics?: PsixoTopic[]; levels?: PsixoLevel[] } = {}) {

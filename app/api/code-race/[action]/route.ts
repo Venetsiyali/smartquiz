@@ -122,7 +122,7 @@ export async function POST(req: Request, { params }: { params: { action: string 
             const race: CodeRace = {
                 ...(english ? {
                     kind: 'english' as const, questions, goal: Math.min(Math.max(Number(body.goal) || 15, 3), 100),
-                    theme: body.theme === 'it' ? 'it' as const : 'grammar' as const,
+                    theme: body.theme === 'it' ? 'it' as const : body.theme === 'psixo' ? 'psixo' as const : 'grammar' as const,
                     uiLang: body.uiLang === 'ru' ? 'ru' as const : 'uz' as const,
                 } : {}),
                 pin: await generateRacePin(),

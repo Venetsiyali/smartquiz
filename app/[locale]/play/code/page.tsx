@@ -22,6 +22,7 @@ interface RaceState {
     tasks: CodeTask[]; playerCount: number; me: Me | null;
     top: { id: string; nickname: string; avatar: string; solved: number }[];
     kind?: 'code' | 'english' | 'memory';
+    theme?: 'grammar' | 'it' | 'psixo' | null;
     uiLang?: RaceLang;
     memory?: { kind: 'words' | 'numbers' | 'sentence'; count: number; intervalMs: number; recallSec: number; items?: string[] };
     question?: EngPublicQuestion | null;
