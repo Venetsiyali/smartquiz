@@ -8,19 +8,8 @@ import { AUD_TOPICS, type AudLang, type AudTopic } from '@/lib/psixolab/auditori
 import Blocks from '@/components/psixolab/Blocks';
 import { audUi, fillN, type AudUi } from '@/components/psixolab/audI18n';
 
-/** Rejadagi mavzular; kontenti hali qoʻshilmaganlari "Tez kunda" boʻlib turadi. */
-const PLAN = {
-    lecture: [
-        { id: 'L3', uz: 'Oʻqitish metodikasi va ilgʻor pedagogik texnologiyalar', ru: 'Методика обучения и передовые педагогические технологии' },
-        { id: 'L6', uz: '', ru: '' },
-        { id: 'L7', uz: 'Shaxsning individual-psixologik xususiyatlari. Muloqot', ru: 'Индивидуально-психологические особенности личности. Общение' },
-    ],
-    practice: [
-        { id: 'P1', uz: 'Pedagogikaning paydo boʻlishi. Sharq mutafakkirlarining pedagogik gʻoyalari', ru: 'Возникновение педагогики. Педагогические идеи восточных мыслителей' },
-        { id: 'P4', uz: 'Ijtimoiy muhitning shaxs shakllanishiga taʼsiri. Shaxslararo munosabatlar', ru: 'Влияние социальной среды на формирование личности. Межличностные отношения' },
-        { id: 'P9', uz: 'Axborot urushining media-psixologik manbalari', ru: 'Медиапсихологические источники информационной войны' },
-    ],
-};
+/** Tabdagi tartib. */
+const PLAN = { lecture: ['L3', 'L6', 'L7'], practice: ['P1', 'P4', 'P9'] };
 
 interface MyTask { id: string; key: string; topicId: string; lang: AudLang; createdAt: number }
 const STORE = 'aud-tasks';
@@ -58,17 +47,9 @@ export default function AuditoriyaPage() {
                 </div>
 
                 <div className="space-y-3">
-                    {PLAN[tab].map(p => {
-                        const topic = AUD_TOPICS.find(t => t.id === p.id);
-                        return topic
-                            ? <TopicCard key={p.id} topic={topic} uiLang={uiLang} ui={ui} onCreated={addTask} mine={mine.filter(m => m.topicId === p.id)} />
-                            : (
-                                <div key={p.id} className="rounded-2xl p-4 bg-white/[0.03] border border-white/10 opacity-60">
-                                    <p className="font-black"><span className="text-violet-300 mr-2">{p.id}</span>{p[uiLang]}</p>
-                                    <p className="text-xs text-white/50 font-bold mt-1">⏳ {ui.soon}</p>
-                                </div>
-                            );
-                    })}
+                    {PLAN[tab].map(id => AUD_TOPICS.find(t => t.id === id)).filter((t): t is AudTopic => !!t).map(topic => (
+                        <TopicCard key={topic.id} topic={topic} uiLang={uiLang} ui={ui} onCreated={addTask} mine={mine.filter(m => m.topicId === topic.id)} />
+                    ))}
                 </div>
             </div>
         </div>
