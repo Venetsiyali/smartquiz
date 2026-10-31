@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { memorySetsFor, type MemorySet, type PsixoLang } from '@/lib/psixolab/questions';
 
@@ -106,6 +107,12 @@ export default function PsixoLabPage() {
                         </div>
                     ))}
                 </div>
+
+                <Link href="/teacher/psixolab/auditoriya"
+                    className="block rounded-2xl p-4 border-2 border-violet-400/40 bg-violet-500/10 hover:bg-violet-500/20">
+                    <p className="font-black">🎓 {lang === 'ru' ? 'Аудиторные занятия' : 'Auditoriya mashgʻulotlari'} →</p>
+                    <p className="text-xs text-white/50 font-bold">{lang === 'ru' ? 'Лекции и практика: объяснение + задания по ссылке' : 'Leksiya va praktika: tushuntirish + havola orqali topshiriqlar'}</p>
+                </Link>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-white/50 text-sm font-black mr-1">{ui.lang}:</span>

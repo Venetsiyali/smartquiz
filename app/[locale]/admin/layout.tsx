@@ -45,6 +45,9 @@ export default async function AdminLayout({ children, params }: { children: Reac
                     <Link href="/admin/bank" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
                         🗃️ Savollar ombori
                     </Link>
+                    <Link href="/admin/tasks" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/70 hover:text-white hover:bg-white/5">
+                        🎓 Topshiriqlar
+                    </Link>
                     <Link href="/" className="whitespace-nowrap px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 mt-auto">
                         ← Saytga qaytish
                     </Link>
