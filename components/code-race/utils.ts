@@ -18,4 +18,4 @@ export function formatClock(ms: number): string {
 
 export const AVATARS = ['🧑‍💻', '👩‍💻', '🦊', '🐼', '🐯', '🦁', '🐸', '🐙', '🦄', '🐲', '🚀', '🤖', '👾', '🧠', '⚡', '🔥'];
 
-export interface RacerView { id: string; nickname: string; avatar: string; solved: number; lastSolvedAt: number | null }
+export interface RacerView { id: string; nickname: string; avatar: string; solved: number; lastSolvedAt: number | null; mistakes?: number }

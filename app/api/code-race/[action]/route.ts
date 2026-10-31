@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { pusherServer } from '@/lib/pusher';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { matchRecall, memoryDurationSec, memoryPhase, SUBMIT_GRACE_MS, type MemoryConfig } from '@/lib/psixolab/memory';
+import { publicRound, sanitizeMatch } from '@/lib/psixolab/match';
 import { currentQuestion, isCorrect, publicQuestion, sanitizeQuestions } from '@/lib/engRace';
 import { redis } from '@/lib/gameState';
 import { awardGameXP, XP_REWARDS } from '@/lib/gamification/xp';
@@ -78,6 +79,9 @@ export async function GET(req: Request, { params }: { params: { action: string }
             items: isHost || race.status === 'ended' ? race.memory.items : undefined,
         } : undefined,
         question: race.kind === 'english' && me && race.status === 'running' ? publicQuestion(currentQuestion(race, me), me.id) : undefined,
+        match: race.match ? { penaltySec: race.match.penaltySec, rounds: race.match.rounds.length } : undefined,
+        matchRound: race.kind === 'match' && me && race.status === 'running' ? publicRound(race, me) : undefined,
+        mistakes: me?.mistakes ?? 0,
         attempts: me?.attempts,
         tasks: isHost ? race.tasks : publicTasks(race),
         players: isHost ? ranked.map(publicRacer) : undefined,
@@ -95,6 +99,18 @@ export async function POST(req: Request, { params }: { params: { action: string 
         case 'create': {
             // Login shart emas — faqat IP bo'yicha cheklov (bir daqiqada 10 ta o'yin)
             if (!createLimiter(getClientIp(req)).success) return json({ error: "Juda ko'p urinish, bir daqiqadan keyin qayta urining" }, 429);
+            if (body.kind === 'match') {
+                const { match, error } = sanitizeMatch(body.rounds, body.penaltySec);
+                if (!match) return json({ error }, 400);
+                const race: CodeRace = {
+                    pin: await generateRacePin(), title: String(body.title || 'Moslashtir').slice(0, 80),
+                    hostKey: crypto.randomUUID(), tasks: [], kind: 'match', match,
+                    uiLang: body.uiLang === 'ru' ? 'ru' : 'uz',
+                    durationSec: Math.min(Math.max(Number(body.durationSec) || 600, 60), 60 * 60), status: 'lobby',
+                };
+                await saveRace(race);
+                return json({ pin: race.pin, hostKey: race.hostKey });
+            }
             if (body.kind === 'memory') {
                 const items: string[] = Array.isArray(body.items)
                     ? body.items.map((x: unknown) => String(x).trim().slice(0, 40)).filter(Boolean).slice(0, 20) : [];
@@ -204,6 +220,38 @@ export async function POST(req: Request, { params }: { params: { action: string 
                 solved: racer.solved, attempts: racer.attempts, finished,
                 question: finished ? null : publicQuestion(currentQuestion(race, racer), racer.id),
             });
+        }
+
+        case 'match': {
+            const race = await getRace(pin);
+            if (!race || race.kind !== 'match' || !race.match) return json({ error: "O'yin topilmadi" }, 404);
+            if (race.status !== 'running' || timeIsUp(race)) return json({ error: 'Vaqt tugadi', ended: true }, 400);
+            const racer = await getRacer(pin, String(body.playerId ?? ''));
+            if (!racer) return json({ error: "Avval o'yinga qo'shiling" }, 400);
+            const round = publicRound(race, racer);
+            if (!round) return json({ finished: true, solved: racer.solved });
+            // Eskirgan soʻrov (boshqa raund) — joriy holatni qaytaramiz
+            if (Number(body.round) !== round.index) return json({ stale: true, solved: racer.solved, mistakes: racer.mistakes ?? 0, round });
+            const li = Number(body.left);
+            const pair = race.match.rounds[round.index].pairs[li];
+            if (!pair || round.matched[li]) return json({ stale: true, solved: racer.solved, mistakes: racer.mistakes ?? 0, round });
+            const penaltyMs = race.match.penaltySec * 1000;
+            const correct = pair.right === String(body.right ?? '');
+            racer.attempts += 1;
+            racer.mistakes = racer.mistakes ?? 0;
+            if (correct) {
+                racer.matched = [...(racer.matched ?? []), `${round.index}:${li}`];
+                racer.solved += 1;
+                // Reyting vaqti = haqiqiy vaqt + xatolar uchun jarima
+                racer.solvedAt.push(Date.now() - (race.startedAt ?? Date.now()) + racer.mistakes * penaltyMs);
+            } else {
+                racer.mistakes += 1;
+                if (racer.solved > 0) racer.solvedAt[racer.solved - 1] += penaltyMs;
+            }
+            await saveRacer(pin, racer);
+            const finished = racer.solved >= raceSteps(race);
+            if (correct) await notify(hostChannel(pin), 'cr-progress', { player: publicRacer(racer), finished });
+            return json({ correct, solved: racer.solved, mistakes: racer.mistakes, finished, round: finished ? null : publicRound(race, racer) });
         }
 
         case 'recall': {

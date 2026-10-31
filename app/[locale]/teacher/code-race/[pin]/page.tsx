@@ -25,9 +25,9 @@ export default function CodeRaceHostPage() {
     const [title, setTitle] = useState('');
     const [status, setStatus] = useState<'lobby' | 'running' | 'ended'>('lobby');
     const [taskCount, setTaskCount] = useState(0);
-    const [kind, setKind] = useState<'code' | 'english' | 'memory'>('code');
+    const [kind, setKind] = useState<'code' | 'english' | 'memory' | 'match'>('code');
     const [memory, setMemory] = useState<MemoryConfig | null>(null);
-    const kindRef = useRef<'code' | 'english' | 'memory'>('code');
+    const kindRef = useRef<'code' | 'english' | 'memory' | 'match'>('code');
     const [theme, setTheme] = useState<'grammar' | 'it' | 'psixo' | null>(null);
     const [uiLang, setUiLang] = useState<RaceLang>('uz');
     const uiLangRef = useRef<RaceLang>('uz');
@@ -75,8 +75,8 @@ export default function CodeRaceHostPage() {
             const text = kindRef.current === 'memory'
                 ? raceT(uiLangRef.current)('memFeed', { name: player.nickname, n: player.solved })
                 : finished
-                ? (kindRef.current === 'english' ? raceT(uiLangRef.current)('feedFinished', { name: player.nickname }) : `🏁 ${player.nickname} cho'qqiga chiqdi!`)
-                : kindRef.current === 'english'
+                ? (kindRef.current === 'english' || kindRef.current === 'match' ? raceT(uiLangRef.current)('feedFinished', { name: player.nickname }) : `🏁 ${player.nickname} cho'qqiga chiqdi!`)
+                : kindRef.current === 'english' || kindRef.current === 'match'
                     ? raceT(uiLangRef.current)('feedSolved', { name: player.nickname, n: player.solved })
                     : `⚡ ${player.nickname} ${player.solved}-masalani yechdi (${formatClock(player.lastSolvedAt ?? 0)})`;
             setFeed(f => [{ key: ++feedSeq.current, text }, ...f].slice(0, 6));
@@ -135,7 +135,7 @@ export default function CodeRaceHostPage() {
         <div className="min-h-screen bg-[#070b18] text-white p-4 md:p-6">
             <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
-                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'memory' ? <>{t('memTitle')} · PsixoLab</> : kind === 'english' ? (theme === 'psixo' ? <>{uiLang === 'ru' ? '🕵️ Психолог-детектив' : '🕵️ Psixolog-detektiv'} · PsixoLab</> : theme === 'it' ? (uiLang === 'ru' ? '💼 Гонка ИКТ' : '💼 AKT Poygasi') : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
+                    <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">{kind === 'memory' ? <>{t('memTitle')} · PsixoLab</> : kind === 'match' ? <>{uiLang === 'ru' ? '🧩 Сопоставь' : '🧩 Moslashtir'} · PsixoLab</> : kind === 'english' ? (theme === 'psixo' ? <>{uiLang === 'ru' ? '🕵️ Психолог-детектив' : '🕵️ Psixolog-detektiv'} · PsixoLab</> : theme === 'it' ? (uiLang === 'ru' ? '💼 Гонка ИКТ' : '💼 AKT Poygasi') : '🏁 Grammar Race') : <>🏔️ Kod Cho&apos;qqisi</>}</p>
                     <h1 className="text-2xl md:text-3xl font-black">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ export default function CodeRaceHostPage() {
                         <div className="inline-block bg-white p-3 rounded-2xl">
                             {joinUrl && <QRCodeSVG value={joinUrl} size={180} bgColor="#ffffff" fgColor="#0a0f1e" level="M" />}
                         </div>
-                        <p className="text-white/40 text-sm">{kind === 'memory' && memory ? `🧠 ${taskCount} · ⏱ ${memory.intervalMs / 1000} s · ✍️ ${memory.recallSec} s` : <>{kind === 'english' ? t('finishGoal', { n: taskCount }) : t('tasksCount', { n: taskCount })} · {Math.round(durationSec / 60)} {t('minutes')}</>}</p>
+                        <p className="text-white/40 text-sm">{kind === 'memory' && memory ? `🧠 ${taskCount} · ⏱ ${memory.intervalMs / 1000} s · ✍️ ${memory.recallSec} s` : <>{kind === 'english' || kind === 'match' ? t('finishGoal', { n: taskCount }) : t('tasksCount', { n: taskCount })} · {Math.round(durationSec / 60)} {t('minutes')}</>}</p>
                         <button onClick={() => action('start')} disabled={racers.length === 0}
                             className="w-full py-4 rounded-2xl text-xl font-black disabled:opacity-40"
                             style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 10px 40px rgba(16,185,129,0.35)' }}>
@@ -190,8 +190,8 @@ export default function CodeRaceHostPage() {
             {status === 'running' && kind !== 'memory' && (
                 <div className="grid lg:grid-cols-[1fr_320px] gap-4" style={{ height: 'calc(100vh - 120px)' }}>
                     <div className="relative min-h-[420px]">
-                        {kind === 'english'
-                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} badge={theme === 'psixo' ? '🕵️' : theme === 'it' ? '💼' : '🇬🇧'} />
+                        {kind === 'english' || kind === 'match'
+                            ? <RaceTrack racers={ranked} goal={taskCount} leaders={leaders} badge={kind === 'match' ? '🧩' : theme === 'psixo' ? '🕵️' : theme === 'it' ? '💼' : '🇬🇧'} />
                             : <Mountain racers={racers} steps={taskCount} leaders={leaders} />}
                         <div className="absolute left-4 top-4 space-y-2 max-w-[60%]">
                             <AnimatePresence initial={false}>
@@ -229,6 +229,7 @@ function Ranking({ ranked, taskCount, t }: { ranked: RacerView[]; taskCount: num
                                     animate={{ width: `${(r.solved / Math.max(taskCount, 1)) * 100}%` }} />
                             </div>
                         </div>
+                        {r.mistakes != null && <span className="text-xs font-bold text-white/40 tabular-nums">⏱ {formatClock(r.lastSolvedAt ?? 0)} · ❌ {r.mistakes}</span>}
                         <span className="font-black text-emerald-300 tabular-nums">{r.solved}/{taskCount}</span>
                     </motion.div>
                 ))}

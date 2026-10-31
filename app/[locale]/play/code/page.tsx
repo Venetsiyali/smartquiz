@@ -10,6 +10,7 @@ import { serverNow, syncServerClock } from '@/lib/serverClock';
 import { PyRunner, type RunResult } from '@/lib/pyRunner';
 import type { CodeTask } from '@/lib/codeRace';
 import CodeEditor from '@/components/code-race/CodeEditor';
+import MatchArena, { type MatchRoundView } from '@/components/psixolab/MatchArena';
 import EnglishArena, { type EngPublicQuestion } from '@/components/code-race/EnglishArena';
 import MemoryPlayer from '@/components/psixolab/MemoryPlayer';
 import { raceT, type RaceLang } from '@/components/code-race/raceI18n';
@@ -21,7 +22,10 @@ interface RaceState {
     startedAt: number | null; durationSec: number; taskCount: number;
     tasks: CodeTask[]; playerCount: number; me: Me | null;
     top: { id: string; nickname: string; avatar: string; solved: number }[];
-    kind?: 'code' | 'english' | 'memory';
+    kind?: 'code' | 'english' | 'memory' | 'match';
+    match?: { penaltySec: number; rounds: number };
+    matchRound?: MatchRoundView | null;
+    mistakes?: number;
     theme?: 'grammar' | 'it' | 'psixo' | null;
     uiLang?: RaceLang;
     memory?: { kind: 'words' | 'numbers' | 'sentence'; count: number; intervalMs: number; recallSec: number; items?: string[] };
@@ -111,7 +115,7 @@ function CodeRacePlay() {
         return (
             <Centered>
                 <div className="space-y-5">
-                    <p className="text-6xl">{isCode ? '🏔️' : state.kind === 'memory' ? '🧠' : '🏁'}</p>
+                    <p className="text-6xl">{isCode ? '🏔️' : state.kind === 'memory' ? '🧠' : state.kind === 'match' ? '🧩' : '🏁'}</p>
                     <h1 className="text-3xl font-black">{state.title}</h1>
                     <p className="text-white/60 font-bold">{t('waitTeacher')} · 👥 {state.playerCount}</p>
                     {isCode && <PyBadge status={pyStatus} />}
@@ -132,6 +136,7 @@ function CodeRacePlay() {
         return <Finished state={state} t={t} />;
     }
 
+    if (state.kind === 'match') return <MatchArena state={state} pin={pin} playerId={playerId} onChange={load} />;
     if (!isCode) return <EnglishArena state={state} pin={pin} playerId={playerId} onChange={load} t={t} />;
 
     return <Arena key={state.me?.solved ?? 0} state={state} pin={pin} playerId={playerId} runner={runnerRef.current} pyStatus={pyStatus} onSolved={load} />;

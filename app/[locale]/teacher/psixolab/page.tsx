@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import DetectiveSetup from '@/components/psixolab/DetectiveSetup';
+import MatchSetup from '@/components/psixolab/MatchSetup';
 import { memorySetsFor, type MemorySet, type PsixoLang } from '@/lib/psixolab/questions';
 
 const UI = {
@@ -14,7 +15,7 @@ const UI = {
         modes: [
             { id: 'memory', icon: '🧠', name: 'Xotira sinovi', sub: 'Jonli mini-oʻyin · Miller 7±2', ready: true },
             { id: 'detective', icon: '🕵️', name: 'Psixolog-detektiv', sub: 'Keys asosida tashxis · izoh bilan', ready: true },
-            { id: 'match', icon: '🧩', name: 'Moslashtir', sub: 'Tushuncha ↔ taʼrif', ready: false },
+            { id: 'match', icon: '🧩', name: 'Moslashtir', sub: 'Tushuncha ↔ taʼrif · jarima soniyalari', ready: true },
         ],
         soon: 'Tez kunda',
         lang: 'Oʻyin tili',
@@ -34,7 +35,7 @@ const UI = {
         modes: [
             { id: 'memory', icon: '🧠', name: 'Тест памяти', sub: 'Живая мини-игра · Миллер 7±2', ready: true },
             { id: 'detective', icon: '🕵️', name: 'Психолог-детектив', sub: 'Диагноз по кейсу · с пояснением', ready: true },
-            { id: 'match', icon: '🧩', name: 'Сопоставь', sub: 'Понятие ↔ определение', ready: false },
+            { id: 'match', icon: '🧩', name: 'Сопоставь', sub: 'Понятие ↔ определение · штрафные секунды', ready: true },
         ],
         soon: 'Скоро',
         lang: 'Язык игры',
@@ -57,7 +58,7 @@ export default function PsixoLabPage() {
     const { locale } = useParams<{ locale: string }>();
     const ui = UI[locale === 'ru' ? 'ru' : 'uz'];
     const [lang, setLang] = useState<PsixoLang>(locale === 'ru' ? 'ru' : 'uz');
-    const [mode, setMode] = useState<'memory' | 'detective'>('memory');
+    const [mode, setMode] = useState<'memory' | 'detective' | 'match'>('memory');
     const [kind, setKind] = useState<Kind>('words');
     const sets = useMemo(() => memorySetsFor(lang, kind), [lang, kind]);
     const [setId, setSetId] = useState<string>('');
@@ -102,7 +103,7 @@ export default function PsixoLabPage() {
 
                 <div className="grid sm:grid-cols-3 gap-2">
                     {ui.modes.map(m => (
-                        <button key={m.id} disabled={!m.ready} onClick={() => m.ready && setMode(m.id as 'memory' | 'detective')}
+                        <button key={m.id} disabled={!m.ready} onClick={() => m.ready && setMode(m.id as 'memory' | 'detective' | 'match')}
                             className={`text-left rounded-2xl p-4 border-2 ${!m.ready ? 'border-white/10 bg-white/[0.03] opacity-60' : mode === m.id ? 'border-violet-400 bg-violet-500/15' : 'border-white/10 bg-white/[0.05] hover:border-violet-400/50'}`}>
                             <p className="text-2xl">{m.icon}</p>
                             <p className="font-black mt-1">{m.name}</p>
@@ -127,7 +128,8 @@ export default function PsixoLabPage() {
                     ))}
                 </div>
 
-                {mode === 'detective' ? <DetectiveSetup lang={lang} uiLang={locale === 'ru' ? 'ru' : 'uz'} /> : <>
+                {mode === 'detective' ? <DetectiveSetup lang={lang} uiLang={locale === 'ru' ? 'ru' : 'uz'} />
+                    : mode === 'match' ? <MatchSetup lang={lang} uiLang={locale === 'ru' ? 'ru' : 'uz'} /> : <>
                 <div className="flex flex-wrap gap-2">
                     {(Object.keys(ui.kinds) as Kind[]).map(k => (
                         <button key={k} onClick={() => { setKind(k); setSetId(''); }}
