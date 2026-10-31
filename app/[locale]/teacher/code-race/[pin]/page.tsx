@@ -145,6 +145,9 @@ export default function CodeRaceHostPage() {
                             ⏱ {status === 'ended' ? '0:00' : formatClock(remaining)}
                         </div>
                     )}
+                    {status === 'ended' && hostKey && (
+                        <a href={`/api/code-race/export?pin=${pin}&hostKey=${hostKey}`} className="px-4 py-2 rounded-2xl bg-emerald-500/20 text-emerald-200 font-black">📥 Excel</a>
+                    )}
                     {status === 'running' && (
                         <button onClick={() => { endingRef.current = true; action('end'); }} className="px-4 py-2 rounded-2xl bg-red-500/15 text-red-300 font-black">{t('endGame')}</button>
                     )}

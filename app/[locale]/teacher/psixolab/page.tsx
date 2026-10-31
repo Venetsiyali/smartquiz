@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import DetectiveSetup from '@/components/psixolab/DetectiveSetup';
 import MatchSetup from '@/components/psixolab/MatchSetup';
+import { loadGames, rememberGame, type PsixoGame } from '@/components/psixolab/history';
 import { memorySetsFor, type MemorySet, type PsixoLang } from '@/lib/psixolab/questions';
 
 const UI = {
@@ -66,6 +67,8 @@ export default function PsixoLabPage() {
     const [intervalMs, setIntervalMs] = useState(2000);
     const [recallSec, setRecallSec] = useState(60);
     const [error, setError] = useState<string | null>(null);
+    const [games, setGames] = useState<PsixoGame[]>([]);
+    useEffect(() => setGames(loadGames()), []);
     const [creating, setCreating] = useState(false);
 
     const chosen = sets.find(s => s.id === setId) ?? sets[0];
@@ -87,7 +90,7 @@ export default function PsixoLabPage() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Error');
-            try { localStorage.setItem(`cr-host-${data.pin}`, data.hostKey); } catch { /* ignore */ }
+            rememberGame({ pin: data.pin, key: data.hostKey, mode: 'memory', title: `${ui.modes[0].name} · ${customItems.length ? ui.custom : ui.kinds[kind]}` });
             router.push(`/teacher/code-race/${data.pin}`);
         } catch (err: any) { setError(err.message); setCreating(false); }
     };
@@ -178,6 +181,20 @@ export default function PsixoLabPage() {
                     {creating ? ui.creating : `${ui.create} · ${ui.items.replace('{n}', String(Math.min(items.length, 20)))}`}
                 </button>
                 </>}
+
+                {games.length > 0 && (
+                    <div className="space-y-2 pt-4">
+                        <p className="text-white/50 text-sm font-black">📋 {lang === 'ru' ? 'Проведённые игры — результаты и Excel' : 'Oʻtkazilgan oʻyinlar — natijalar va Excel'}</p>
+                        {games.slice(0, 20).map(g => (
+                            <div key={g.pin} className="flex flex-wrap items-center gap-2 rounded-xl bg-white/[0.04] px-3 py-2 text-sm">
+                                <span className="font-bold flex-1 min-w-[160px]">{g.title}</span>
+                                <span className="text-white/40 text-xs">PIN {g.pin} · {new Date(g.at).toLocaleString()}</span>
+                                <Link href={`/teacher/code-race/${g.pin}`} className="px-2.5 py-1 rounded-lg bg-white/10 font-black text-xs">📊</Link>
+                                <a href={`/api/code-race/export?pin=${g.pin}&hostKey=${g.key}`} className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-200 font-black text-xs">📥 Excel</a>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

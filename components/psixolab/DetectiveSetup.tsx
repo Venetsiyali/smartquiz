@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { rememberGame } from './history';
 import { questionsFor, TOPIC_NAMES, type PsixoLang, type PsixoLevel, type PsixoTopic } from '@/lib/psixolab/questions';
 
 const UI = {
@@ -59,7 +60,7 @@ export default function DetectiveSetup({ lang, uiLang }: { lang: PsixoLang; uiLa
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Error');
-            try { localStorage.setItem(`cr-host-${data.pin}`, data.hostKey); } catch { /* ignore */ }
+            rememberGame({ pin: data.pin, key: data.hostKey, mode: 'detective', title: `🕵️ ${UI[lang].title}` });
             router.push(`/teacher/code-race/${data.pin}`);
         } catch (err: any) { setError(err.message); setCreating(false); }
     };

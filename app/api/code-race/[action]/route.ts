@@ -10,7 +10,7 @@ import { redis } from '@/lib/gameState';
 import { awardGameXP, XP_REWARDS } from '@/lib/gamification/xp';
 import {
     CR_TTL, generateRacePin, raceSteps, getRace, getRacer, getRacers, publicRacer, publicTasks, rankRacers,
-    sanitizeTasks, saveRace, saveRacer, saveSolution, type CodeRace,
+    sanitizeTasks, saveRace, saveRacer, saveSolution, type CodeRace, type CodeRacer,
 } from '@/lib/codeRace';
 
 export const dynamic = 'force-dynamic';
@@ -46,10 +46,14 @@ async function finish(race: CodeRace) {
         await awardGameXP(Array.from(awards, ([userId, amount]) => ({ userId, amount })));
     }
     await saveRace(race);
+    // Natija 60 kun saqlanadi — oʻqituvchi keyin ham Excel yuklab olishi uchun
+    await redis.set(`cr:${race.pin}:final`, JSON.stringify({ race: { ...race, tasks: [], questions: undefined }, racers }), { ex: 60 * 24 * 3600 })
+        .catch(err => console.error('code-race final:', err));
     await notify(playChannel(race.pin), 'cr-end', { podium: racers.slice(0, 3).map(publicRacer) });
 }
 
 export async function GET(req: Request, { params }: { params: { action: string } }) {
+    if (params.action === 'export') return exportXlsx(req);
     if (params.action !== 'state') return json({ error: 'Topilmadi' }, 404);
     const url = new URL(req.url);
     const pin = url.searchParams.get('pin') ?? '';
@@ -295,4 +299,99 @@ export async function POST(req: Request, { params }: { params: { action: string 
         }
     }
     return json({ error: 'Topilmadi' }, 404);
+}
+
+/** Oʻyin natijalari Excel'da (oʻqituvchi kaliti bilan). Tugagan oʻyin — saqlangan yakuniy natijadan. */
+async function exportXlsx(req: Request) {
+    const url = new URL(req.url);
+    const pin = url.searchParams.get('pin') ?? '';
+    const hostKey = url.searchParams.get('hostKey') ?? '';
+    const live = await getRace(pin);
+    let race: CodeRace | null = live;
+    let racers: CodeRacer[];
+    if (live && live.status !== 'ended') {
+        racers = rankRacers(await getRacers(pin));
+    } else {
+        const raw = await redis.get(`cr:${pin}:final`);
+        const snap = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) as { race: CodeRace; racers: CodeRacer[] } : null;
+        if (snap) { race = snap.race; racers = snap.racers; } else racers = race ? rankRacers(await getRacers(pin)) : [];
+    }
+    if (!race) return json({ error: "Natija topilmadi (60 kundan eski yoki PIN notoʻgʻri)" }, 404);
+    if (hostKey !== race.hostKey) return json({ error: "Ruxsat yo'q" }, 403);
+
+    const ru = race.uiLang === 'ru';
+    const L = (uz: string, r: string) => (ru ? r : uz);
+    const ExcelJS = (await import('exceljs')).default;
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet(L('Natijalar', 'Результаты'));
+    const clock = (ms: number | null | undefined) => ms == null ? '' : `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+    const last = (r: CodeRacer) => r.solvedAt[r.solved - 1] ?? null;
+    const steps = raceSteps(race);
+    const base = [
+        { header: '№', key: 'n', width: 5 },
+        { header: L('Ishtirokchi', 'Участник'), key: 'name', width: 26 },
+    ];
+
+    if (race.kind === 'memory' && race.memory) {
+        const items = race.memory.items;
+        ws.columns = [...base,
+            { header: L(`Esladi (${items.length} dan)`, `Запомнил (из ${items.length})`), key: 'rec', width: 14 },
+            { header: '%', key: 'pct', width: 8 },
+            { header: L('Miller (7±2)', 'Миллер (7±2)'), key: 'miller', width: 14 },
+            { header: L('Eslangan elementlar', 'Запомненные элементы'), key: 'words', width: 60 }];
+        const sorted = [...racers].sort((a, b) => (b.recalled?.length ?? 0) - (a.recalled?.length ?? 0));
+        sorted.forEach((r, i) => {
+            const k = r.recalled?.length ?? 0;
+            ws.addRow({ n: i + 1, name: r.nickname, rec: r.attempts > 0 ? k : L('yubormadi', 'не отправил'), pct: r.attempts > 0 ? Math.round(k / items.length * 100) : '',
+                miller: r.attempts > 0 ? (k < 5 ? L('pastroq', 'ниже') : k > 9 ? L('yuqoriroq', 'выше') : L('meʼyorda', 'в норме')) : '',
+                words: (r.recalled ?? []).sort((a, b) => a - b).map(p => items[p]).join(', ') });
+        });
+        const sent = racers.filter(r => r.attempts > 0);
+        const avg = sent.length ? sent.reduce((s2, r) => s2 + (r.recalled?.length ?? 0), 0) / sent.length : 0;
+        ws.addRow({});
+        ws.addRow({ name: L('Guruh oʻrtachasi', 'Среднее по группе'), rec: Math.round(avg * 10) / 10 }).font = { bold: true };
+        // Pozitsiya effekti (birinchi/oxirgi oʻrin)
+        const pos = wb.addWorksheet(L('Pozitsiya effekti', 'Эффект позиции'));
+        pos.columns = [
+            { header: L('Oʻrin', 'Позиция'), key: 'p', width: 8 },
+            { header: L('Element', 'Элемент'), key: 'w', width: 22 },
+            { header: L('Eslaganlar', 'Запомнили'), key: 'c', width: 12 },
+            { header: '%', key: 'pct', width: 8 }];
+        items.forEach((w, p) => {
+            const c = sent.filter(r => r.recalled?.includes(p)).length;
+            pos.addRow({ p: p + 1, w, c, pct: sent.length ? Math.round(c / sent.length * 100) : 0 });
+        });
+        pos.getRow(1).font = { bold: true };
+    } else if (race.kind === 'match') {
+        ws.columns = [...base,
+            { header: L(`Juftliklar (${steps} dan)`, `Пары (из ${steps})`), key: 's', width: 14 },
+            { header: L('Xatolar', 'Ошибки'), key: 'm', width: 10 },
+            { header: L('Jarima, s', 'Штраф, с'), key: 'pen', width: 10 },
+            { header: L('Vaqt (jarima bilan)', 'Время (со штрафом)'), key: 't', width: 18 }];
+        racers.forEach((r, i) => ws.addRow({ n: i + 1, name: r.nickname, s: r.solved, m: r.mistakes ?? 0,
+            pen: (r.mistakes ?? 0) * (race!.match?.penaltySec ?? 0), t: clock(last(r)) }));
+    } else if (race.kind === 'english') {
+        ws.columns = [...base,
+            { header: L(`Toʻgʻri javoblar (marra: ${steps})`, `Верные ответы (финиш: ${steps})`), key: 's', width: 22 },
+            { header: L('Jami javoblar', 'Всего ответов'), key: 'a', width: 14 },
+            { header: L('Aniqlik, %', 'Точность, %'), key: 'acc', width: 12 },
+            { header: L('Marraga yetdi', 'Финишировал'), key: 'fin', width: 14 },
+            { header: L('Oxirgi toʻgʻri javob vaqti', 'Время последнего верного'), key: 't', width: 22 }];
+        racers.forEach((r, i) => ws.addRow({ n: i + 1, name: r.nickname, s: r.solved, a: r.attempts,
+            acc: r.attempts ? Math.round(r.solved / r.attempts * 100) : '', fin: r.solved >= steps ? '✓' : '', t: clock(last(r)) }));
+    } else {
+        ws.columns = [...base,
+            { header: `Masalalar (${steps} dan)`, key: 's', width: 16 },
+            { header: 'Urinishlar', key: 'a', width: 12 },
+            { header: 'Oxirgi yechim vaqti', key: 't', width: 18 }];
+        racers.forEach((r, i) => ws.addRow({ n: i + 1, name: r.nickname, s: r.solved, a: r.attempts, t: clock(last(r)) }));
+    }
+    ws.getRow(1).font = { bold: true };
+    const buf = await wb.xlsx.writeBuffer();
+    return new NextResponse(buf as ArrayBuffer, {
+        headers: {
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition': `attachment; filename="natijalar-${pin}.xlsx"`,
+        },
+    });
 }

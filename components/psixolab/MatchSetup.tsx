@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { rememberGame } from './history';
 import { MATCH_KIND_NAMES, matchSetsFor } from '@/lib/psixolab/match';
 import type { PsixoLang } from '@/lib/psixolab/questions';
 
@@ -52,7 +53,7 @@ export default function MatchSetup({ lang, uiLang }: { lang: PsixoLang; uiLang: 
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Error');
-            try { localStorage.setItem(`cr-host-${data.pin}`, data.hostKey); } catch { /* ignore */ }
+            rememberGame({ pin: data.pin, key: data.hostKey, mode: 'match', title: `🧩 ${UI[lang].title}` });
             router.push(`/teacher/code-race/${data.pin}`);
         } catch (err: any) { setError(err.message); setCreating(false); }
     };
