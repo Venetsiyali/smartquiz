@@ -180,6 +180,23 @@ export default function DashboardPage() {
                         </div>
                     </Link>
 
+                    {/* Topshiriq — QR/havola orqali istalgan vaqtda */}
+                    <Link
+                        href={`/${locale}/teacher/assignments`}
+                        className="relative rounded-2xl overflow-hidden flex flex-col justify-end transition-all hover:scale-[1.02] hover:shadow-2xl"
+                        style={{ minHeight: 180, background: 'linear-gradient(135deg, #0d2e1a 0%, #0a5e3a 100%)', border: '1px solid rgba(0,230,118,0.25)' }}
+                    >
+                        <div className="absolute inset-0 flex items-center justify-center opacity-10 text-[120px] select-none pointer-events-none">📅</div>
+                        <div className="relative z-10 p-5">
+                            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-widest" style={{ background: 'rgba(0,230,118,0.2)', color: '#6ee7b7' }}>Uyga vazifa</span>
+                            <h3 className="text-white font-black text-2xl mb-1">Topshiriqlar</h3>
+                            <p className="text-white/40 text-sm font-semibold">QR yoki havola · Istalgan vaqtda yechiladi</p>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                            <span className="text-3xl">📅</span>
+                        </div>
+                    </Link>
+
                     {/* Qishloq Bozori */}
                     <Link
                         href={`/${locale}/play/qishloq-bozori`}

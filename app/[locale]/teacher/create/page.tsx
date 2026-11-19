@@ -801,7 +801,30 @@ function TeacherCreateInner() {
     };
 
     const [saving, setSaving] = useState(false);
-    
+
+    // Savollarni "Topshiriq" (QR/havola orqali istalgan vaqtda yechish) rejimiga o'tkazish.
+    // Faqat 4 variantli, bitta to'g'ri javobli savollar mos keladi.
+    const makeAssignment = () => {
+        const usable = questions
+            .filter(q => q.type === 'multiple' && q.text.trim().length >= 3
+                && q.options.length === 4 && q.options.every(o => o.text.trim())
+                && q.options.filter(o => o.isCorrect).length === 1)
+            .map(q => ({
+                text: q.text.trim(),
+                options: q.options.map(o => o.text.trim()),
+                correctIndex: q.options.findIndex(o => o.isCorrect),
+                explanation: q.explanation?.trim() || '',
+            }));
+        if (usable.length === 0) {
+            alert("Topshiriq uchun 4 variantli va bitta toʻgʻri javobi belgilangan savollar kerak.");
+            return;
+        }
+        const skipped = questions.length - usable.length;
+        if (skipped > 0 && !confirm(`${skipped} ta savol mos emas (4 variant va bitta toʻgʻri javob kerak) — ular qoʻshilmaydi. Davom etamizmi?`)) return;
+        sessionStorage.setItem('assignmentPreload', JSON.stringify({ title, questions: usable }));
+        router.push('/teacher/assignments/new');
+    };
+
     const saveToLibrary = async () => {
         if (!validate()) return;
         setSaving(true);
@@ -914,6 +937,13 @@ function TeacherCreateInner() {
                     className="input-game min-w-28 max-w-[140px] text-sm"
                     style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '12px', display: isPro ? 'block' : 'none' }} />
                 <div className="ml-auto flex items-center gap-2">
+                    {!continuePin && !['order', 'match', 'blitz', 'anagram'].includes(lockedMode ?? '') && (
+                        <button onClick={makeAssignment} title="Savollarni QR/havola orqali istalgan vaqtda yechiladigan topshiriqqa aylantirish"
+                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
+                            style={{ background: 'rgba(0,230,118,0.12)', border: '1px solid rgba(0,230,118,0.3)', color: '#6ee7b7' }}>
+                            📅 Topshiriq qilish
+                        </button>
+                    )}
                     <button onClick={() => router.push('/teacher/quizzes')}
                         className="hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-sm text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 mr-1">
                         📚 Savollarim

@@ -48,6 +48,7 @@ model User {
   quizzes       Quiz[]
   badges        UserBadge[]
   wheelSessions WheelSession[]
+  assignments   Assignment[]
 }
 
 // ==========================================
@@ -233,6 +234,73 @@ model BankQuestion {
 }
 
 // O'qituvchilarning "Savolda xato bor" shikoyatlari (bitta foydalanuvchi — bitta savolga bir marta)
+// ==========================================
+// TOPSHIRIQ (o'quvchi QR/havola orqali istalgan vaqtda mustaqil yechadi)
+// ==========================================
+
+model Assignment {
+  id              String    @id @default(cuid())
+  code            String    @unique // havoladagi qisqa kod: zukkoo.uz/v/<code>
+  teacherId       String
+  teacher         User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  title           String
+  description     String    @default("")
+  questions       Json      // [{ text, options[4], correctIndex, explanation }] — berilgan paytdagi nusxa
+  opensAt         DateTime?
+  closesAt        DateTime?
+  maxAttempts     Int       @default(1) // 0 = cheklanmagan
+  timePerQuestion Int       @default(0) // soniya, 0 = cheklanmagan
+  shuffle         Boolean   @default(true)
+  showAnswers     String    @default("AFTER_SUBMIT") // AFTER_SUBMIT | AFTER_CLOSE | NEVER
+  status          String    @default("ACTIVE") // ACTIVE | CLOSED
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  attempts        AssignmentAttempt[]
+
+  @@index([teacherId])
+  @@map("assignments")
+}
+
+model AssignmentAttempt {
+  id            String    @id @default(cuid())
+  assignmentId  String
+  assignment    Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  token         String    // o'quvchi qurilmasidagi maxfiy kalit — urinishni faqat u davom ettira oladi
+  studentName   String
+  groupName     String    @default("")
+  deviceId      String
+  userId        String?
+  order         Json      // [{ q: asl savol indeksi, o: [variantlar tartibi] }]
+  servedIndex   Int       @default(-1) // hozir ko'rsatilgan savol (order bo'yicha)
+  servedAt      DateTime?
+  startedAt     DateTime  @default(now())
+  submittedAt   DateTime?
+  correctCount  Int       @default(0)
+  total         Int
+  score         Int       @default(0) // foiz
+
+  answers       AssignmentAnswer[]
+
+  @@index([assignmentId])
+  @@index([assignmentId, deviceId])
+  @@map("assignment_attempts")
+}
+
+model AssignmentAnswer {
+  id            String    @id @default(cuid())
+  attemptId     String
+  attempt       AssignmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionIndex Int       // asl savol indeksi
+  selected      Int       // asl variant indeksi, -1 = vaqt tugadi
+  isCorrect     Boolean
+  timeMs        Int       @default(0)
+  answeredAt    DateTime  @default(now())
+
+  @@unique([attemptId, questionIndex])
+  @@map("assignment_answers")
+}
+
 model BankReport {
   id         String       @id @default(cuid())
   questionId String
