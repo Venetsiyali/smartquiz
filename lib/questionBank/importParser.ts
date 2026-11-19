@@ -26,6 +26,8 @@ export interface ImportDefaults {
     topic?: string;
     grade?: number | null;
     difficulty?: number;
+    /** Fan tanilmasa xato bermay, `subject` ga tushadi (fan muhim boʻlmagan joylar uchun, masalan topshiriq). */
+    lenientSubject?: boolean;
 }
 
 export interface ImportedQuestion {
@@ -106,7 +108,7 @@ function buildQuestion(d: Draft, ctx: ImportDefaults & { subjectRaw?: string }, 
         return errors.push({ ref, reason: "Javob qatori va * belgisi turli variantni ko'rsatyapti" });
     }
 
-    const subject = resolveSubject(ctx.subjectRaw ?? ctx.subject);
+    const subject = resolveSubject(ctx.subjectRaw ?? ctx.subject) ?? (ctx.lenientSubject ? ctx.subject ?? null : null);
     if (!subject) return errors.push({ ref, reason: ctx.subjectRaw ? `Fan noma'lum: "${ctx.subjectRaw}"` : "Fan ko'rsatilmagan — faylda \"Fan:\" qatorini yozing yoki formada tanlang" });
 
     out.push({

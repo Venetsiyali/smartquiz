@@ -41,7 +41,17 @@ export function similarityScore(a: string, b: string): number {
     return 1 - levenshtein(s1, s2) / maxLen;
 }
 
-const BANNED_OPTION = /^(hech (biri|qaysi(si)?)|hammasi|barchasi|barcha javoblar|yuqoridagilarning (hammasi|barchasi)|[a-d] va [a-d]|ikkalasi)\b/i;
+// Variantning O'ZI "qochish" javobi bo'lsa ("Hammasi to'g'ri", "A va B", "Hech biri"). Faqat butun variant
+// tekshiriladi — "Ikkalasi bilan alohida gaplashish" kabi mazmunli javoblar taqiqlanmaydi.
+const BANNED_OPTION = /^(hech (biri|qaysisi)|hammasi|barchasi|barcha javoblar|yuqoridagilarning (hammasi|barchasi)|[a-d] va [a-d]|ikkalasi)( ham)?( (to'g'ri|noto'g'ri))?( emas)?[.!]?$/i;
+const normApostrophes = (s: string) => s.replace(/[‘’ʻʼ`´]/g, "'");
+
+// AI yoki fayldan qolib ketgan "A) ..." prefiksi. "A. Maslou" kabi bosh harfli ismlarni xato deb sanamaslik uchun
+// nuqtali prefiks faqat barcha variantlarda ketma-ket (A., B., C., D.) uchraganda hisobga olinadi.
+function hasLetterPrefix(opts: string[]): boolean {
+    if (opts.some(o => /^[A-Da-d]\)\s/.test(o))) return true;
+    return opts.length === 4 && opts.every((o, i) => new RegExp(`^${'ABCD'[i]}\\.\\s`, 'i').test(o));
+}
 
 /** Savolning tuzilishidagi nuqsonlar ro'yxati (bo'sh massiv = yaroqli). */
 export function qualityIssues(q: { question: string; options: string[]; correctIndex: number }): string[] {
@@ -53,8 +63,8 @@ export function qualityIssues(q: { question: string; options: string[]; correctI
     const opts = q.options.map(o => o.trim());
     if (opts.some(o => o.length === 0 || o.length > 150)) issues.push('variant uzunligi');
     if (new Set(opts.map(o => o.toLowerCase())).size !== opts.length) issues.push('takroriy variant');
-    if (opts.some(o => BANNED_OPTION.test(o))) issues.push('taqiqlangan variant');
-    if (opts.some(o => /^[A-Da-d][).]\s/.test(o))) issues.push('variant harf bilan boshlangan');
+    if (opts.some(o => BANNED_OPTION.test(normApostrophes(o)))) issues.push('taqiqlangan variant');
+    if (hasLetterPrefix(opts)) issues.push('variant harf bilan boshlangan');
     if (hasLengthGiveaway(opts, q.correctIndex)) issues.push("to'g'ri javob uzunligi bilan ajralib turadi");
     return issues;
 }
